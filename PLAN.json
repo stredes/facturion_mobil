@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "appName": "Facturiion",
+  "phases": [
+    {
+      "phase": 0,
+      "name": "Theme System & Core Components",
+      "machine": "local (Arch)",
+      "status": "completed",
+      "files": [
+        "src/theme/colors.ts",
+        "src/theme/spacing.ts",
+        "src/theme/typography.ts",
+        "src/theme/radius.ts",
+        "src/theme/shadows.ts",
+        "src/theme/index.ts",
+        "src/components/ScreenContainer.tsx",
+        "src/components/AppHeader.tsx",
+        "src/components/StatusBadge.tsx",
+        "src/components/AmountRow.tsx",
+        "src/components/TextInputField.tsx",
+        "src/components/DateInput.tsx",
+        "src/components/SectionTitle.tsx",
+        "src/components/PrimaryButton.tsx",
+        "src/components/SecondaryButton.tsx",
+        "src/components/SearchInput.tsx",
+        "src/components/FilterChip.tsx",
+        "src/components/LoadingState.tsx",
+        "src/components/ErrorState.tsx",
+        "src/components/ConfirmModal.tsx",
+        "src/components/SummaryCard.tsx",
+        "src/components/InvoiceCard.tsx",
+        "src/components/EmptyState.tsx",
+        "src/components/FloatingActionButton.tsx",
+        "src/components/MoneyInput.tsx"
+      ]
+    },
+    {
+      "phase": 1,
+      "name": "Home Screen & Invoices List",
+      "machine": "mint (192.168.1.90)",
+      "status": "in_progress",
+      "files": [
+        "app/(tabs)/_layout.tsx",
+        "app/(tabs)/index.tsx",
+        "app/(tabs)/facturas.tsx"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Form, Detail, Summary & States",
+      "machine": "kali (192.168.1.100)",
+      "status": "in_progress",
+      "files": [
+        "src/components/InvoiceForm.tsx",
+        "app/facturas/[id].tsx",
+        "app/facturas/nueva.tsx",
+        "app/facturas/editar/[id].tsx",
+        "app/(tabs)/resumen.tsx"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Cleanup & Verification",
+      "machine": "all",
+      "status": "pending",
+      "tasks": [
+        "Run tsc --noEmit on all machines",
+        "Verify consistency"
+      ]
+    }
+  ]
+}
