@@ -20,7 +20,7 @@ export function SearchInput({
         accessibilityLabel="Buscar"
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.text.tertiary}
         style={styles.input}
         value={value}
       />
@@ -40,8 +40,8 @@ export function SearchInput({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: radius.input,
     borderWidth: 1,
     flexDirection: "row",
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-    color: colors.textPrimary,
+    color: colors.text.primary,
     flex: 1,
     fontSize: 15,
     minHeight: 50,
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   clearIcon: {
-    color: colors.textMuted,
+    color: colors.text.tertiary,
     fontSize: 14,
     fontWeight: "600",
   },

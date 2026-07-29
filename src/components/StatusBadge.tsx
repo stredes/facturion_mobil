@@ -15,27 +15,27 @@ const badgeConfig: Record<
 > = {
   paid: {
     label: "Pagada",
-    bg: colors.successLight,
-    text: colors.success,
-    dot: colors.success,
+    bg: colors.status.success + "20",
+    text: colors.status.success,
+    dot: colors.status.success,
   },
   pending: {
     label: "Pendiente",
-    bg: colors.warningLight,
-    text: colors.warning,
-    dot: colors.warning,
+    bg: colors.status.warning + "20",
+    text: colors.status.warning,
+    dot: colors.status.warning,
   },
   registered: {
     label: "Pago registrado",
-    bg: colors.infoLight,
-    text: colors.info,
-    dot: colors.info,
+    bg: colors.status.info + "20",
+    text: colors.status.info,
+    dot: colors.status.info,
   },
   none: {
     label: "Sin fecha de pago",
-    bg: colors.borderLight,
-    text: colors.textSecondary,
-    dot: colors.textMuted,
+    bg: colors.border.light + "80",
+    text: colors.text.secondary,
+    dot: colors.text.tertiary,
   },
 };
 

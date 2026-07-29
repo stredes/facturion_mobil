@@ -23,10 +23,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.mainTitle,
-    color: colors.textPrimary,
+    color: colors.text.primary,
   },
   subtitle: {
     ...typography.caption,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
   },
 });

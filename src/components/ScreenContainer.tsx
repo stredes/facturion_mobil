@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, screenPadding } from "../theme";
+import { colors, spacing } from "../theme";
 
 interface ScreenContainerProps {
   children: ReactNode;
@@ -20,8 +20,10 @@ export function ScreenContainer({ children }: ScreenContainerProps) {
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
     flex: 1,
-    paddingHorizontal: screenPadding,
+    paddingHorizontal: spacing.screenPadding,
   },
 });
+
+export { spacing as screenPaddingExports } from "../theme";

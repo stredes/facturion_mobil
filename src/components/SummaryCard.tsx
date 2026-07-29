@@ -22,7 +22,8 @@ export function SummaryCard({
       style={[
         styles.card,
         shadows.card,
-        tone === "strong" ? styles.strongCard : null,
+        tone === "strong" && styles.strongCard,
+        tone === "warning" && styles.warningCard,
       ]}
     >
       {icon ? <Text style={styles.icon}>{icon}</Text> : null}
@@ -32,23 +33,21 @@ export function SummaryCard({
         numberOfLines={1}
         style={[
           styles.value,
-          tone === "strong" ? styles.strongValue : null,
-          tone === "warning" ? styles.warningValue : null,
+          tone === "strong" && styles.strongValue,
+          tone === "warning" && styles.warningValue,
         ]}
       >
         {value}
       </Text>
-      {secondary ? (
-        <Text style={styles.secondary}>{secondary}</Text>
-      ) : null}
+      {secondary ? <Text style={styles.secondary}>{secondary}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: radius.card,
     borderWidth: 1,
     flexBasis: "48%",
@@ -58,7 +57,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   strongCard: {
-    borderColor: colors.primary,
+    borderColor: colors.primary.main,
+    borderWidth: 2,
+  },
+  warningCard: {
+    borderColor: colors.status.warning,
     borderWidth: 2,
   },
   icon: {
@@ -67,21 +70,21 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.label,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
   },
   value: {
     ...typography.cardAmount,
-    color: colors.textPrimary,
+    color: colors.text.primary,
   },
   strongValue: {
-    color: colors.primary,
+    color: colors.primary.main,
   },
   warningValue: {
-    color: colors.warning,
+    color: colors.status.warning,
   },
   secondary: {
     ...typography.small,
-    color: colors.textMuted,
+    color: colors.text.tertiary,
     marginTop: spacing.xs,
   },
 });

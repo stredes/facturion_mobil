@@ -1,25 +1,29 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors, radius } from "../theme";
+import { colors, radius, spacing } from "../theme";
 
 interface FilterChipProps {
   label: string;
-  active: boolean;
+  selected: boolean;
   onPress: () => void;
 }
 
-export function FilterChip({ label, active, onPress }: FilterChipProps) {
+export function FilterChip({
+  label,
+  selected,
+  onPress,
+}: FilterChipProps) {
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.chip,
-        active ? styles.active : null,
-        pressed ? styles.pressed : null,
+        selected && styles.selected,
+        pressed && styles.pressed,
       ]}
     >
-      <Text style={[styles.label, active ? styles.labelActive : null]}>
+      <Text style={[styles.text, selected && styles.textSelected]}>
         {label}
       </Text>
     </Pressable>
@@ -28,23 +32,26 @@ export function FilterChip({ label, active, onPress }: FilterChipProps) {
 
 const styles = StyleSheet.create({
   chip: {
-    backgroundColor: colors.borderLight,
-    borderRadius: radius.badge,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 20,
+    borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-  active: {
-    backgroundColor: colors.primary,
+  selected: {
+    backgroundColor: "#0A4C6B",
+    borderColor: "#0A4C6B",
   },
   pressed: {
-    opacity: 0.8,
+    opacity: 0.85,
   },
-  label: {
-    color: colors.textSecondary,
+  text: {
+    color: "#64748B",
     fontSize: 13,
     fontWeight: "600",
   },
-  labelActive: {
-    color: colors.surface,
+  textSelected: {
+    color: "#FFFFFF",
   },
 });

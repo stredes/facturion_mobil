@@ -1,42 +1,39 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
-import { formatCurrency, parseMoneyInput } from "../utils/currency";
+import { colors, radius, spacing } from "../theme";
 
 interface MoneyInputProps {
   label: string;
   value: number;
-  onChangeValue: (value: number) => void;
   error?: string;
-  readonly?: boolean;
+  onChangeValue: (value: number) => void;
 }
 
 export function MoneyInput({
   label,
   value,
-  onChangeValue,
   error,
-  readonly = false,
+  onChangeValue,
 }: MoneyInputProps) {
+  const formattedValue = value
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputWrapper, readonly ? styles.readonly : null, error ? styles.inputError : null]}>
-        <Text style={styles.prefix}>$</Text>
-        <TextInput
-          accessibilityLabel={label}
-          editable={!readonly}
-          keyboardType="number-pad"
-          onChangeText={(text) => onChangeValue(parseMoneyInput(text))}
-          placeholder="0"
-          placeholderTextColor={colors.textMuted}
-          style={[styles.input, readonly ? styles.readonlyInput : null]}
-          value={value > 0 ? formatCurrency(value) : ""}
-        />
-      </View>
-      {readonly ? (
-        <Text style={styles.hint}>Calculado automáticamente</Text>
-      ) : null}
+      <TextInput
+        accessibilityLabel={label}
+        keyboardType="numbers-and-punctuation"
+        onChangeText={(text) => {
+          const numericValue = parseInt(text.replace(/[^\d]/g, ""), 10) || 0;
+          onChangeValue(numericValue);
+        }}
+        placeholder="$ 0"
+        placeholderTextColor={colors.text.tertiary}
+        style={[styles.input, error && styles.inputError]}
+        value={formattedValue}
+      />
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
@@ -44,54 +41,29 @@ export function MoneyInput({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.xs,
+    gap: 6,
   },
   label: {
-    ...typography.label,
-    color: colors.textPrimary,
-  },
-  inputWrapper: {
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    flexDirection: "row",
-    minHeight: 52,
-    paddingHorizontal: 14,
-  },
-  readonly: {
-    backgroundColor: colors.infoLight,
-    borderColor: colors.primaryLight,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  prefix: {
-    color: colors.textSecondary,
-    fontSize: 17,
+    color: "#1E293B",
+    fontSize: 14,
     fontWeight: "600",
-    marginRight: spacing.xs,
   },
   input: {
-    color: colors.textPrimary,
-    flex: 1,
-    fontSize: 17,
-    minHeight: 50,
-    paddingVertical: 0,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#1E293B",
+    fontSize: 16,
+    minHeight: 52,
+    paddingHorizontal: 14,
     textAlign: "right",
   },
-  readonlyInput: {
-    color: colors.primary,
-    fontWeight: "700",
-  },
-  hint: {
-    color: colors.primaryLight,
-    fontSize: 12,
-    fontWeight: "500",
+  inputError: {
+    borderColor: "#EF4444",
   },
   error: {
-    color: colors.error,
+    color: "#EF4444",
     fontSize: 12,
     fontWeight: "500",
   },

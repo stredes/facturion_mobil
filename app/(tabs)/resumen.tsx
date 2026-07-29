@@ -9,13 +9,20 @@ import { formatMonthPeriod } from "../../src/utils/dates";
 export default function SummaryScreen() {
   const { monthlySummary, isLoading, error } = useInvoiceSummary();
 
+  const formatAmount = (amount: number) =>
+    new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+      minimumFractionDigits: 0,
+    }).format(amount);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Resumen mensual</Text>
 
       {isLoading ? (
         <View style={styles.loading}>
-          <ActivityIndicator color="#0E7490" />
+          <ActivityIndicator color="#0A4C6B" />
         </View>
       ) : null}
 
@@ -34,7 +41,7 @@ export default function SummaryScreen() {
             <Text style={styles.monthTitle}>
               {formatMonthPeriod(summary.period)}
             </Text>
-            <Text style={styles.monthCount}>{summary.invoiceCount}</Text>
+            <Text style={styles.monthCount}>{summary.invoiceCount} facturas</Text>
           </View>
 
           <View style={styles.grid}>
@@ -73,13 +80,13 @@ export default function SummaryScreen() {
 const styles = StyleSheet.create({
   container: {
     gap: 18,
-    padding: 18,
+    padding: 16,
     paddingBottom: 34,
   },
   title: {
-    color: "#102A43",
+    color: "#1E293B",
     fontSize: 28,
-    fontWeight: "900",
+    fontWeight: "700",
   },
   loading: {
     paddingVertical: 32,
@@ -103,10 +110,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   monthTitle: {
-    color: "#102A43",
+    color: "#1E293B",
     flex: 1,
     fontSize: 19,
-    fontWeight: "900",
+    fontWeight: "700",
     textTransform: "capitalize",
   },
   monthCount: {
@@ -114,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: "#155E75",
     fontSize: 13,
-    fontWeight: "900",
+    fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: 10,
     paddingVertical: 6,

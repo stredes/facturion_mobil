@@ -1,18 +1,12 @@
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, shadows, spacing } from "../theme";
 
 interface ConfirmModalProps {
   visible: boolean;
   title: string;
   message: string;
-  confirmLabel: string;
+  confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
@@ -23,43 +17,51 @@ export function ConfirmModal({
   visible,
   title,
   message,
-  confirmLabel,
+  confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   onConfirm,
   onCancel,
-  destructive = true,
+  destructive = false,
 }: ConfirmModalProps) {
-  return (
-    <Modal animationType="fade" transparent visible={visible}>
-      <View style={styles.backdrop}>
-        <View style={styles.dialog}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
+  if (!visible) return null;
 
-          <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onCancel}
-              style={({ pressed }) => [
-                styles.button,
-                styles.secondaryButton,
-                pressed ? styles.pressed : null,
+  return (
+    <Modal animationType="fade" transparent={true} visible={visible}>
+      <View style={styles.overlay} accessible={false} />
+      <View style={[styles.modal, shadows.modal]}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{title}</Text>
+        </View>
+        <Text style={styles.message}>{message}</Text>
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onCancel}
+            style={({ pressed }) => [
+              styles.cancelButton,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Text style={styles.cancelText}>{cancelLabel}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onConfirm}
+            style={({ pressed }) => [
+              styles.confirmButton,
+              destructive && styles.destructiveButton,
+              pressed && styles.buttonPressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.confirmText,
+                destructive && styles.destructiveText,
               ]}
             >
-              <Text style={styles.secondaryText}>{cancelLabel}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onConfirm}
-              style={({ pressed }) => [
-                styles.button,
-                destructive ? styles.dangerButton : styles.primaryButton,
-                pressed ? styles.pressed : null,
-              ]}
-            >
-              <Text style={styles.primaryText}>{confirmLabel}</Text>
-            </Pressable>
-          </View>
+              {confirmLabel}
+            </Text>
+          </Pressable>
         </View>
       </View>
     </Modal>
@@ -67,62 +69,72 @@ export function ConfirmModal({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    alignItems: "center",
+  overlay: {
     backgroundColor: colors.overlay,
     flex: 1,
-    justifyContent: "center",
-    padding: spacing.xl,
   },
-  dialog: {
-    backgroundColor: colors.surface,
+  modal: {
+    backgroundColor: colors.surface.primary,
     borderRadius: radius.modal,
-    gap: spacing.lg,
-    padding: spacing.xl,
-    width: "100%",
+    margin: spacing.lg,
+    maxHeight: "80%",
+    padding: spacing.lg,
+    width: "90%",
+  },
+  header: {
+    marginBottom: spacing.md,
   },
   title: {
-    color: colors.textPrimary,
-    fontSize: 19,
+    color: colors.text.primary,
+    fontSize: 20,
     fontWeight: "700",
   },
   message: {
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     fontSize: 15,
-    lineHeight: 21,
+    lineHeight: 22,
+    marginBottom: spacing.xl,
   },
   actions: {
     flexDirection: "row",
     gap: spacing.md,
+    justifyContent: "flex-end",
   },
-  button: {
+  cancelButton: {
     alignItems: "center",
+    flex: 1,
+    minHeight: 48,
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  confirmButton: {
+    alignItems: "center",
+    backgroundColor: colors.primary.main,
     borderRadius: radius.button,
     flex: 1,
     minHeight: 48,
     justifyContent: "center",
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
-  secondaryButton: {
-    backgroundColor: colors.borderLight,
+  destructiveButton: {
+    backgroundColor: colors.status.error,
   },
-  dangerButton: {
-    backgroundColor: colors.error,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-  },
-  secondaryText: {
-    color: colors.textPrimary,
-    fontSize: 15,
+  cancelText: {
+    color: colors.text.secondary,
+    fontSize: 16,
     fontWeight: "600",
   },
-  primaryText: {
-    color: colors.surface,
-    fontSize: 15,
-    fontWeight: "600",
+  confirmText: {
+    color: colors.surface.primary,
+    fontSize: 16,
+    fontWeight: "700",
   },
-  pressed: {
-    opacity: 0.8,
+  destructiveText: {
+    color: colors.surface.primary,
+  },
+  buttonPressed: {
+    opacity: 0.85,
   },
 });

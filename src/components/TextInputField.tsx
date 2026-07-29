@@ -33,11 +33,11 @@ export function TextInputField({
         onBlur={onBlur}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.text.tertiary}
         style={[
           styles.input,
-          multiline ? styles.multiline : null,
-          error ? styles.inputError : null,
+          multiline && styles.multiline,
+          error && styles.inputError,
         ]}
         value={value}
       />
@@ -51,16 +51,16 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   label: {
-    color: colors.textPrimary,
+    color: colors.text.primary,
     fontSize: 14,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: radius.input,
     borderWidth: 1,
-    color: colors.textPrimary,
+    color: colors.text.primary,
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
@@ -71,10 +71,10 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: colors.status.error,
   },
   error: {
-    color: colors.error,
+    color: colors.status.error,
     fontSize: 12,
     fontWeight: "500",
   },

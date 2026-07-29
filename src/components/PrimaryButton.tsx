@@ -1,12 +1,13 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors, radius } from "../theme";
+import { colors, radius, spacing } from "../theme";
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
+  fullWidth?: boolean;
 }
 
 export function PrimaryButton({
@@ -14,6 +15,7 @@ export function PrimaryButton({
   onPress,
   disabled = false,
   loading = false,
+  fullWidth = true,
 }: PrimaryButtonProps) {
   const isDisabled = disabled || loading;
 
@@ -24,11 +26,12 @@ export function PrimaryButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        isDisabled ? styles.disabled : null,
-        pressed && !isDisabled ? styles.pressed : null,
+        fullWidth && styles.fullWidth,
+        isDisabled && styles.disabled,
+        pressed && !isDisabled && styles.pressed,
       ]}
     >
-      <Text style={[styles.text, isDisabled ? styles.textDisabled : null]}>
+      <Text style={[styles.text, isDisabled && styles.textDisabled]}>
         {loading ? "Guardando..." : label}
       </Text>
     </Pressable>
@@ -38,24 +41,27 @@ export function PrimaryButton({
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: radius.button,
+    backgroundColor: "#0A4C6B",
+    borderRadius: 8,
     minHeight: 52,
     justifyContent: "center",
     paddingHorizontal: 18,
   },
+  fullWidth: {
+    width: "100%",
+  },
   disabled: {
-    backgroundColor: colors.border,
+    backgroundColor: "#CBD5E1",
   },
   pressed: {
     opacity: 0.85,
   },
   text: {
-    color: colors.surface,
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
   },
   textDisabled: {
-    color: colors.textMuted,
+    color: "#94A3B8",
   },
 });

@@ -26,8 +26,8 @@ export function DateInput({
         onBlur={onBlur}
         onChangeText={onChangeText}
         placeholder="AAAA-MM-DD"
-        placeholderTextColor={colors.textMuted}
-        style={[styles.input, error ? styles.inputError : null]}
+        placeholderTextColor={colors.text.tertiary}
+        style={[styles.input, error && styles.inputError]}
         value={value}
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -40,25 +40,25 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   label: {
-    color: colors.textPrimary,
+    color: colors.text.primary,
     fontSize: 14,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: radius.input,
     borderWidth: 1,
-    color: colors.textPrimary,
+    color: colors.text.primary,
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: colors.status.error,
   },
   error: {
-    color: colors.error,
+    color: colors.status.error,
     fontSize: 12,
     fontWeight: "500",
   },

@@ -5,4 +5,5 @@ export const radius = {
   badge: 6,
   modal: 16,
   fab: 28,
+  chip: 20,
 } as const;

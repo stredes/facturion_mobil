@@ -1,233 +1,140 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import React, { useState } from "react";
+import { Text, View } from "react-native";
 
-import { EmptyState } from "../../src/components/EmptyState";
-import { FloatingActionButton } from "../../src/components/FloatingActionButton";
-import { InvoiceCard } from "../../src/components/InvoiceCard";
-import type { PaymentStatusFilter } from "../../src/domain/Invoice";
-import { useInvoices } from "../../src/hooks/useInvoices";
+import { AppHeader } from "@/components/AppHeader";
+import { ScreenContainer } from "@/components/ScreenContainer";
+import { SearchInput } from "@/components/SearchInput";
+import { FilterChip } from "@/components/FilterChip";
+import { InvoiceCard } from "@/components/InvoiceCard";
+import { EmptyState } from "@/components/EmptyState";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { SectionTitle } from "@/components/SectionTitle";
+import { colors, spacing } from "@/theme";
 
-const PAYMENT_FILTERS: Array<{
-  label: string;
-  value: PaymentStatusFilter;
-}> = [
-  { label: "Todas", value: "all" },
-  { label: "Pagadas", value: "paid" },
-  { label: "Pendientes", value: "unpaid" },
+type InvoiceStatus = "paid" | "pending" | "unpaid";
+
+interface Invoice {
+  id: string;
+  clientName: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  netAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  paymentDate?: string;
+  taxPayment: number;
+  tagAmount: number;
+  accountantAmount: number;
+  savingsAmount: number;
+  description?: string;
+}
+
+const statusOptions: { value: InvoiceStatus | "all"; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "paid", label: "Pagadas" },
+  { value: "pending", label: "Pendientes" },
+  { value: "unpaid", label: "Sin pago" },
 ];
 
-export default function InvoicesScreen() {
-  const router = useRouter();
-  const [searchText, setSearchText] = useState("");
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
-  const [paymentStatus, setPaymentStatus] =
-    useState<PaymentStatusFilter>("all");
-  const { invoices, isLoading, error } = useInvoices({
-    searchText,
-    month,
-    year,
-    paymentStatus,
+export default function FacturasScreen() {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "all">("all");
+
+  // Using mock data for now - replace with useInvoices hook
+  const mockInvoices: Invoice[] = [
+    { id: "1", clientName: "Empresa ABC", invoiceNumber: "001", invoiceDate: "2024-01-15", netAmount: 1500000, taxAmount: 285000, totalAmount: 1785000, paymentDate: "2024-01-20", taxPayment: 285000, tagAmount: 50000, accountantAmount: 30000, savingsAmount: 20000, description: "Servicios profesionales" },
+    { id: "2", clientName: "Tech Solutions", invoiceNumber: "002", invoiceDate: "2024-01-20", netAmount: 850000, taxAmount: 161500, totalAmount: 1011500, paymentDate: undefined, taxPayment: 0, tagAmount: 0, accountantAmount: 0, savingsAmount: 0, description: "Desarrollo web" },
+    { id: "3", clientName: "Comercial XYZ", invoiceNumber: "003", invoiceDate: "2024-01-10", netAmount: 2200000, taxAmount: 418000, totalAmount: 2618000, paymentDate: undefined, taxPayment: 200000, tagAmount: 100000, accountantAmount: 50000, savingsAmount: 30000, description: "Consultoría" },
+    { id: "4", clientName: "Startup Inc", invoiceNumber: "004", invoiceDate: "2024-01-25", netAmount: 450000, taxAmount: 85500, totalAmount: 535500, paymentDate: "2024-02-01", taxPayment: 85500, tagAmount: 20000, accountantAmount: 10000, savingsAmount: 5000, description: "Diseño" },
+    { id: "5", clientName: "Corporación DEF", invoiceNumber: "005", invoiceDate: "2024-01-18", netAmount: 3100000, taxAmount: 589000, totalAmount: 3689000, paymentDate: undefined, taxPayment: 0, tagAmount: 0, accountantAmount: 0, savingsAmount: 0, description: "Mantenimiento" },
+  ];
+
+  const getStatus = (invoice: Invoice): InvoiceStatus => {
+    if (invoice.paymentDate) return "paid";
+    if (invoice.taxPayment > 0) return "pending";
+    return "unpaid";
+  };
+
+  const filteredInvoices = mockInvoices.filter((invoice) => {
+    const status = getStatus(invoice);
+    const matchesSearch =
+      invoice.clientName.toLowerCase().includes(search.toLowerCase()) ||
+      invoice.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
+      (invoice.description && invoice.description.toLowerCase().includes(search.toLowerCase()));
+    const matchesStatus =
+      statusFilter === "all" || status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   return (
-    <View style={styles.screen}>
-      <FlatList
-        contentContainerStyle={styles.container}
-        data={invoices}
-        keyExtractor={(item) => item.id}
-        keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          isLoading ? (
-            <View style={styles.loading}>
-              <ActivityIndicator color="#0E7490" />
-            </View>
-          ) : (
-            <EmptyState
-              message="Ajusta la búsqueda o registra una nueva factura."
-              title="Sin facturas"
-            />
-          )
-        }
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.title}>Facturas</Text>
-            <TextInput
-              accessibilityLabel="Buscar facturas"
-              onChangeText={setSearchText}
-              placeholder="Buscar por número, cliente o descripción"
-              placeholderTextColor="#7C8794"
-              style={styles.searchInput}
-              value={searchText}
-            />
+    <ScreenContainer>
+      <AppHeader title="Facturas" subtitle={`${mockInvoices.length} facturas`} />
 
-            <View style={styles.filterRow}>
-              <TextInput
-                accessibilityLabel="Mes"
-                keyboardType="number-pad"
-                maxLength={2}
-                onChangeText={(value) =>
-                  setMonth(value.replace(/\D/g, "").slice(0, 2))
-                }
-                placeholder="Mes"
-                placeholderTextColor="#7C8794"
-                style={styles.filterInput}
-                value={month}
-              />
-              <TextInput
-                accessibilityLabel="Año"
-                keyboardType="number-pad"
-                maxLength={4}
-                onChangeText={(value) =>
-                  setYear(value.replace(/\D/g, "").slice(0, 4))
-                }
-                placeholder="Año"
-                placeholderTextColor="#7C8794"
-                style={styles.filterInput}
-                value={year}
-              />
-            </View>
+      <View style={styles.searchSection}>
+        <SearchInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Buscar por número, cliente o descripción"
+        />
+      </View>
 
-            <View style={styles.segmentedControl}>
-              {PAYMENT_FILTERS.map((filter) => {
-                const isActive = paymentStatus === filter.value;
-
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    key={filter.value}
-                    onPress={() => setPaymentStatus(filter.value)}
-                    style={[
-                      styles.segment,
-                      isActive ? styles.segmentActive : null,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.segmentText,
-                        isActive ? styles.segmentTextActive : null,
-                      ]}
-                    >
-                      {filter.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-          </View>
-        }
-        renderItem={({ item }) => (
-          <InvoiceCard
-            invoice={item}
-            onPress={() =>
-              router.push({
-                pathname: "/facturas/[id]",
-                params: { id: item.id },
-              })
-            }
+      <View style={styles.filters}>
+        {statusOptions.map((option) => (
+          <FilterChip
+            key={option.value}
+            label={option.label}
+            selected={statusFilter === option.value}
+            onPress={() => setStatusFilter(option.value)}
           />
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+        ))}
+      </View>
 
-      <FloatingActionButton onPress={() => router.push("/facturas/nueva")} />
-    </View>
+      <SectionTitle title={`Resultados (${filteredInvoices.length})`} />
+
+      {filteredInvoices.length === 0 ? (
+        <EmptyState
+          title="Sin facturas"
+          message={
+            search || statusFilter !== "all"
+              ? "No hay facturas que coincidan con tu búsqueda"
+              : "No hay facturas registradas aún"
+          }
+          actionLabel="Crear factura"
+          onAction={() => console.log("Nueva factura")}
+          icon="🔍"
+        />
+      ) : (
+        <View style={styles.list}>
+          {filteredInvoices.map((invoice) => (
+            <InvoiceCard
+              key={invoice.id}
+              invoice={invoice as any}
+              onPress={() => console.log("Detalle", invoice.id)}
+            />
+          ))}
+        </View>
+      )}
+
+      <FloatingActionButton
+        onPress={() => console.log("Nueva factura")}
+        accessibilityLabel="Crear factura"
+      />
+    </ScreenContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: "#F6F8FA",
-    flex: 1,
+const styles: any = {
+  searchSection: {
+    marginBottom: spacing.md,
   },
-  container: {
-    padding: 18,
-    paddingBottom: 110,
-  },
-  header: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  title: {
-    color: "#102A43",
-    fontSize: 28,
-    fontWeight: "900",
-  },
-  searchInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D9E2EC",
-    borderRadius: 8,
-    borderWidth: 1,
-    color: "#102A43",
-    fontSize: 15,
-    minHeight: 52,
-    paddingHorizontal: 14,
-  },
-  filterRow: {
+  filters: {
     flexDirection: "row",
-    gap: 10,
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
-  filterInput: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D9E2EC",
-    borderRadius: 8,
-    borderWidth: 1,
-    color: "#102A43",
-    flex: 1,
-    fontSize: 15,
-    minHeight: 50,
-    paddingHorizontal: 14,
+  list: {
+    gap: spacing.md,
+    paddingBottom: 100,
   },
-  segmentedControl: {
-    backgroundColor: "#E9EFF5",
-    borderRadius: 8,
-    flexDirection: "row",
-    padding: 4,
-  },
-  segment: {
-    alignItems: "center",
-    borderRadius: 6,
-    flex: 1,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  segmentActive: {
-    backgroundColor: "#FFFFFF",
-  },
-  segmentText: {
-    color: "#52606D",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  segmentTextActive: {
-    color: "#0E7490",
-  },
-  separator: {
-    height: 12,
-  },
-  loading: {
-    paddingVertical: 32,
-  },
-  error: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: 8,
-    borderWidth: 1,
-    color: "#C2410C",
-    fontSize: 14,
-    fontWeight: "700",
-    padding: 14,
-  },
-});
+};

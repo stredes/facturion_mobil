@@ -1,91 +1,40 @@
-import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, spacing } from "../theme";
 
 interface LoadingStateProps {
-  count?: number;
+  message?: string;
+  size?: "small" | "large";
 }
 
-function SkeletonBlock({ style }: { style?: object }) {
-  const opacity = useRef(new Animated.Value(0.3));
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity.current, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity.current, {
-          toValue: 0.3,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-
-    animation.start();
-
-    return () => animation.stop();
-  }, []);
-
+export function LoadingState({
+  message = "Cargando...",
+  size = "large",
+}: LoadingStateProps) {
   return (
-    <Animated.View
-      style={[styles.skeleton, style, { opacity: opacity.current }]}
-    />
-  );
-}
-
-export function LoadingState({ count = 3 }: LoadingStateProps) {
-  return (
-    <View style={styles.container}>
-      {Array.from({ length: count }, (_, i) => (
-        <View key={i} style={styles.card}>
-          <SkeletonBlock style={styles.titleLine} />
-          <SkeletonBlock style={styles.line} />
-          <View style={styles.row}>
-            <SkeletonBlock style={styles.amountBlock} />
-            <SkeletonBlock style={styles.amountBlock} />
-          </View>
-        </View>
-      ))}
+    <View style={[styles.container, styles[size]]}>
+      <ActivityIndicator color={colors.primary.main} size={size} />
+      {message && <Text style={styles.message}>{message}</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: "center",
     gap: spacing.md,
-    paddingVertical: spacing.lg,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    gap: spacing.sm,
+    justifyContent: "center",
     padding: spacing.lg,
   },
-  skeleton: {
-    backgroundColor: colors.skeleton,
-    borderRadius: 4,
+  large: {
+    paddingVertical: spacing.xxl,
   },
-  titleLine: {
-    height: 20,
-    width: "60%",
+  small: {
+    paddingVertical: spacing.lg,
   },
-  line: {
-    height: 14,
-    width: "40%",
-  },
-  row: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  amountBlock: {
-    flex: 1,
-    height: 40,
-    borderRadius: radius.input,
+  message: {
+    color: colors.text.secondary,
+    fontSize: 14,
+    fontWeight: "400",
   },
 });

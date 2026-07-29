@@ -13,9 +13,7 @@ interface InvoiceCardProps {
 
 export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
   const hasPaymentDate = Boolean(invoice.paymentDate);
-  const status = invoice.paymentDate
-    ? "paid"
-    : "pending";
+  const status = invoice.paymentDate ? "paid" : "pending";
 
   return (
     <Pressable
@@ -24,7 +22,7 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
       style={({ pressed }) => [
         styles.card,
         shadows.card,
-        pressed ? styles.pressed : null,
+        pressed && styles.pressed,
       ]}
     >
       <View style={styles.header}>
@@ -60,8 +58,8 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: radius.card,
     borderWidth: 1,
     gap: spacing.sm,
@@ -78,21 +76,21 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.cardTitle,
-    color: colors.textPrimary,
+    color: colors.text.primary,
     flex: 1,
   },
   date: {
     ...typography.caption,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     paddingTop: 2,
   },
   client: {
     ...typography.bodyBold,
-    color: colors.textPrimary,
+    color: colors.text.primary,
   },
   total: {
     ...typography.cardAmount,
-    color: colors.primary,
+    color: colors.primary.main,
     marginTop: spacing.xs,
   },
   amountRow: {
@@ -101,7 +99,7 @@ const styles = StyleSheet.create({
   },
   amountItem: {
     ...typography.caption,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
   },
   footer: {
     flexDirection: "row",

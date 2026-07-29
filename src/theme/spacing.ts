@@ -3,11 +3,20 @@ export const spacing = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
-  xxl: 32,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+  screenPadding: 16,
+  cardPadding: 16,
+  inputHeight: 52,
+  buttonHeight: 52,
+  buttonHeightSmall: 48,
+  headerHeight: 56,
+  tabBarHeight: 80,
+  cardRadius: 16,
+  inputRadius: 8,
+  buttonRadius: 8,
+  chipRadius: 20,
 } as const;
 
-export const screenPadding = spacing.lg;
-export const cardPadding = spacing.lg;
-export const cardGap = spacing.md;
-export const sectionGap = spacing.xl;
+export type Spacing = typeof spacing;
