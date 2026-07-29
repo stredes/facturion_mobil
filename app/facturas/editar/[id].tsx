@@ -1,17 +1,18 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { EmptyState } from "../../../src/components/EmptyState";
 import { InvoiceForm } from "../../../src/components/InvoiceForm";
 import type { CreateInvoiceInput, Invoice } from "../../../src/domain/Invoice";
-import { SQLiteInvoiceRepository } from "../../../src/infrastructure/repositories/SQLiteInvoiceRepository";
+import { useInvoiceService } from "../../../src/infrastructure/di/ServiceContext";
+import { colors, spacing } from "../../../src/theme";
 
 export default function EditInvoiceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const invoiceId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
-  const repository = useMemo(() => new SQLiteInvoiceRepository(), []);
+  const service = useInvoiceService();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export default function EditInvoiceScreen() {
     try {
       setIsLoading(true);
       setLoadError(null);
-      setInvoice(await repository.findById(invoiceId));
+      setInvoice(await service.getById(invoiceId));
     } catch (error) {
       setLoadError(
         error instanceof Error
@@ -37,7 +38,7 @@ export default function EditInvoiceScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [invoiceId, repository]);
+  }, [invoiceId, service]);
 
   useFocusEffect(
     useCallback(() => {
@@ -53,7 +54,7 @@ export default function EditInvoiceScreen() {
     try {
       setIsSubmitting(true);
       setSubmitError(null);
-      const updatedInvoice = await repository.update(invoice.id, input);
+      const updatedInvoice = await service.update(invoice.id, input);
 
       router.replace({
         pathname: "/facturas/[id]",
@@ -73,7 +74,7 @@ export default function EditInvoiceScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color="#0E7490" />
+        <ActivityIndicator color={colors.primary.main} />
       </View>
     );
   }
@@ -97,11 +98,6 @@ export default function EditInvoiceScreen() {
         clientName: invoice.clientName,
         description: invoice.description ?? "",
         netAmount: invoice.netAmount,
-        paymentDate: invoice.paymentDate ?? "",
-        taxPayment: invoice.taxPayment,
-        tagAmount: invoice.tagAmount,
-        accountantAmount: invoice.accountantAmount,
-        savingsAmount: invoice.savingsAmount,
       }}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
@@ -114,9 +110,9 @@ export default function EditInvoiceScreen() {
 const styles = StyleSheet.create({
   centered: {
     alignItems: "center",
-    backgroundColor: "#F6F8FA",
+    backgroundColor: colors.background.primary,
     flex: 1,
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xxl,
   },
 });

@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
 import { colors, radius, shadows, spacing } from "../theme";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -14,41 +15,34 @@ export function FloatingActionButton({
   icon = "+",
 }: FloatingActionButtonProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        shadows.fab,
-        pressed && styles.pressed,
-      ]}
+      style={[styles.button, shadows.fab]}
     >
       <Text style={styles.icon}>{icon}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: "#0A4C6B",
-    borderRadius: 28,
+    backgroundColor: colors.primary.main,
+    borderRadius: radius.fab,
     bottom: 24,
     justifyContent: "center",
     position: "absolute",
     right: 24,
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
+    zIndex: 10,
   },
   icon: {
-    color: "#FFFFFF",
-    fontSize: 28,
+    color: colors.text.inverse,
+    fontSize: 24,
     fontWeight: "700",
     lineHeight: 28,
-  },
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.95 }],
   },
 });

@@ -1,10 +1,6 @@
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+
+import { colors, radius, spacing, typography } from "../theme";
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -39,7 +35,7 @@ export function ConfirmDialog({
               style={({ pressed }) => [
                 styles.button,
                 styles.secondaryButton,
-                pressed ? styles.pressed : null,
+                pressed && styles.pressed,
               ]}
             >
               <Text style={styles.secondaryText}>{cancelLabel}</Text>
@@ -50,7 +46,7 @@ export function ConfirmDialog({
               style={({ pressed }) => [
                 styles.button,
                 styles.dangerButton,
-                pressed ? styles.pressed : null,
+                pressed && styles.pressed,
               ]}
             >
               <Text style={styles.primaryText}>{confirmLabel}</Text>
@@ -65,55 +61,53 @@ export function ConfirmDialog({
 const styles = StyleSheet.create({
   backdrop: {
     alignItems: "center",
-    backgroundColor: "rgba(15, 23, 42, 0.32)",
+    backgroundColor: colors.overlay,
     flex: 1,
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xxl,
   },
   dialog: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    gap: 14,
-    padding: 20,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radius.modal,
+    gap: spacing.lg,
+    padding: spacing.xl,
     width: "100%",
   },
   title: {
-    color: "#102A43",
-    fontSize: 19,
-    fontWeight: "800",
+    ...typography.sectionTitle,
+    color: colors.text.primary,
   },
   message: {
-    color: "#52606D",
-    fontSize: 15,
+    ...typography.body,
+    color: colors.text.secondary,
     lineHeight: 21,
   },
   actions: {
     flexDirection: "row",
-    gap: 10,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   button: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: radius.button,
     flex: 1,
     minHeight: 48,
     justifyContent: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   secondaryButton: {
-    backgroundColor: "#F3F7FA",
+    backgroundColor: colors.background.tertiary,
   },
   dangerButton: {
-    backgroundColor: "#B91C1C",
+    backgroundColor: colors.status.error,
   },
   secondaryText: {
-    color: "#102A43",
-    fontSize: 15,
-    fontWeight: "800",
+    ...typography.bodyMedium,
+    color: colors.text.primary,
   },
   primaryText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "800",
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
   pressed: {
     opacity: 0.72,

@@ -1,158 +1,299 @@
-import React from "react";
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { AppHeader } from "@/components/AppHeader";
-import { ScreenContainer } from "@/components/ScreenContainer";
-import { SummaryCard } from "@/components/SummaryCard";
-import { SectionTitle } from "@/components/SectionTitle";
 import { InvoiceCard } from "@/components/InvoiceCard";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { colors, spacing } from "@/theme";
-
-const mockInvoices = [
-  { id: "1", clientName: "Empresa ABC", invoiceNumber: "001", invoiceDate: "2024-01-15", netAmount: 1500000, taxAmount: 285000, totalAmount: 1785000, paymentDate: "2024-01-20", taxPayment: 285000, tagAmount: 50000, accountantAmount: 30000, savingsAmount: 20000, description: "Servicios profesionales" },
-  { id: "2", clientName: "Tech Solutions", invoiceNumber: "002", invoiceDate: "2024-01-20", netAmount: 850000, taxAmount: 161500, totalAmount: 1011500, paymentDate: undefined, taxPayment: 0, tagAmount: 0, accountantAmount: 0, savingsAmount: 0, description: "Desarrollo web" },
-  { id: "3", clientName: "Comercial XYZ", invoiceNumber: "003", invoiceDate: "2024-01-10", netAmount: 2200000, taxAmount: 418000, totalAmount: 2618000, paymentDate: undefined, taxPayment: 200000, tagAmount: 100000, accountantAmount: 50000, savingsAmount: 30000, description: "Consultoría" },
-];
-
-const totalInvoiced = mockInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-const pendingAmount = mockInvoices
-  .filter((inv) => !inv.paymentDate)
-  .reduce((sum, inv) => sum + inv.totalAmount, 0);
-const paidAmount = mockInvoices
-  .filter((inv) => inv.paymentDate)
-  .reduce((sum, inv) => sum + inv.totalAmount, 0);
-const totalNet = mockInvoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-const totalTax = mockInvoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
-const totalRemaining = mockInvoices.reduce((sum, inv) => {
-  const remaining = inv.totalAmount - inv.taxPayment - inv.tagAmount - inv.accountantAmount - inv.savingsAmount;
-  return sum + remaining;
-}, 0);
-const totalTag = mockInvoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
-const totalAccountant = mockInvoices.reduce((sum, inv) => sum + inv.accountantAmount, 0);
-const totalSavings = mockInvoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("es-CL", {
-    style: "currency",
-    currency: "CLP",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+import { InvoiceCardSkeleton } from "@/components/LoadingSkeleton";
+import { SectionTitle } from "@/components/SectionTitle";
+import { SummaryCard } from "@/components/SummaryCard";
+import { useInvoices } from "@/hooks/useInvoices";
+import { usePaymentSummary } from "@/hooks/usePaymentSummary";
+import { colors, radius, spacing, typography } from "@/theme";
+import { formatCurrency } from "@/utils/currency";
+import { formatDisplayDate } from "@/utils/dates";
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 360;
+
+  const {
+    data,
+    recentGeneralPayments,
+    recentTaxPayments,
+    isLoading,
+    error: summaryError,
+    refresh: refreshSummary,
+  } = usePaymentSummary();
+  const { invoices, isLoading: invoicesLoading, refresh: invoicesRefresh } = useInvoices();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refreshSummary(), invoicesRefresh()]);
+    setRefreshing(false);
+  }, [refreshSummary, invoicesRefresh]);
+
+  if (summaryError) {
+    return (
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View style={styles.centeredBody}>
+          <Text style={styles.errorText}>{summaryError}</Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
-    <ScreenContainer>
-      <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
-
-      <View style={styles.mainCard}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <View style={[styles.mainCard]}>
         <Text style={styles.mainLabel}>Total facturado</Text>
-        <Text style={styles.mainAmount}>{formatCurrency(totalInvoiced)}</Text>
-        <Text style={styles.mainSubtitle}>{mockInvoices.length} facturas registradas</Text>
+        {isLoading ? (
+          <Text style={[styles.mainAmount, { fontSize: isSmallScreen ? 23 : 26 }]}>---</Text>
+        ) : (
+          <>
+            <Text
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+              numberOfLines={1}
+              style={[styles.mainAmount, { fontSize: isSmallScreen ? 23 : 26 }]}
+            >
+              {formatCurrency(data.totalInvoiced)}
+            </Text>
+            <Text style={styles.mainSubtitle}>
+              {data.invoiceCount} {data.invoiceCount === 1 ? "factura registrada" : "facturas registradas"}
+            </Text>
+          </>
+        )}
       </View>
 
-      <View style={styles.summarySection}>
-        <SummaryCard
-          label="Neto"
-          value={formatCurrency(totalNet)}
-          icon="💰"
-          tone="strong"
-        />
-        <SummaryCard
-          label="IVA"
-          value={formatCurrency(totalTax)}
-          icon="📋"
-        />
-        <SummaryCard
-          label="Restante"
-          value={formatCurrency(totalRemaining)}
-          icon="💵"
-          tone="strong"
-        />
-        <SummaryCard
-          label="Pago IVA"
-          value={formatCurrency(mockInvoices.reduce((s, i) => s + i.taxPayment, 0))}
-          icon="✅"
-        />
+      <SectionTitle title="IVA y obligaciones tributarias" />
+      <View style={styles.ivaSection}>
+        <View style={styles.grid}>
+          <SummaryCard label="IVA generado" value={isLoading ? "---" : formatCurrency(data.generatedTax)} secondary="Calculado desde las facturas" />
+          <SummaryCard label="IVA pagado" value={isLoading ? "---" : formatCurrency(data.paidTax)} secondary="Registrado en Pagos de IVA" />
+        </View>
+
+        {!isLoading ? (
+          <View style={[styles.reserveCard, data.vatReserveOverpaid && styles.reserveCardDanger]}>
+            <Text style={styles.reserveLabel}>
+              {data.vatReserveOverpaid ? "Deficit de IVA" : "Reserva de IVA"}
+            </Text>
+            <Text
+              adjustsFontSizeToFit
+              numberOfLines={1}
+              style={[styles.reserveValue, data.vatReserveOverpaid && styles.reserveValueDanger]}
+            >
+              {data.vatReserveOverpaid ? `-${formatCurrency(Math.abs(data.generatedTax - data.paidTax))}` : formatCurrency(data.vatReserve)}
+            </Text>
+            <Text style={styles.reserveHint}>
+              {data.vatReserveOverpaid
+                ? "Los pagos de IVA superan el IVA generado registrado."
+                : "Disponible para futuros pagos de IVA."}
+            </Text>
+          </View>
+        ) : null}
       </View>
 
-      <View style={styles.distributionSection}>
-        <SummaryCard
-          label="TAG"
-          value={formatCurrency(mockInvoices.reduce((s, i) => s + i.tagAmount, 0))}
-          icon="🏷️"
-        />
-        <SummaryCard
-          label="Contador"
-          value={formatCurrency(mockInvoices.reduce((s, i) => s + i.accountantAmount, 0))}
-          icon="📊"
-        />
-        <SummaryCard
-          label="Ahorro"
-          value={formatCurrency(mockInvoices.reduce((s, i) => s + i.savingsAmount, 0))}
-          icon="💚"
-        />
+      <SectionTitle title="Pagos generales exentos de IVA" />
+      <View style={styles.gpSection}>
+        <View style={styles.grid}>
+          <SummaryCard label="TAG" value={isLoading ? "---" : formatCurrency(data.totalTag)} />
+          <SummaryCard label="Contador" value={isLoading ? "---" : formatCurrency(data.totalAccountant)} />
+          <SummaryCard label="Ahorro" value={isLoading ? "---" : formatCurrency(data.totalSavings)} />
+          <SummaryCard label="Total general" value={isLoading ? "---" : formatCurrency(data.totalGeneralPayments)} tone="strong" />
+        </View>
+        <Text style={styles.gpNote}>Estos pagos no modifican el IVA generado ni la reserva de IVA.</Text>
+      </View>
+
+      <SectionTitle title="Ultimos pagos generales" />
+      <View style={styles.recentBlock}>
+        {isLoading ? (
+          Array.from({ length: 2 }).map((_, i) => <InvoiceCardSkeleton key={i} />)
+        ) : recentGeneralPayments.length === 0 ? (
+          <Text style={styles.recentEmpty}>No hay pagos generales recientes.</Text>
+        ) : (
+          recentGeneralPayments.map((p) => (
+            <View key={p.id} style={styles.recentRow}>
+              <View style={styles.recentLeft}>
+                <Text style={styles.recentCategory}>
+                  {p.category === "tag" ? "TAG" : p.category === "accountant" ? "Contador" : "Ahorro"}
+                </Text>
+                <Text style={styles.recentDate}>{formatDisplayDate(p.paymentDate)}</Text>
+              </View>
+              <Text style={styles.recentAmount}>{formatCurrency(p.amount)}</Text>
+            </View>
+          ))
+        )}
+      </View>
+
+      <SectionTitle title="Ultimos pagos de IVA" />
+      <View style={styles.recentBlock}>
+        {isLoading ? (
+          Array.from({ length: 2 }).map((_, i) => <InvoiceCardSkeleton key={i} />)
+        ) : recentTaxPayments.length === 0 ? (
+          <Text style={styles.recentEmpty}>No hay pagos de IVA recientes.</Text>
+        ) : (
+          recentTaxPayments.map((p) => (
+            <View key={p.id} style={styles.recentRow}>
+              <View style={styles.recentLeft}>
+                <Text style={styles.recentCategory}>Periodo {p.taxPeriod}</Text>
+                <Text style={styles.recentDate}>Pagado el {formatDisplayDate(p.paymentDate)}</Text>
+              </View>
+              <Text style={styles.recentAmount}>{formatCurrency(p.amount)}</Text>
+            </View>
+          ))
+        )}
       </View>
 
       <SectionTitle title="Facturas recientes" />
-
       <View style={styles.list}>
-        {mockInvoices.map((invoice) => (
-          <InvoiceCard
-            key={invoice.id}
-            invoice={invoice as any}
-            onPress={() => console.log("Detalle", invoice.id)}
-          />
-        ))}
+        {invoicesLoading
+          ? Array.from({ length: 3 }).map((_, i) => <InvoiceCardSkeleton key={i} />)
+          : invoices.slice(0, 5).map((invoice) => (
+              <InvoiceCard
+                key={invoice.id}
+                invoice={invoice}
+                onPress={() => router.push({ pathname: "/facturas/[id]", params: { id: invoice.id } })}
+              />
+            ))}
       </View>
-
-      <FloatingActionButton
-        onPress={() => console.log("Nueva factura")}
-        accessibilityLabel="Crear factura"
-      />
-    </ScreenContainer>
+    </ScrollView>
   );
 }
 
-const styles: any = {
+const styles = StyleSheet.create({
+  scrollContent: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: 120,
+    gap: spacing.xl,
+  },
+  centeredBody: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: colors.status.error,
+    textAlign: "center",
+  },
   mainCard: {
-    backgroundColor: "#0A4C6B",
-    borderRadius: 16,
-    marginBottom: 20,
-    padding: 20,
+    backgroundColor: colors.primary.main,
+    borderRadius: radius.mainCard,
+    minHeight: 128,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
   mainLabel: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+    ...typography.label,
+    color: colors.text.inverse,
     opacity: 0.9,
   },
   mainAmount: {
-    color: "#FFFFFF",
-    fontSize: 36,
-    fontWeight: "700",
-    marginTop: 4,
+    ...typography.primaryAmount,
+    color: colors.text.inverse,
+    marginTop: spacing.xxs,
   },
   mainSubtitle: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    marginTop: 4,
+    ...typography.caption,
+    color: colors.text.inverse,
+    marginTop: spacing.xs,
     opacity: 0.8,
   },
-  summarySection: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 16,
+  ivaSection: {
+    gap: spacing.md,
   },
-  distributionSection: {
+  gpSection: {
+    gap: spacing.md,
+  },
+  gpNote: {
+    ...typography.small,
+    color: colors.text.tertiary,
+    fontStyle: "italic",
+    textAlign: "center",
+  },
+  grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 20,
+    gap: spacing.gridGap,
+  },
+  reserveCard: {
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.primary.main,
+    borderRadius: radius.mainCard,
+    borderWidth: 2,
+    gap: spacing.xs,
+    padding: spacing.lg,
+  },
+  reserveCardDanger: {
+    borderColor: colors.status.error,
+    backgroundColor: colors.statusLight.error,
+  },
+  reserveLabel: {
+    ...typography.sectionTitle,
+    color: colors.primary.main,
+  },
+  reserveValue: {
+    ...typography.primaryAmount,
+    color: colors.primary.main,
+    fontVariant: ["tabular-nums"],
+  },
+  reserveValueDanger: {
+    color: colors.status.error,
+  },
+  reserveHint: {
+    ...typography.small,
+    color: colors.text.tertiary,
+  },
+  recentBlock: {
+    gap: spacing.sm,
+  },
+  recentRow: {
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: spacing.cardPadding,
+  },
+  recentLeft: {
+    gap: 2,
+    minWidth: 0,
+    flex: 1,
+  },
+  recentCategory: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    fontWeight: "600",
+  },
+  recentDate: {
+    ...typography.caption,
+    color: colors.text.tertiary,
+  },
+  recentAmount: {
+    ...typography.cardAmount,
+    color: colors.primary.main,
+    fontVariant: ["tabular-nums"],
+    marginLeft: spacing.md,
+  },
+  recentEmpty: {
+    ...typography.body,
+    color: colors.text.tertiary,
+    textAlign: "center",
+    paddingVertical: spacing.lg,
   },
   list: {
-    gap: 12,
-    paddingBottom: 100,
+    gap: spacing.gridGap,
   },
-};
+});

@@ -6,7 +6,7 @@ interface SummaryCardProps {
   label: string;
   value: string;
   icon?: string;
-  tone?: "default" | "strong" | "warning";
+  tone?: "default" | "strong" | "warning" | "error";
   secondary?: string;
 }
 
@@ -24,22 +24,33 @@ export function SummaryCard({
         shadows.card,
         tone === "strong" && styles.strongCard,
         tone === "warning" && styles.warningCard,
+        tone === "error" && styles.errorCard,
       ]}
     >
-      {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-      <Text style={styles.label}>{label}</Text>
+      <View style={styles.top}>
+        {icon ? <Text style={styles.icon}>{icon}</Text> : null}
+        <Text numberOfLines={1} style={styles.label}>
+          {label}
+        </Text>
+      </View>
       <Text
-        adjustsFontSizeToFit
         numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.82}
         style={[
           styles.value,
           tone === "strong" && styles.strongValue,
           tone === "warning" && styles.warningValue,
+          tone === "error" && styles.errorValue,
         ]}
       >
         {value}
       </Text>
-      {secondary ? <Text style={styles.secondary}>{secondary}</Text> : null}
+      {secondary ? (
+        <Text numberOfLines={1} style={styles.secondary}>
+          {secondary}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -50,11 +61,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border.light,
     borderRadius: radius.card,
     borderWidth: 1,
-    flexBasis: "48%",
+    flexBasis: "47%",
     flexGrow: 1,
     gap: spacing.xs,
-    minHeight: 100,
-    padding: spacing.lg,
+    minHeight: 104,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
   strongCard: {
     borderColor: colors.primary.main,
@@ -64,13 +76,23 @@ const styles = StyleSheet.create({
     borderColor: colors.status.warning,
     borderWidth: 2,
   },
+  errorCard: {
+    borderColor: colors.status.error,
+    borderWidth: 2,
+  },
+  top: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xxs,
+  },
   icon: {
-    fontSize: 20,
-    marginBottom: spacing.xs,
+    fontSize: 14,
+    color: colors.text.tertiary,
   },
   label: {
     ...typography.label,
     color: colors.text.secondary,
+    flex: 1,
   },
   value: {
     ...typography.cardAmount,
@@ -82,9 +104,11 @@ const styles = StyleSheet.create({
   warningValue: {
     color: colors.status.warning,
   },
+  errorValue: {
+    color: colors.status.error,
+  },
   secondary: {
     ...typography.small,
     color: colors.text.tertiary,
-    marginTop: spacing.xs,
   },
 });

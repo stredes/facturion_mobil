@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, shadows, spacing } from "../theme";
+import { colors, radius, shadows, spacing, typography } from "../theme";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -85,14 +85,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
+    ...typography.sectionTitle,
     color: colors.text.primary,
-    fontSize: 20,
-    fontWeight: "700",
   },
   message: {
+    ...typography.body,
     color: colors.text.secondary,
-    fontSize: 15,
-    lineHeight: 22,
     marginBottom: spacing.xl,
   },
   actions: {
@@ -122,14 +120,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.status.error,
   },
   cancelText: {
+    ...typography.bodyMedium,
     color: colors.text.secondary,
-    fontSize: 16,
-    fontWeight: "600",
   },
   confirmText: {
+    ...typography.bodyMedium,
     color: colors.surface.primary,
-    fontSize: 16,
-    fontWeight: "700",
   },
   destructiveText: {
     color: colors.surface.primary,

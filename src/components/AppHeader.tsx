@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: {
-    ...typography.mainTitle,
+    ...typography.screenTitle,
     color: colors.text.primary,
   },
   subtitle: {

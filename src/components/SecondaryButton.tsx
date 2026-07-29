@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 interface SecondaryButtonProps {
   label: string;
@@ -16,32 +17,31 @@ export function SecondaryButton({
   fullWidth = true,
 }: SecondaryButtonProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         fullWidth && styles.fullWidth,
         disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
       ]}
     >
       <Text style={[styles.text, disabled && styles.textDisabled]}>
         {label}
       </Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
-    borderRadius: 8,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
+    borderRadius: radius.button,
     borderWidth: 1,
-    minHeight: 52,
+    minHeight: spacing.buttonHeight,
     justifyContent: "center",
     paddingHorizontal: 18,
   },
@@ -51,15 +51,11 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5,
   },
-  pressed: {
-    opacity: 0.85,
-  },
   text: {
-    color: "#0A4C6B",
-    fontSize: 16,
-    fontWeight: "700",
+    ...typography.bodyMedium,
+    color: colors.primary.main,
   },
   textDisabled: {
-    color: "#94A3B8",
+    color: colors.text.tertiary,
   },
 });

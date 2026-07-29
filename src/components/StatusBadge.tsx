@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
 
 type BadgeVariant = "paid" | "pending" | "registered" | "none";
 
@@ -58,17 +58,17 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderRadius: radius.badge,
     flexDirection: "row",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    gap: spacing.xxs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
   },
   dot: {
-    borderRadius: 4,
-    height: 8,
-    width: 8,
+    borderRadius: radius.badge,
+    height: 7,
+    width: 7,
   },
   label: {
-    fontSize: 12,
+    ...typography.small,
     fontWeight: "600",
   },
 });

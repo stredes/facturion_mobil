@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: colors.text.primary,
     fontSize: 16,
-    minHeight: 52,
+    minHeight: spacing.inputHeight,
     paddingHorizontal: 14,
   },
   inputError: {

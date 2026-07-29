@@ -1,10 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import type { Invoice } from "../domain/Invoice";
 import { colors, radius, shadows, spacing, typography } from "../theme";
 import { formatCurrency } from "../utils/currency";
 import { formatDisplayDate } from "../utils/dates";
-import { StatusBadge } from "./StatusBadge";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 interface InvoiceCardProps {
   invoice: Invoice;
@@ -12,47 +12,61 @@ interface InvoiceCardProps {
 }
 
 export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
-  const hasPaymentDate = Boolean(invoice.paymentDate);
-  const status = invoice.paymentDate ? "paid" : "pending";
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        shadows.card,
-        pressed && styles.pressed,
-      ]}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Factura N.º {invoice.invoiceNumber}</Text>
+    <AnimatedPressable onPress={onPress}>
+      <View style={[styles.card, shadows.card]}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text numberOfLines={1} style={styles.title}>
+              N. {invoice.invoiceNumber}
+            </Text>
+            <Text numberOfLines={1} style={styles.client}>
+              {invoice.clientName}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.amountRow}>
+          <View style={styles.amountItem}>
+            <Text style={styles.amountLabel}>Neto</Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={styles.amountValue}
+            >
+              {formatCurrency(invoice.netAmount)}
+            </Text>
+          </View>
+          <View style={styles.amountDivider} />
+          <View style={styles.amountItem}>
+            <Text style={styles.amountLabel}>IVA</Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={styles.amountValue}
+            >
+              {formatCurrency(invoice.taxAmount)}
+            </Text>
+          </View>
+          <View style={styles.amountDivider} />
+          <View style={[styles.amountItem, styles.amountItemTotal]}>
+            <Text style={styles.amountLabel}>Total</Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={styles.totalValue}
+            >
+              {formatCurrency(invoice.totalAmount)}
+            </Text>
+          </View>
+        </View>
+
         <Text style={styles.date}>{formatDisplayDate(invoice.invoiceDate)}</Text>
       </View>
-
-      <Text numberOfLines={1} style={styles.client}>
-        {invoice.clientName}
-      </Text>
-
-      <Text style={styles.total}>{formatCurrency(invoice.totalAmount)}</Text>
-
-      <View style={styles.amountRow}>
-        <Text style={styles.amountItem}>
-          Neto {formatCurrency(invoice.netAmount)}
-        </Text>
-        <Text style={styles.amountItem}>
-          IVA {formatCurrency(invoice.taxAmount)}
-        </Text>
-      </View>
-
-      <View style={styles.footer}>
-        {hasPaymentDate ? (
-          <StatusBadge status="paid" />
-        ) : (
-          <StatusBadge status="pending" />
-        )}
-      </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -63,46 +77,66 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  pressed: {
-    opacity: 0.85,
+    minHeight: 150,
+    padding: spacing.cardPadding,
   },
   header: {
-    alignItems: "flex-start",
     flexDirection: "row",
-    gap: spacing.md,
     justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+  },
+  headerLeft: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
   },
   title: {
     ...typography.cardTitle,
     color: colors.text.primary,
-    flex: 1,
-  },
-  date: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    paddingTop: 2,
   },
   client: {
-    ...typography.bodyBold,
-    color: colors.text.primary,
-  },
-  total: {
-    ...typography.cardAmount,
-    color: colors.primary.main,
-    marginTop: spacing.xs,
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
   },
   amountRow: {
     flexDirection: "row",
-    gap: spacing.lg,
+    alignItems: "center",
+    backgroundColor: colors.background.primary,
+    borderRadius: radius.inner,
+    padding: spacing.sm,
+    gap: 0,
   },
   amountItem: {
-    ...typography.caption,
-    color: colors.text.secondary,
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
   },
-  footer: {
-    flexDirection: "row",
-    marginTop: spacing.xs,
+  amountItemTotal: {
+    flex: 1.3,
+  },
+  amountDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: colors.border.light,
+    marginHorizontal: spacing.xs,
+  },
+  amountLabel: {
+    ...typography.small,
+    color: colors.text.tertiary,
+  },
+  amountValue: {
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    fontVariant: ["tabular-nums"],
+    textAlign: "right",
+  },
+  totalValue: {
+    ...typography.cardAmount,
+    color: colors.primary.main,
+  },
+  date: {
+    ...typography.caption,
+    color: colors.text.tertiary,
   },
 });

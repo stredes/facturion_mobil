@@ -15,7 +15,7 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>🔍</Text>
+      <Text style={styles.icon}>{"\u2315"}</Text>
       <TextInput
         accessibilityLabel="Buscar"
         onChangeText={onChangeText}
@@ -26,11 +26,11 @@ export function SearchInput({
       />
       {value.length > 0 ? (
         <Pressable
-          accessibilityLabel="Limpiar búsqueda"
+          accessibilityLabel="Limpiar busqueda"
           onPress={() => onChangeText("")}
           style={styles.clearButton}
         >
-          <Text style={styles.clearIcon}>✕</Text>
+          <Text style={styles.clearIcon}>{"\u2715"}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -46,17 +46,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
-    minHeight: 52,
+    minHeight: spacing.inputHeight,
     paddingHorizontal: 14,
   },
   icon: {
+    color: colors.text.tertiary,
     fontSize: 16,
   },
   input: {
     color: colors.text.primary,
     flex: 1,
     fontSize: 15,
-    minHeight: 50,
+    lineHeight: 20,
+    minHeight: spacing.inputHeight - 2,
     paddingVertical: 0,
   },
   clearButton: {

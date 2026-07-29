@@ -1,140 +1,142 @@
-import React, { useState } from "react";
-import { Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 
-import { AppHeader } from "@/components/AppHeader";
-import { ScreenContainer } from "@/components/ScreenContainer";
-import { SearchInput } from "@/components/SearchInput";
-import { FilterChip } from "@/components/FilterChip";
-import { InvoiceCard } from "@/components/InvoiceCard";
 import { EmptyState } from "@/components/EmptyState";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { InvoiceCard } from "@/components/InvoiceCard";
+import { InvoiceCardSkeleton } from "@/components/LoadingSkeleton";
+import { ScreenContainer } from "@/components/ScreenContainer";
+import { SearchInput } from "@/components/SearchInput";
 import { SectionTitle } from "@/components/SectionTitle";
+import type { Invoice, InvoiceFilters } from "@/domain/Invoice";
+import { useInvoices } from "@/hooks/useInvoices";
 import { colors, spacing } from "@/theme";
 
-type InvoiceStatus = "paid" | "pending" | "unpaid";
-
-interface Invoice {
-  id: string;
-  clientName: string;
-  invoiceNumber: string;
-  invoiceDate: string;
-  netAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  paymentDate?: string;
-  taxPayment: number;
-  tagAmount: number;
-  accountantAmount: number;
-  savingsAmount: number;
-  description?: string;
-}
-
-const statusOptions: { value: InvoiceStatus | "all"; label: string }[] = [
-  { value: "all", label: "Todas" },
-  { value: "paid", label: "Pagadas" },
-  { value: "pending", label: "Pendientes" },
-  { value: "unpaid", label: "Sin pago" },
-];
-
 export default function FacturasScreen() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | "all">("all");
+  const listRef = useRef<FlatList<Invoice>>(null);
 
-  // Using mock data for now - replace with useInvoices hook
-  const mockInvoices: Invoice[] = [
-    { id: "1", clientName: "Empresa ABC", invoiceNumber: "001", invoiceDate: "2024-01-15", netAmount: 1500000, taxAmount: 285000, totalAmount: 1785000, paymentDate: "2024-01-20", taxPayment: 285000, tagAmount: 50000, accountantAmount: 30000, savingsAmount: 20000, description: "Servicios profesionales" },
-    { id: "2", clientName: "Tech Solutions", invoiceNumber: "002", invoiceDate: "2024-01-20", netAmount: 850000, taxAmount: 161500, totalAmount: 1011500, paymentDate: undefined, taxPayment: 0, tagAmount: 0, accountantAmount: 0, savingsAmount: 0, description: "Desarrollo web" },
-    { id: "3", clientName: "Comercial XYZ", invoiceNumber: "003", invoiceDate: "2024-01-10", netAmount: 2200000, taxAmount: 418000, totalAmount: 2618000, paymentDate: undefined, taxPayment: 200000, tagAmount: 100000, accountantAmount: 50000, savingsAmount: 30000, description: "Consultoría" },
-    { id: "4", clientName: "Startup Inc", invoiceNumber: "004", invoiceDate: "2024-01-25", netAmount: 450000, taxAmount: 85500, totalAmount: 535500, paymentDate: "2024-02-01", taxPayment: 85500, tagAmount: 20000, accountantAmount: 10000, savingsAmount: 5000, description: "Diseño" },
-    { id: "5", clientName: "Corporación DEF", invoiceNumber: "005", invoiceDate: "2024-01-18", netAmount: 3100000, taxAmount: 589000, totalAmount: 3689000, paymentDate: undefined, taxPayment: 0, tagAmount: 0, accountantAmount: 0, savingsAmount: 0, description: "Mantenimiento" },
-  ];
+  const filters: InvoiceFilters = useMemo(() => {
+    return { searchText: search || undefined };
+  }, [search]);
 
-  const getStatus = (invoice: Invoice): InvoiceStatus => {
-    if (invoice.paymentDate) return "paid";
-    if (invoice.taxPayment > 0) return "pending";
-    return "unpaid";
-  };
+  const { invoices, isLoading, error, refresh } = useInvoices(filters);
 
-  const filteredInvoices = mockInvoices.filter((invoice) => {
-    const status = getStatus(invoice);
-    const matchesSearch =
-      invoice.clientName.toLowerCase().includes(search.toLowerCase()) ||
-      invoice.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
-      (invoice.description && invoice.description.toLowerCase().includes(search.toLowerCase()));
-    const matchesStatus =
-      statusFilter === "all" || status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const handlePress = useCallback(
+    (id: string) => {
+      router.push({ pathname: "/facturas/[id]", params: { id } });
+    },
+    [router],
+  );
 
-  return (
-    <ScreenContainer>
-      <AppHeader title="Facturas" subtitle={`${mockInvoices.length} facturas`} />
+  const renderItem = useCallback(
+    ({ item }: { item: Invoice }) => (
+      <InvoiceCard invoice={item} onPress={() => handlePress(item.id)} />
+    ),
+    [handlePress],
+  );
 
-      <View style={styles.searchSection}>
+  const keyExtractor = useCallback((item: Invoice) => item.id, []);
+
+  const ListHeaderComponent = useMemo(
+    () => (
+      <View style={styles.headerSection}>
         <SearchInput
           value={search}
           onChangeText={setSearch}
-          placeholder="Buscar por número, cliente o descripción"
+          placeholder="Buscar por numero, cliente o descripcion"
         />
+
+        <SectionTitle title={`Resultados (${invoices.length})`} />
+
+        {isLoading ? (
+          <View style={styles.skeletonList}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <InvoiceCardSkeleton key={i} />
+            ))}
+          </View>
+        ) : null}
       </View>
+    ),
+    [search, invoices.length, isLoading],
+  );
 
-      <View style={styles.filters}>
-        {statusOptions.map((option) => (
-          <FilterChip
-            key={option.value}
-            label={option.label}
-            selected={statusFilter === option.value}
-            onPress={() => setStatusFilter(option.value)}
-          />
-        ))}
+  if (error) {
+    return (
+      <View style={styles.wrapper}>
+        <ScreenContainer>
+          <View style={styles.centeredBody}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        </ScreenContainer>
       </View>
+    );
+  }
 
-      <SectionTitle title={`Resultados (${filteredInvoices.length})`} />
-
-      {filteredInvoices.length === 0 ? (
-        <EmptyState
-          title="Sin facturas"
-          message={
-            search || statusFilter !== "all"
-              ? "No hay facturas que coincidan con tu búsqueda"
-              : "No hay facturas registradas aún"
-          }
-          actionLabel="Crear factura"
-          onAction={() => console.log("Nueva factura")}
-          icon="🔍"
-        />
-      ) : (
-        <View style={styles.list}>
-          {filteredInvoices.map((invoice) => (
-            <InvoiceCard
-              key={invoice.id}
-              invoice={invoice as any}
-              onPress={() => console.log("Detalle", invoice.id)}
+  return (
+    <View style={styles.wrapper}>
+      <ScreenContainer>
+        {!isLoading && invoices.length === 0 ? (
+          <View style={styles.centeredBody}>
+            <EmptyState
+              title="Sin facturas"
+              message={
+                search
+                  ? "No hay facturas que coincidan con tu busqueda"
+                  : "No hay facturas registradas aun"
+              }
+              actionLabel="Crear factura"
+              onAction={() => router.push("/facturas/nueva")}
             />
-          ))}
-        </View>
-      )}
+          </View>
+        ) : (
+          <FlatList
+            ref={listRef}
+            data={isLoading ? [] : invoices}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            ListHeaderComponent={ListHeaderComponent}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
+      </ScreenContainer>
 
       <FloatingActionButton
-        onPress={() => console.log("Nueva factura")}
+        onPress={() => router.push("/facturas/nueva")}
         accessibilityLabel="Crear factura"
       />
-    </ScreenContainer>
+    </View>
   );
 }
 
-const styles: any = {
-  searchSection: {
-    marginBottom: spacing.md,
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
   },
-  filters: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  list: {
+  headerSection: {
     gap: spacing.md,
-    paddingBottom: 100,
+    paddingBottom: spacing.md,
   },
-};
+  listContent: {
+    paddingBottom: 120,
+  },
+  separator: {
+    height: spacing.gridGap,
+  },
+  skeletonList: {
+    gap: spacing.gridGap,
+  },
+  centeredBody: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  errorText: {
+    color: colors.status.error,
+    textAlign: "center",
+  },
+});
