@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import type {
   GeneralPayment,
@@ -7,6 +7,7 @@ import type {
   GeneralPaymentSummary,
 } from "../domain/GeneralPayment";
 import { useGeneralPaymentService } from "../infrastructure/di/ServiceContext";
+import { filtersToKey } from "../utils/filters";
 
 export function useGeneralPayments(filters?: GeneralPaymentFilters) {
   const service = useGeneralPaymentService();
@@ -23,26 +24,35 @@ export function useGeneralPayments(filters?: GeneralPaymentFilters) {
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
 
+  const filtersKey = useMemo(() => filtersToKey(filters), [filters]);
+  const requestIdRef = useRef(0);
+
   const refresh = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-      setError(null);
       const [rows, summ] = await Promise.all([
         service.getAll(filtersRef.current),
         service.getSummary(),
       ]);
+      if (requestId !== requestIdRef.current) return;
       setPayments(rows);
       setSummary(summ);
     } catch (currentError) {
+      if (requestId !== requestIdRef.current) return;
       setError(
         currentError instanceof Error
           ? currentError.message
           : "No se pudieron cargar los pagos",
       );
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [service]);
+  }, [service, filtersKey]);
 
   useFocusEffect(
     useCallback(() => {

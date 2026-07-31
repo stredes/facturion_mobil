@@ -1,6 +1,10 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
+import {
+  formatMoneyInput,
+  parseMoneyInput,
+} from "../utils/moneyInput";
 
 interface MoneyInputProps {
   label: string;
@@ -15,9 +19,7 @@ export function MoneyInput({
   error,
   onChangeValue,
 }: MoneyInputProps) {
-  const formattedValue = value
-    ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-    : "";
+  const formattedValue = formatMoneyInput(value);
 
   return (
     <View style={styles.container}>
@@ -28,8 +30,7 @@ export function MoneyInput({
           accessibilityLabel={label}
           keyboardType="numbers-and-punctuation"
           onChangeText={(text) => {
-            const numericValue = parseInt(text.replace(/[^\d]/g, ""), 10) || 0;
-            onChangeValue(numericValue);
+            onChangeValue(parseMoneyInput(text));
           }}
           placeholder="0"
           placeholderTextColor={colors.text.tertiary}

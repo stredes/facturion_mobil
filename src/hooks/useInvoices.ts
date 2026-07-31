@@ -1,8 +1,9 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { Invoice, InvoiceFilters } from "../domain/Invoice";
 import { useInvoiceService } from "../infrastructure/di/ServiceContext";
+import { filtersToKey } from "../utils/filters";
 
 export function useInvoices(filters: InvoiceFilters = {}) {
   const service = useInvoiceService();
@@ -13,22 +14,31 @@ export function useInvoices(filters: InvoiceFilters = {}) {
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
 
+  const filtersKey = useMemo(() => filtersToKey(filters), [filters]);
+  const requestIdRef = useRef(0);
+
   const refresh = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-      setError(null);
       const rows = await service.getAll(filtersRef.current);
+      if (requestId !== requestIdRef.current) return;
       setInvoices(rows);
     } catch (currentError) {
+      if (requestId !== requestIdRef.current) return;
       setError(
         currentError instanceof Error
           ? currentError.message
           : "No se pudieron cargar las facturas",
       );
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [service]);
+  }, [service, filtersKey]);
 
   useFocusEffect(
     useCallback(() => {

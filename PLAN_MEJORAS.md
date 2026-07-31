@@ -51,3 +51,21 @@ Entregables:
 - Merge ramas feature/* -> main
 - Sync 3 maquinas, typecheck + tests en todas
 - Actualizar AUDITORIA.md y PLAN.json
+
+## RESULTADO_FASE1 — REPORTE DE DEBUGGING (2026-07-31)
+
+Verificado: `npx tsc --noEmit` OK | `npm test -- --watch=false` 34 tests / 7 suites OK
+Fixes aplicados SOLO a bugs High/Medium confirmados con tests nuevos.
+
+| archivo:linea | bug | severidad | fix |
+|---|---|---|---|
+| src/hooks/useInvoices.ts:33-37, useGeneralPayments.ts:47-51, useTaxPayments.ts:38-42 | `refresh` solo se dispara en `useFocusEffect`; cambiar filtros con la pantalla enfocada no recarga datos (busqueda rota en facturas.tsx, chips de categoria en pagos/index.tsx) | HIGH | refresh depende de clave serializada de filtros (`filtersToKey`) via useMemo; aplicar en los 3 hooks |
+| src/components/MoneyInput.tsx:31 | `parseInt(text.replace(/[^\d]/g, ""))` mezcla decimales/centavos: "1500.50" -> 150050, "1.500,75" -> 150075 | MEDIUM | extraer `parseMoneyInput`/`formatMoneyInput` (src/utils/moneyInput.ts): separadores de miles validos se quitan, parte decimal se descarta |
+| src/hooks/useInvoices.ts:16-31, useGeneralPayments.ts:26-45, useTaxPayments.ts:17-36 | refrescos solapados: respuesta lenta de un refresh anterior sobrescribe la reciente (stale data) | MEDIUM | guard con `requestIdRef` (solo el ultimo request aplica estado) |
+| src/infrastructure/repositories/SQLiteInvoiceRepository.ts:233,249 | `ORDER BY CAST(invoice_number AS INTEGER) DESC` -> numeros de factura no numericos ("FAC-001") castean a 0, orden inestable en empates de fecha | LOW | NO fijado (fase 2): usar `created_at DESC` como tiebreaker |
+| src/application/InvoiceService.ts:25-48 | filtros month/year aplicados en memoria: `findAll` trae todas las filas y filtra en JS (perf) | LOW | NO fijado (fase 3): mover filtros a SQL |
+| src/infrastructure/repositories/SQLiteInvoiceRepository.ts:129-218 | TOCTOU en `existsByInvoiceNumber` + INSERT sin transaccion (mitigado por indice UNIQUE); SELECT extra post-write (N+1) | LOW | NO fijado (fase 3): envolver en `withTransactionAsync` |
+| src/components/MoneyInput.tsx:18-20 | value 0 se muestra vacio (no distinguible de campo sin valor) | LOW | NO fijado: placeholder "0" ya cubre el caso |
+
+Zod (v4.4.3): sin bugs confirmados — `.int()` ya rechaza NaN/Infinity/no-safe-integers/0.
+Redondeo IVA (`Math.round(netAmount * 0.19)`): sin divergencias vs. aritmetica entera en 1..1M; comportamiento correcto.

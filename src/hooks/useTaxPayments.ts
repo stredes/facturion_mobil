@@ -1,8 +1,9 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import type { TaxPayment, TaxPaymentFilters } from "../domain/TaxPayment";
 import { useTaxPaymentService } from "../infrastructure/di/ServiceContext";
+import { filtersToKey } from "../utils/filters";
 
 export function useTaxPayments(filters?: TaxPaymentFilters) {
   const service = useTaxPaymentService();
@@ -14,26 +15,35 @@ export function useTaxPayments(filters?: TaxPaymentFilters) {
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
 
+  const filtersKey = useMemo(() => filtersToKey(filters), [filters]);
+  const requestIdRef = useRef(0);
+
   const refresh = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-      setError(null);
       const [rows, total] = await Promise.all([
         service.getAll(filtersRef.current),
         service.getTotalPaidTax(),
       ]);
+      if (requestId !== requestIdRef.current) return;
       setPayments(rows);
       setTotalPaidTax(total);
     } catch (currentError) {
+      if (requestId !== requestIdRef.current) return;
       setError(
         currentError instanceof Error
           ? currentError.message
           : "No se pudieron cargar los pagos",
       );
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [service]);
+  }, [service, filtersKey]);
 
   useFocusEffect(
     useCallback(() => {
