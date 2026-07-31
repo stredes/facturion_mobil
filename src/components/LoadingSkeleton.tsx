@@ -59,15 +59,6 @@ export function InvoiceCardSkeleton() {
   );
 }
 
-export function SummaryCardSkeleton() {
-  return (
-    <View style={styles.summaryCard}>
-      <Skeleton width={40} height={11} />
-      <Skeleton width="70%" height={22} />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   skeleton: {
     backgroundColor: colors.border.light,
@@ -83,16 +74,5 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  summaryCard: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "47%",
-    flexGrow: 1,
-    gap: spacing.xs,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
   },
 });

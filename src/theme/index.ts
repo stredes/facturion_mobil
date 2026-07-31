@@ -3,10 +3,4 @@ export { spacing, type Spacing } from "./spacing";
 export { typography } from "./typography";
 export { radius } from "./radius";
 export { shadows } from "./shadows";
-export {
-  animationDuration,
-  springConfig,
-  easing,
-  createFadeIn,
-  cardEnterAnimation,
-} from "./animations";
+export { springConfig } from "./animations";
