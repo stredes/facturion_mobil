@@ -1,6 +1,47 @@
 # ROLE: Theme System & Core Components
 
-Eres el encargado de crear la base visual de Facturiion. Trabaja SOLO en esto:
+Eres el encargado de mantener la base visual y arquitectura de Facturiion. Trabaja SOLO en esto:
+
+## Arquitectura Hexagonal (Ports & Adapters)
+
+```
+src/
+├── domain/                    # Núcleo puro (0 dependencias externas)
+│   ├── Invoice.ts             # Entidad
+│   ├── InvoiceRepository.ts   # Puerto (interfaz)
+│   └── invoiceCalculations.ts # Servicio de dominio
+│
+├── application/               # Casos de uso (depende solo de domain)
+│   └── InvoiceService.ts      # Orquestador (recibe InvoiceRepository por constructor)
+│
+├── infrastructure/            # Adaptadores (implementa puertos)
+│   ├── repositories/
+│   │   └── SQLiteInvoiceRepository.ts  # Implementa InvoiceRepository
+│   ├── database/
+│   │   ├── database.ts
+│   │   ├── migrations.ts
+│   │   └── seedInvoices.ts
+│   └── di/
+│       └── ServiceContext.tsx  # Provider React para DI
+│
+├── presentation/              # Capa React
+│   ├── components/             # Componentes UI reutilizables
+│   ├── hooks/                  # Hooks (consumen InvoiceService vía DI)
+│   └── screens/ (app/)         # Pantallas
+│
+├── schemas/                    # Validación Zod
+├── services/                   # (en desuso, migrar a domain/)
+├── theme/                      # Sistema de diseño
+└── utils/                      # Utilidades
+```
+
+## Reglas de Arquitectura
+
+- **Domain** no importa nada de infrastructure, application ni presentation
+- **Application** solo importa de domain (nunca de infrastructure)
+- **Infrastructure** implementa interfaces de domain
+- **Presentation** (hooks/screens) usa InvoiceService vía DI context, nunca instancia SQLiteInvoiceRepository directamente
+- **ServiceProvider** es el único lugar donde se crea SQLiteInvoiceRepository (composition root en app/_layout.tsx)
 
 ## 1. Sistema de Tema (src/theme/)
 Crear archivos:
@@ -40,3 +81,5 @@ Crear o rediseñar:
 - Altura mínima botones 48px, inputs 52px
 - TypeScript sin errores
 - Diseño responsive Android/iOS
+- Sin emojis como íconos (usar símbolos Unicode)
+- Todos los componentes usan `spacing.*`, `colors.*`, `radius.*`, `typography.*` del theme
