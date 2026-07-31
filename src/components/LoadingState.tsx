@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing } from "../theme";
+import { colors, spacing, typography } from "../theme";
 
 interface LoadingStateProps {
   message?: string;
@@ -33,8 +33,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   message: {
+    ...typography.caption,
     color: colors.text.secondary,
-    fontSize: 14,
-    fontWeight: "400",
   },
 });

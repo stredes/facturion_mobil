@@ -1,13 +1,22 @@
 import type * as SQLite from "expo-sqlite";
 
-import type { CreateInvoiceInput } from "../domain/Invoice";
 import {
   calculateInvoiceTotal,
   calculateTax,
 } from "../services/invoiceCalculations";
 
-interface SeedInvoice extends CreateInvoiceInput {
+interface SeedInvoice {
   id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  clientName: string;
+  description: string;
+  netAmount: number;
+  paymentDate?: string;
+  taxPayment?: number;
+  tagAmount?: number;
+  accountantAmount?: number;
+  savingsAmount?: number;
 }
 
 const INITIAL_INVOICES: SeedInvoice[] = [
@@ -136,12 +145,11 @@ export async function seedInitialInvoices(
     return;
   }
 
-  const now = new Date().toISOString();
-
   await db.withTransactionAsync(async () => {
     for (const invoice of INITIAL_INVOICES) {
       const taxAmount = calculateTax(invoice.netAmount);
       const totalAmount = calculateInvoiceTotal(invoice.netAmount, taxAmount);
+      const timestamp = `${invoice.invoiceDate}T12:00:00.000Z`;
 
       await db.runAsync(
         `INSERT INTO invoices (
@@ -175,8 +183,8 @@ export async function seedInitialInvoices(
           invoice.tagAmount ?? 0,
           invoice.accountantAmount ?? 0,
           invoice.savingsAmount ?? 0,
-          now,
-          now,
+          timestamp,
+          timestamp,
         ],
       );
     }

@@ -1,40 +1,32 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
+import { PrimaryButton } from "./PrimaryButton";
 
 interface EmptyStateProps {
-  title: string;
-  message: string;
+  title?: string;
+  message?: string;
   actionLabel?: string;
   onAction?: () => void;
-  icon?: string;
 }
 
+const ICON = "\u2756";
+
 export function EmptyState({
-  title,
-  message,
+  title = "Sin datos",
+  message = "No hay informacion disponible.",
   actionLabel,
   onAction,
-  icon = "📭",
 }: EmptyStateProps) {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Text style={styles.icon}>{icon}</Text>
+        <Text style={styles.icon}>{ICON}</Text>
       </View>
-      <Text style={[styles.title, typography.sectionTitle]}>{title}</Text>
-      <Text style={[styles.message, typography.body]}>{message}</Text>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.message}>{message}</Text>
       {actionLabel && onAction ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onAction}
-          style={({ pressed }) => [
-            styles.actionButton,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={styles.actionText}>{actionLabel}</Text>
-        </Pressable>
+        <PrimaryButton label={actionLabel} onPress={onAction} />
       ) : null}
     </View>
   );
@@ -48,39 +40,25 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.xxl,
+    padding: spacing.xl,
   },
   iconContainer: {
     backgroundColor: colors.surface.primary,
-    borderRadius: 40,
-    padding: spacing.xl,
+    borderRadius: 36,
+    padding: spacing.lg,
   },
   icon: {
-    fontSize: 32,
+    fontSize: 26,
+    color: colors.text.tertiary,
   },
   title: {
+    ...typography.sectionTitle,
     color: colors.text.primary,
     textAlign: "center",
   },
   message: {
+    ...typography.body,
     color: colors.text.secondary,
     textAlign: "center",
-  },
-  actionButton: {
-    alignItems: "center",
-    backgroundColor: "#0A4C6B",
-    borderRadius: 8,
-    marginTop: spacing.sm,
-    minHeight: 48,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  actionText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  pressed: {
-    opacity: 0.85,
   },
 });

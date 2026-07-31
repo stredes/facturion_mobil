@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
 
 interface ErrorStateProps {
   message: string;
@@ -15,8 +15,10 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>⚠️</Text>
-      <Text style={styles.title}>Algo salió mal</Text>
+      <View style={styles.iconCircle}>
+        <Text style={styles.icon}>!</Text>
+      </View>
+      <Text style={styles.title}>Algo salio mal</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry ? (
         <Pressable
@@ -34,38 +36,46 @@ export function ErrorState({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    backgroundColor: "#FFF5F5",
-    borderColor: "#FECACA",
-    borderRadius: 16,
+    backgroundColor: colors.statusLight.error,
+    borderColor: colors.status.error + "40",
+    borderRadius: radius.card,
     borderWidth: 1,
-    gap: 12,
-    padding: 24,
+    gap: spacing.md,
+    padding: spacing.xxl,
+  },
+  iconCircle: {
+    backgroundColor: colors.status.error + "20",
+    borderRadius: 24,
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
   },
   icon: {
-    fontSize: 32,
+    ...typography.sectionTitle,
+    color: colors.status.error,
+    fontWeight: "700",
   },
   title: {
-    color: "#C2410C",
-    fontSize: 18,
-    fontWeight: "600",
+    ...typography.sectionTitle,
+    color: colors.status.error,
     textAlign: "center",
   },
   message: {
-    color: "#9A3412",
-    fontSize: 15,
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: "center",
   },
   retryButton: {
-    backgroundColor: "#EF4444",
-    borderRadius: 8,
-    marginTop: 8,
+    backgroundColor: colors.status.error,
+    borderRadius: radius.button,
+    marginTop: spacing.sm,
     minHeight: 48,
     paddingHorizontal: 24,
     paddingVertical: 12,
   },
   retryText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
 });

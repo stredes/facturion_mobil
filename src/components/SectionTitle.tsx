@@ -20,8 +20,8 @@ export function SectionTitle({ title, subtitle }: SectionTitleProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 2,
-    marginBottom: 8,
+    gap: spacing.xxs,
+    marginBottom: spacing.xxs,
   },
   title: {
     color: colors.text.primary,

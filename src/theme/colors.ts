@@ -1,13 +1,17 @@
 export const colors = {
   primary: {
-    main: "#0A4C6B",
-    light: "#5FB4D9",
-    dark: "#06374A",
+    main: "#123B5D",
+    light: "#E8F1F7",
+    dark: "#0D2A42",
+  },
+  accent: {
+    main: "#2B8C9E",
+    light: "#65C7C9",
   },
   background: {
-    primary: "#F5F7FA",
+    primary: "#F6F8FA",
     secondary: "#FFFFFF",
-    tertiary: "#E8ECF1",
+    tertiary: "#EEF2F5",
   },
   surface: {
     primary: "#FFFFFF",
@@ -15,31 +19,31 @@ export const colors = {
     elevated: "#FFFFFF",
   },
   text: {
-    primary: "#1E293B",
-    secondary: "#64748B",
-    tertiary: "#94A3B8",
+    primary: "#17212B",
+    secondary: "#66727E",
+    tertiary: "#8A949E",
     inverse: "#FFFFFF",
     disabled: "#CBD5E1",
   },
   status: {
-    success: "#22C55E",
-    warning: "#F59E0B",
-    error: "#EF4444",
-    info: "#3B82F6",
+    success: "#2E8B57",
+    warning: "#C78316",
+    error: "#C84646",
+    info: "#3277A8",
   },
   statusLight: {
-    success: "#F0FFF4",
-    warning: "#FFFFF0",
-    error: "#FFF5F5",
-    info: "#EBF8FF",
+    success: "#E7F5EC",
+    warning: "#FFF4D8",
+    error: "#FDECEC",
+    info: "#E8F2F9",
   },
   border: {
-    light: "#E2E8F0",
+    light: "#DDE3E8",
     medium: "#CBD5E1",
-    dark: "#94A3B8",
+    dark: "#8A949E",
   },
-  overlay: "rgba(15, 23, 42, 0.5)",
-  shadow: "rgba(15, 23, 42, 0.08)",
+  overlay: "rgba(18, 59, 93, 0.4)",
+  shadow: "rgba(18, 59, 93, 0.08)",
 } as const;
 
 export type Colors = typeof colors;

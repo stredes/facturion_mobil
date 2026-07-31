@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { colors, spacing, typography } from "../src/theme";
 import { initializeDatabase } from "../src/database/database";
+import { ServiceProvider } from "../src/infrastructure/di/ServiceContext";
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
@@ -30,7 +32,7 @@ export default function RootLayout() {
             <Text style={styles.error}>{error}</Text>
           ) : (
             <>
-              <ActivityIndicator color="#0E7490" size="large" />
+              <ActivityIndicator color={colors.primary.main} size="large" />
               <Text style={styles.loadingText}>Preparando facturas...</Text>
             </>
           )}
@@ -40,59 +42,76 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          contentStyle: {
-            backgroundColor: "#F6F8FA",
-          },
-          headerShadowVisible: false,
-          headerStyle: {
-            backgroundColor: "#F6F8FA",
-          },
-          headerTitleStyle: {
-            color: "#102A43",
-            fontWeight: "900",
-          },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="facturas/nueva"
-          options={{ title: "Nueva factura" }}
-        />
-        <Stack.Screen
-          name="facturas/[id]"
-          options={{ title: "Detalle de factura" }}
-        />
-        <Stack.Screen
-          name="facturas/editar/[id]"
-          options={{ title: "Editar factura" }}
-        />
-      </Stack>
-    </SafeAreaProvider>
+    <ServiceProvider>
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            contentStyle: {
+              backgroundColor: colors.background.primary,
+            },
+            headerShadowVisible: false,
+            headerStyle: {
+              backgroundColor: colors.background.primary,
+            },
+            headerTitleStyle: {
+              color: colors.text.primary,
+              fontWeight: "700",
+              fontSize: 18,
+            },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="facturas/nueva"
+            options={{ title: "Nueva factura" }}
+          />
+          <Stack.Screen
+            name="facturas/[id]"
+            options={{ title: "Detalle de factura" }}
+          />
+          <Stack.Screen
+            name="facturas/editar/[id]"
+            options={{ title: "Editar factura" }}
+          />
+          <Stack.Screen
+            name="pagos/general/nueva"
+            options={{ title: "Nuevo pago general" }}
+          />
+          <Stack.Screen
+            name="pagos/general/editar/[id]"
+            options={{ title: "Editar pago general" }}
+          />
+          <Stack.Screen
+            name="pagos/iva/nueva"
+            options={{ title: "Nuevo pago IVA" }}
+          />
+          <Stack.Screen
+            name="pagos/iva/editar/[id]"
+            options={{ title: "Editar pago IVA" }}
+          />
+        </Stack>
+      </SafeAreaProvider>
+    </ServiceProvider>
   );
 }
 
 const styles = StyleSheet.create({
   loadingScreen: {
     alignItems: "center",
-    backgroundColor: "#F6F8FA",
+    backgroundColor: colors.background.primary,
     flex: 1,
-    gap: 12,
+    gap: spacing.md,
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xxl,
   },
   loadingText: {
-    color: "#52606D",
-    fontSize: 15,
-    fontWeight: "700",
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
   },
   error: {
-    color: "#B91C1C",
-    fontSize: 15,
-    fontWeight: "800",
+    ...typography.bodyMedium,
+    color: colors.status.error,
     textAlign: "center",
   },
 });

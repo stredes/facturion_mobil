@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
 
 interface TextInputFieldProps {
   label: string;
@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   label: {
+    ...typography.label,
     color: colors.text.primary,
-    fontSize: 14,
-    fontWeight: "600",
+    marginBottom: spacing.xxs,
   },
   input: {
     backgroundColor: colors.surface.primary,
@@ -61,13 +61,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.input,
     borderWidth: 1,
     color: colors.text.primary,
-    fontSize: 16,
-    minHeight: 52,
+    fontSize: 15,
+    lineHeight: 20,
+    minHeight: spacing.inputHeight,
     paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   multiline: {
     minHeight: 94,
-    paddingTop: 14,
     textAlignVertical: "top",
   },
   inputError: {
@@ -76,6 +77,7 @@ const styles = StyleSheet.create({
   error: {
     color: colors.status.error,
     fontSize: 12,
-    fontWeight: "500",
+    lineHeight: 16,
+    marginTop: 5,
   },
 });

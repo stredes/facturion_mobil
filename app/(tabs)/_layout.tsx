@@ -1,84 +1,71 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
-import { Text } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppHeader } from "@/components/AppHeader";
-import { ScreenContainer } from "@/components/ScreenContainer";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { colors, spacing } from "@/theme";
+import HomeScreen from "./index";
+import FacturasScreen from "./facturas";
+import SummaryScreen from "./resumen";
+import PagosScreen from "./pagos/index";
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
-function HomeStack() {
+function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+  const icons: Record<string, string> = {
+    Inicio: "\u2302",
+    Facturas: "\u2630",
+    Pagos: "\u25CF",
+    Resumen: "\u2261",
+  };
+
   return (
-    <Stack.Navigator
-      screenOptions={{
-        header: () => (
-          <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
-        ),
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
+    <View style={tabStyles.iconContainer}>
+      <Text
+        style={[
+          tabStyles.icon,
+          { color: focused ? colors.primary.main : colors.text.tertiary },
+        ]}
+      >
+        {icons[label] || "\u2022"}
+      </Text>
+    </View>
   );
 }
 
-function FacturasStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        header: () => <AppHeader title="Facturas" subtitle="Todas las facturas" />,
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen
-        name="FacturasList"
-        component={FacturasListScreen}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function HomeScreen() {
-  return (
-    <ScreenContainer>
-      <Text style={{ marginTop: 100 }}>Home Screen - Próximamente</Text>
-    </ScreenContainer>
-  );
-}
-
-function FacturasListScreen() {
-  return (
-    <ScreenContainer>
-      <Text style={{ marginTop: 100 }}>Lista de Facturas - Próximamente</Text>
-    </ScreenContainer>
-  );
-}
+const tabStyles = StyleSheet.create({
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+  },
+  icon: {
+    fontSize: 22,
+    fontWeight: "700",
+  },
+});
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#0A4C6B",
-        tabBarInactiveTintColor: "#94A3B8",
+        tabBarActiveTintColor: colors.primary.main,
+        tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: colors.surface.primary,
           borderTopWidth: 1,
-          borderTopColor: "#E2E8F0",
-          height: 70,
-          paddingBottom: 8,
+          borderTopColor: colors.border.light,
+          height: spacing.tabBarHeight + insets.bottom,
+          paddingBottom: insets.bottom + 8,
+          paddingTop: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
+          color: colors.text.tertiary,
         },
         tabBarItemStyle: {
           paddingVertical: 4,
@@ -86,60 +73,45 @@ export default function TabsLayout() {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeStack}
+        name="index"
+        component={HomeScreen}
         options={{
           title: "Inicio",
-          tabBarIcon: ({ focused, color, size }) => (
-            <Text style={{ color, fontSize: size * 1.2, fontWeight: focused ? "700" : "400" }}>🏠</Text>
+          tabBarIcon: ({ focused }) => (
+            <TabIcon label="Inicio" focused={focused} />
           ),
         }}
       />
       <Tab.Screen
-        name="Facturas"
-        component={FacturasStack}
+        name="facturas"
+        component={FacturasScreen}
         options={{
           title: "Facturas",
-          tabBarIcon: ({ focused, color, size }) => (
-            <Text style={{ color, fontSize: size * 1.2, fontWeight: focused ? "700" : "400" }}>📄</Text>
+          tabBarIcon: ({ focused }) => (
+            <TabIcon label="Facturas" focused={focused} />
           ),
         }}
       />
       <Tab.Screen
-        name="Resumen"
-        component={ResumenStack}
+        name="pagos"
+        component={PagosScreen}
+        options={{
+          title: "Pagos",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon label="Pagos" focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="resumen"
+        component={SummaryScreen}
         options={{
           title: "Resumen",
-          tabBarIcon: ({ focused, color, size }) => (
-            <Text style={{ color, fontSize: size * 1.2, fontWeight: focused ? "700" : "400" }}>📊</Text>
+          tabBarIcon: ({ focused }) => (
+            <TabIcon label="Resumen" focused={focused} />
           ),
         }}
       />
     </Tab.Navigator>
-  );
-}
-
-function ResumenStack() {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        header: () => <AppHeader title="Resumen" subtitle="Resumen mensual" />,
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen
-        name="ResumenScreen"
-        component={ResumenScreen}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-function ResumenScreen() {
-  return (
-    <ScreenContainer>
-      <Text style={{ marginTop: 100 }}>Resumen - Próximamente</Text>
-    </ScreenContainer>
   );
 }

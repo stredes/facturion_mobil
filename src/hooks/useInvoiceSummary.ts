@@ -5,23 +5,17 @@ import type {
   InvoiceSummary,
   MonthlyInvoiceSummary,
 } from "../domain/Invoice";
-import { SQLiteInvoiceRepository } from "../infrastructure/repositories/SQLiteInvoiceRepository";
-
-const repository = new SQLiteInvoiceRepository();
+import { useInvoiceService } from "../infrastructure/di/ServiceContext";
 
 const EMPTY_SUMMARY: InvoiceSummary = {
   invoiceCount: 0,
   totalNetAmount: 0,
   totalTaxAmount: 0,
   totalInvoiceAmount: 0,
-  totalTaxPayment: 0,
-  totalTagAmount: 0,
-  totalAccountantAmount: 0,
-  totalSavingsAmount: 0,
-  totalRemainingAmount: 0,
 };
 
 export function useInvoiceSummary() {
+  const service = useInvoiceService();
   const [summary, setSummary] = useState<InvoiceSummary>(EMPTY_SUMMARY);
   const [monthlySummary, setMonthlySummary] = useState<MonthlyInvoiceSummary[]>(
     [],
@@ -35,8 +29,8 @@ export function useInvoiceSummary() {
       setError(null);
 
       const [nextSummary, nextMonthlySummary] = await Promise.all([
-        repository.getSummary(),
-        repository.getMonthlySummary(),
+        service.getSummary(),
+        service.getMonthlySummary(),
       ]);
 
       setSummary(nextSummary);
@@ -50,7 +44,7 @@ export function useInvoiceSummary() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [service]);
 
   useFocusEffect(
     useCallback(() => {

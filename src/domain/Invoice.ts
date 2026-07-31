@@ -26,53 +26,26 @@ export interface CreateInvoiceInput {
   invoiceDate: string;
   clientName: string;
   description?: string;
-
   netAmount: number;
-
-  paymentDate?: string;
-  taxPayment?: number;
-
-  tagAmount?: number;
-  accountantAmount?: number;
-  savingsAmount?: number;
 }
 
 export interface InvoiceSummary {
   invoiceCount: number;
-
   totalNetAmount: number;
   totalTaxAmount: number;
   totalInvoiceAmount: number;
-
-  totalTaxPayment: number;
-  totalTagAmount: number;
-  totalAccountantAmount: number;
-  totalSavingsAmount: number;
-
-  totalRemainingAmount: number;
 }
 
 export interface MonthlyInvoiceSummary {
   period: string;
   invoiceCount: number;
-
   netAmount: number;
   taxAmount: number;
   totalAmount: number;
-
-  taxPayment: number;
-  tagAmount: number;
-  accountantAmount: number;
-  savingsAmount: number;
-
-  remainingAmount: number;
 }
-
-export type PaymentStatusFilter = "all" | "paid" | "unpaid";
 
 export interface InvoiceFilters {
   searchText?: string;
   month?: string;
   year?: string;
-  paymentStatus?: PaymentStatusFilter;
 }

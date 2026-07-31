@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
+import { AnimatedPressable } from "./AnimatedPressable";
 
 interface PrimaryButtonProps {
   label: string;
@@ -20,30 +21,29 @@ export function PrimaryButton({
   const isDisabled = disabled || loading;
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={[
         styles.button,
         fullWidth && styles.fullWidth,
         isDisabled && styles.disabled,
-        pressed && !isDisabled && styles.pressed,
       ]}
     >
       <Text style={[styles.text, isDisabled && styles.textDisabled]}>
         {loading ? "Guardando..." : label}
       </Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: "#0A4C6B",
-    borderRadius: 8,
-    minHeight: 52,
+    backgroundColor: colors.primary.main,
+    borderRadius: radius.button,
+    minHeight: spacing.buttonHeight,
     justifyContent: "center",
     paddingHorizontal: 18,
   },
@@ -51,17 +51,13 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   disabled: {
-    backgroundColor: "#CBD5E1",
-  },
-  pressed: {
-    opacity: 0.85,
+    backgroundColor: colors.text.disabled,
   },
   text: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
   },
   textDisabled: {
-    color: "#94A3B8",
+    color: colors.text.tertiary,
   },
 });

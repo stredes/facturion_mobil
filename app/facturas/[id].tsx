@@ -1,19 +1,15 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useCallback, useState } from "react";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
+import { AnimatedPressable } from "../../src/components/AnimatedPressable";
 import { ConfirmDialog } from "../../src/components/ConfirmDialog";
 import { EmptyState } from "../../src/components/EmptyState";
+import { ErrorState } from "../../src/components/ErrorState";
+import { LoadingState } from "../../src/components/LoadingState";
 import type { Invoice } from "../../src/domain/Invoice";
-import { SQLiteInvoiceRepository } from "../../src/infrastructure/repositories/SQLiteInvoiceRepository";
-import { calculateRemainingAmount } from "../../src/services/invoiceCalculations";
+import { useInvoiceService } from "../../src/infrastructure/di/ServiceContext";
+import { colors, radius, shadows, spacing, typography } from "../../src/theme";
 import { formatCurrency } from "../../src/utils/currency";
 import { formatDisplayDate } from "../../src/utils/dates";
 
@@ -21,7 +17,9 @@ export default function InvoiceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const invoiceId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
-  const repository = useMemo(() => new SQLiteInvoiceRepository(), []);
+  const service = useInvoiceService();
+  const { width } = useWindowDimensions();
+  const isSmallScreen = width < 360;
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +36,7 @@ export default function InvoiceDetailScreen() {
     try {
       setIsLoading(true);
       setError(null);
-      setInvoice(await repository.findById(invoiceId));
+      setInvoice(await service.getById(invoiceId));
     } catch (currentError) {
       setError(
         currentError instanceof Error
@@ -48,7 +46,7 @@ export default function InvoiceDetailScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [invoiceId, repository]);
+  }, [invoiceId, service]);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,9 +62,9 @@ export default function InvoiceDetailScreen() {
     try {
       setIsDeleting(true);
       setDeleteError(null);
-      await repository.delete(invoice.id);
+      await service.delete(invoice.id);
       setShowDeleteDialog(false);
-      router.replace("/facturas");
+      router.back();
     } catch (currentError) {
       setDeleteError(
         currentError instanceof Error
@@ -82,7 +80,7 @@ export default function InvoiceDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color="#0E7490" />
+        <LoadingState message="Cargando factura..." />
       </View>
     );
   }
@@ -90,7 +88,7 @@ export default function InvoiceDetailScreen() {
   if (error) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.error}>{error}</Text>
+        <ErrorState message={error} onRetry={loadInvoice} />
       </View>
     );
   }
@@ -106,103 +104,94 @@ export default function InvoiceDetailScreen() {
     );
   }
 
-  const remainingAmount = calculateRemainingAmount({
-    totalAmount: invoice.totalAmount,
-    taxPayment: invoice.taxPayment,
-    tagAmount: invoice.tagAmount,
-    accountantAmount: invoice.accountantAmount,
-    savingsAmount: invoice.savingsAmount,
-  });
-
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Factura N.º {invoice.invoiceNumber}</Text>
-          <Text style={styles.client}>{invoice.clientName}</Text>
+        <View style={styles.headerSection}>
+          <Text style={styles.invoiceNumber}>
+            Factura N. {invoice.invoiceNumber}
+          </Text>
+          <Text style={styles.clientName}>{invoice.clientName}</Text>
         </View>
 
-        <View style={styles.detailList}>
+        <View style={[styles.totalCard, shadows.card]}>
+          <Text style={styles.totalLabel}>Total factura</Text>
+          <Text
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
+            numberOfLines={1}
+            style={[
+              styles.totalValue,
+              { fontSize: isSmallScreen ? 23 : 26 },
+            ]}
+          >
+            {formatCurrency(invoice.totalAmount)}
+          </Text>
+        </View>
+
+        <View style={styles.block}>
+          <Text style={styles.blockTitle}>Informacion</Text>
           <DetailRow label="Fecha" value={formatDisplayDate(invoice.invoiceDate)} />
           <DetailRow
-            label="Descripción"
-            value={invoice.description || "Sin descripción"}
+            label="Descripcion"
+            value={invoice.description || "Sin descripcion"}
           />
-          <DetailRow label="Neto" value={formatCurrency(invoice.netAmount)} />
-          <DetailRow label="IVA" value={formatCurrency(invoice.taxAmount)} />
+        </View>
+
+        <View style={styles.block}>
+          <Text style={styles.blockTitle}>Montos</Text>
           <DetailRow
-            label="Total factura"
+            label="Neto"
+            value={formatCurrency(invoice.netAmount)}
+          />
+          <DetailRow
+            label="IVA"
+            value={formatCurrency(invoice.taxAmount)}
+          />
+          <DetailRow
+            label="Total"
             value={formatCurrency(invoice.totalAmount)}
           />
-          <DetailRow
-            label="Fecha de pago"
-            value={formatDisplayDate(invoice.paymentDate)}
-          />
-          <DetailRow
-            label="Pago IVA"
-            value={formatCurrency(invoice.taxPayment)}
-          />
-          <DetailRow label="TAG" value={formatCurrency(invoice.tagAmount)} />
-          <DetailRow
-            label="Contador"
-            value={formatCurrency(invoice.accountantAmount)}
-          />
-          <DetailRow
-            label="Ahorro"
-            value={formatCurrency(invoice.savingsAmount)}
-          />
-          <View style={styles.remainingRow}>
-            <Text style={styles.remainingLabel}>Restante</Text>
-            <Text
-              adjustsFontSizeToFit
-              numberOfLines={1}
-              style={styles.remainingValue}
-            >
-              {formatCurrency(remainingAmount)}
-            </Text>
+        </View>
+
+        {deleteError ? (
+          <View style={styles.inlineError}>
+            <Text style={styles.inlineErrorText}>{deleteError}</Text>
           </View>
-        </View>
+        ) : null}
 
-        {deleteError ? <Text style={styles.inlineError}>{deleteError}</Text> : null}
+        <AnimatedPressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: "/facturas/editar/[id]",
+              params: { id: invoice.id },
+            })
+          }
+          style={[styles.actionButton, styles.editButton]}
+        >
+          <Text style={styles.editButtonText}>Editar factura</Text>
+        </AnimatedPressable>
 
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/facturas/editar/[id]",
-                params: { id: invoice.id },
-              })
-            }
-            style={({ pressed }) => [
-              styles.actionButton,
-              styles.editButton,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <Text style={styles.editButtonText}>Editar</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            disabled={isDeleting}
-            onPress={() => setShowDeleteDialog(true)}
-            style={({ pressed }) => [
-              styles.actionButton,
-              styles.deleteButton,
-              isDeleting ? styles.disabledButton : null,
-              pressed ? styles.pressed : null,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>
-              {isDeleting ? "Eliminando..." : "Eliminar"}
-            </Text>
-          </Pressable>
-        </View>
+        <AnimatedPressable
+          accessibilityRole="button"
+          disabled={isDeleting}
+          onPress={() => setShowDeleteDialog(true)}
+          style={[
+            styles.actionButton,
+            styles.deleteButton,
+            isDeleting && styles.disabledButton,
+          ]}
+        >
+          <Text style={styles.deleteButtonText}>
+            {isDeleting ? "Eliminando..." : "Eliminar factura"}
+          </Text>
+        </AnimatedPressable>
       </ScrollView>
 
       <ConfirmDialog
         confirmLabel="Eliminar"
-        message="Esta factura se eliminará de la base local."
+        message={`Esta accion eliminara la factura N. ${invoice.invoiceNumber}. Deseas continuar?`}
         onCancel={() => setShowDeleteDialog(false)}
         onConfirm={() => {
           void deleteInvoice();
@@ -218,129 +207,130 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
+      <Text
+        adjustsFontSizeToFit
+        minimumFontScale={0.82}
+        numberOfLines={1}
+        style={styles.detailValue}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: "#F6F8FA",
+    backgroundColor: colors.background.primary,
     flex: 1,
   },
   container: {
-    gap: 18,
-    padding: 18,
-    paddingBottom: 34,
+    gap: spacing.lg,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl * 2,
   },
   centered: {
     alignItems: "center",
-    backgroundColor: "#F6F8FA",
+    backgroundColor: colors.background.primary,
     flex: 1,
     justifyContent: "center",
-    padding: 24,
+    padding: spacing.xl,
   },
-  header: {
-    gap: 6,
+  headerSection: {
+    gap: spacing.sm,
   },
-  title: {
-    color: "#102A43",
-    fontSize: 27,
-    fontWeight: "900",
+  invoiceNumber: {
+    ...typography.screenTitle,
+    color: colors.text.primary,
   },
-  client: {
-    color: "#52606D",
-    fontSize: 16,
-    fontWeight: "800",
+  clientName: {
+    ...typography.body,
+    color: colors.text.secondary,
   },
-  detailList: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D9E2EC",
-    borderRadius: 8,
-    borderWidth: 1,
-    overflow: "hidden",
+  totalCard: {
+    backgroundColor: colors.primary.main,
+    borderRadius: radius.mainCard,
+    gap: spacing.xxs,
+    minHeight: 128,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  totalLabel: {
+    ...typography.label,
+    color: colors.text.inverse,
+    opacity: 0.9,
+  },
+  totalValue: {
+    ...typography.primaryAmount,
+    color: colors.text.inverse,
+    marginTop: spacing.xxs,
+  },
+  block: {
+    gap: spacing.sm,
+  },
+  blockTitle: {
+    ...typography.sectionTitle,
+    color: colors.text.primary,
+    marginBottom: spacing.xxs,
   },
   detailRow: {
-    borderBottomColor: "#E9EFF5",
-    borderBottomWidth: 1,
-    gap: 4,
-    padding: 15,
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
+    borderRadius: radius.input,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: spacing.md,
   },
   detailLabel: {
-    color: "#627D98",
-    fontSize: 12,
-    fontWeight: "800",
+    ...typography.label,
+    color: colors.text.secondary,
+    flexShrink: 0,
   },
   detailValue: {
-    color: "#102A43",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  remainingRow: {
-    backgroundColor: "#ECFDF3",
-    gap: 6,
-    padding: 16,
-  },
-  remainingLabel: {
-    color: "#166534",
-    fontSize: 13,
-    fontWeight: "900",
-  },
-  remainingValue: {
-    color: "#166534",
-    fontSize: 24,
-    fontWeight: "900",
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 10,
+    ...typography.bodyMedium,
+    color: colors.text.primary,
+    flex: 1,
+    textAlign: "right",
+    marginLeft: spacing.md,
+    minWidth: 0,
   },
   actionButton: {
     alignItems: "center",
-    borderRadius: 8,
-    flex: 1,
-    minHeight: 52,
+    borderRadius: radius.button,
+    minHeight: spacing.buttonHeight,
     justifyContent: "center",
-    paddingHorizontal: 14,
+    paddingHorizontal: spacing.lg,
   },
   editButton: {
-    backgroundColor: "#0E7490",
-  },
-  deleteButton: {
-    backgroundColor: "#FFF1F2",
-    borderColor: "#FECDD3",
-    borderWidth: 1,
+    backgroundColor: colors.primary.main,
   },
   editButtonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "900",
+    ...typography.bodyMedium,
+    color: colors.text.inverse,
+  },
+  deleteButton: {
+    backgroundColor: colors.statusLight.error,
+    borderColor: colors.status.error + "40",
+    borderWidth: 1,
   },
   deleteButtonText: {
-    color: "#B91C1C",
-    fontSize: 15,
-    fontWeight: "900",
-  },
-  error: {
-    color: "#B91C1C",
-    fontSize: 15,
-    fontWeight: "800",
-    textAlign: "center",
+    ...typography.bodyMedium,
+    color: colors.status.error,
   },
   inlineError: {
-    backgroundColor: "#FFF7ED",
-    borderColor: "#FDBA74",
-    borderRadius: 8,
+    backgroundColor: colors.statusLight.error,
+    borderColor: colors.status.error + "40",
+    borderRadius: radius.input,
     borderWidth: 1,
-    color: "#C2410C",
-    fontSize: 14,
-    fontWeight: "700",
-    padding: 14,
+    padding: spacing.md,
+  },
+  inlineErrorText: {
+    ...typography.bodyMedium,
+    color: colors.status.error,
   },
   disabledButton: {
     opacity: 0.6,
-  },
-  pressed: {
-    opacity: 0.72,
   },
 });

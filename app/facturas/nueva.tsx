@@ -1,13 +1,13 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { InvoiceForm } from "../../src/components/InvoiceForm";
 import type { CreateInvoiceInput } from "../../src/domain/Invoice";
-import { SQLiteInvoiceRepository } from "../../src/infrastructure/repositories/SQLiteInvoiceRepository";
+import { useInvoiceService } from "../../src/infrastructure/di/ServiceContext";
 
 export default function NewInvoiceScreen() {
   const router = useRouter();
-  const repository = useMemo(() => new SQLiteInvoiceRepository(), []);
+  const service = useInvoiceService();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -15,7 +15,7 @@ export default function NewInvoiceScreen() {
     try {
       setIsSubmitting(true);
       setSubmitError(null);
-      const invoice = await repository.create(input);
+      const invoice = await service.create(input);
 
       router.replace({
         pathname: "/facturas/[id]",
