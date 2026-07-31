@@ -3,7 +3,7 @@ import type * as SQLite from "expo-sqlite";
 import {
   calculateInvoiceTotal,
   calculateTax,
-} from "../services/invoiceCalculations";
+} from "../domain/invoiceCalculations";
 
 interface SeedInvoice {
   id: string;

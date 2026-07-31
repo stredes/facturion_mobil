@@ -7,7 +7,11 @@ import type {
   UpdateTaxPaymentInput,
 } from "../../domain/TaxPayment";
 import type { TaxPaymentRepository } from "../../domain/TaxPaymentRepository";
+import { validateMoney } from "../../domain/money";
+import { isValidISODate } from "../../utils/dates";
 import { createId } from "../../utils/ids";
+
+const TAX_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 interface TaxPaymentRow {
   id: string;
@@ -37,16 +41,26 @@ function mapRow(row: TaxPaymentRow): TaxPayment {
   };
 }
 
-function validateAmount(amount: number): void {
-  if (!Number.isSafeInteger(amount) || amount < 0) {
-    throw new Error("El monto debe ser un numero entero mayor o igual a cero");
+function validatePayment(input: {
+  taxPeriod: string;
+  paymentDate: string;
+  amount: number;
+}): void {
+  if (!TAX_PERIOD_PATTERN.test(input.taxPeriod)) {
+    throw new Error("El periodo debe usar formato AAAA-MM.");
   }
+
+  if (!input.paymentDate || !isValidISODate(input.paymentDate)) {
+    throw new Error("La fecha debe ser valida y usar formato AAAA-MM-DD.");
+  }
+
+  validateMoney(input.amount, "Monto");
 }
 
 export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
   async create(input: CreateTaxPaymentInput): Promise<TaxPayment> {
     const db = await getDatabase();
-    validateAmount(input.amount);
+    validatePayment(input);
 
     const id = createId("tp");
     const now = new Date().toISOString();
@@ -79,7 +93,7 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
     input: UpdateTaxPaymentInput,
   ): Promise<TaxPayment> {
     const db = await getDatabase();
-    validateAmount(input.amount);
+    validatePayment(input);
 
     const now = new Date().toISOString();
     const result = await db.runAsync(

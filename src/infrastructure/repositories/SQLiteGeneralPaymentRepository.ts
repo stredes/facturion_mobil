@@ -8,6 +8,8 @@ import type {
   UpdateGeneralPaymentInput,
 } from "../../domain/GeneralPayment";
 import type { GeneralPaymentRepository } from "../../domain/GeneralPaymentRepository";
+import { validateMoney } from "../../domain/money";
+import { isValidISODate } from "../../utils/dates";
 import { createId } from "../../utils/ids";
 
 interface GeneralPaymentRow {
@@ -38,17 +40,31 @@ function mapRow(row: GeneralPaymentRow): GeneralPayment {
   };
 }
 
-function validateAmount(amount: number): void {
-  if (!Number.isSafeInteger(amount) || amount < 0) {
-    throw new Error("El monto debe ser un numero entero mayor o igual a cero");
+function validatePayment(input: {
+  category: GeneralPaymentCategory;
+  paymentDate: string;
+  amount: number;
+}): void {
+  if (
+    input.category !== "tag" &&
+    input.category !== "accountant" &&
+    input.category !== "savings"
+  ) {
+    throw new Error("La categoria debe ser tag, accountant o savings");
   }
+
+  if (!input.paymentDate || !isValidISODate(input.paymentDate)) {
+    throw new Error("La fecha debe ser valida y usar formato AAAA-MM-DD.");
+  }
+
+  validateMoney(input.amount, "Monto");
 }
 
 export class SQLiteGeneralPaymentRepository
   implements GeneralPaymentRepository {
   async create(input: CreateGeneralPaymentInput): Promise<GeneralPayment> {
     const db = await getDatabase();
-    validateAmount(input.amount);
+    validatePayment(input);
 
     const id = createId("gp");
     const now = new Date().toISOString();
@@ -81,7 +97,7 @@ export class SQLiteGeneralPaymentRepository
     input: UpdateGeneralPaymentInput,
   ): Promise<GeneralPayment> {
     const db = await getDatabase();
-    validateAmount(input.amount);
+    validatePayment(input);
 
     const now = new Date().toISOString();
     const result = await db.runAsync(

@@ -10,7 +10,6 @@
       "@/theme/*": ["src/theme/*"],
       "@/hooks/*": ["src/hooks/*"],
       "@/utils/*": ["src/utils/*"],
-      "@/services/*": ["src/services/*"],
       "@/schemas/*": ["src/schemas/*"],
       "@/domain/*": ["src/domain/*"],
       "@/application/*": ["src/application/*"],

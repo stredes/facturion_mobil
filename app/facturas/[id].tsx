@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { AnimatedPressable } from "../../src/components/AnimatedPressable";
-import { ConfirmDialog } from "../../src/components/ConfirmDialog";
+import { AmountRow } from "../../src/components/AmountRow";
+import { ConfirmModal } from "../../src/components/ConfirmModal";
 import { EmptyState } from "../../src/components/EmptyState";
 import { ErrorState } from "../../src/components/ErrorState";
 import { LoadingState } from "../../src/components/LoadingState";
@@ -140,17 +141,18 @@ export default function InvoiceDetailScreen() {
 
         <View style={styles.block}>
           <Text style={styles.blockTitle}>Montos</Text>
-          <DetailRow
+          <AmountRow
             label="Neto"
             value={formatCurrency(invoice.netAmount)}
           />
-          <DetailRow
+          <AmountRow
             label="IVA"
             value={formatCurrency(invoice.taxAmount)}
           />
-          <DetailRow
+          <AmountRow
             label="Total"
             value={formatCurrency(invoice.totalAmount)}
+            tone="success"
           />
         </View>
 
@@ -189,8 +191,10 @@ export default function InvoiceDetailScreen() {
         </AnimatedPressable>
       </ScrollView>
 
-      <ConfirmDialog
+      <ConfirmModal
+        cancelLabel="Cancelar"
         confirmLabel="Eliminar"
+        destructive
         message={`Esta accion eliminara la factura N. ${invoice.invoiceNumber}. Deseas continuar?`}
         onCancel={() => setShowDeleteDialog(false)}
         onConfirm={() => {

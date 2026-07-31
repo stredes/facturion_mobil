@@ -11,12 +11,12 @@ import {
 } from "react-native";
 
 import type { CreateInvoiceInput } from "../domain/Invoice";
-import type { InvoiceFormValues } from "../schemas/invoiceSchema";
-import { invoiceSchema } from "../schemas/invoiceSchema";
 import {
   calculateInvoiceTotal,
   calculateTax,
-} from "../services/invoiceCalculations";
+} from "../domain/invoiceCalculations";
+import type { InvoiceFormValues } from "../schemas/invoiceSchema";
+import { invoiceSchema } from "../schemas/invoiceSchema";
 import { colors, radius, spacing, typography } from "../theme";
 import { formatCurrency } from "../utils/currency";
 import { toISODate } from "../utils/dates";

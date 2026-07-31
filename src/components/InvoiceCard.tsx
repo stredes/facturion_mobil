@@ -5,6 +5,7 @@ import { colors, radius, shadows, spacing, typography } from "../theme";
 import { formatCurrency } from "../utils/currency";
 import { formatDisplayDate } from "../utils/dates";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { StatusBadge } from "./StatusBadge";
 
 interface InvoiceCardProps {
   invoice: Invoice;
@@ -24,6 +25,10 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
               {invoice.clientName}
             </Text>
           </View>
+          <StatusBadge
+            label={invoice.paymentDate ? "Pagada" : "Sin fecha de pago"}
+            status={invoice.paymentDate ? "paid" : "none"}
+          />
         </View>
 
         <View style={styles.amountRow}>

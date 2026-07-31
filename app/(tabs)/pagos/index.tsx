@@ -1,24 +1,74 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { FilterChip } from "@/components/FilterChip";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Skeleton } from "@/components/LoadingSkeleton";
-import { useGeneralPaymentService, useTaxPaymentService } from "@/infrastructure/di/ServiceContext";
+import type {
+  GeneralPayment,
+  GeneralPaymentCategory,
+} from "@/domain/GeneralPayment";
+import type { TaxPayment } from "@/domain/TaxPayment";
+import { useGeneralPayments } from "@/hooks/useGeneralPayments";
+import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { colors, radius, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
 
 type Segment = "general" | "iva";
-type ViewState = "loading" | "success" | "empty" | "error";
+type GPFilter = "all" | GeneralPaymentCategory;
+
+const CATEGORY_FILTERS: { value: GPFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "tag", label: "TAG" },
+  { value: "accountant", label: "Contador" },
+  { value: "savings", label: "Ahorro" },
+];
+
+function categoryLabel(category: GeneralPaymentCategory): string {
+  switch (category) {
+    case "tag":
+      return "TAG";
+    case "accountant":
+      return "Contador";
+    case "savings":
+      return "Ahorro";
+  }
+}
 
 export default function PagosScreen() {
-  const router = useRouter();
   const [segment, setSegment] = useState<Segment>("general");
+  const [categoryFilter, setCategoryFilter] = useState<GPFilter>("all");
+
+  const generalFilters = useMemo(
+    () => (categoryFilter === "all" ? undefined : { category: categoryFilter }),
+    [categoryFilter],
+  );
+
+  const {
+    payments: generalPayments,
+    isLoading: generalLoading,
+    error: generalError,
+    refresh: generalRefresh,
+  } = useGeneralPayments(generalFilters);
+
+  const {
+    payments: taxPayments,
+    isLoading: taxLoading,
+    error: taxError,
+    refresh: taxRefresh,
+  } = useTaxPayments();
 
   return (
     <ScreenContainer>
@@ -36,69 +86,68 @@ export default function PagosScreen() {
       </View>
 
       {segment === "general" ? (
-        <GeneralPaymentsView />
+        <GeneralPaymentsView
+          categoryFilter={categoryFilter}
+          error={generalError}
+          isLoading={generalLoading}
+          onCategoryChange={setCategoryFilter}
+          onRetry={generalRefresh}
+          payments={generalPayments}
+        />
       ) : (
-        <IvaPaymentsView />
+        <TaxPaymentsView
+          error={taxError}
+          isLoading={taxLoading}
+          onRetry={taxRefresh}
+          payments={taxPayments}
+        />
       )}
     </ScreenContainer>
   );
 }
 
-type GPFilter = "all" | "tag" | "accountant" | "savings";
+interface GeneralPaymentsViewProps {
+  payments: GeneralPayment[];
+  isLoading: boolean;
+  error: string | null;
+  categoryFilter: GPFilter;
+  onCategoryChange: (filter: GPFilter) => void;
+  onRetry: () => Promise<void>;
+}
 
-function GeneralPaymentsView() {
+function GeneralPaymentsView({
+  payments,
+  isLoading,
+  error,
+  categoryFilter,
+  onCategoryChange,
+  onRetry,
+}: GeneralPaymentsViewProps) {
   const router = useRouter();
-  const service = useGeneralPaymentService();
-  const [payments, setPayments] = useState<any[]>([]);
-  const [viewState, setViewState] = useState<ViewState>("loading");
-  const [error, setError] = useState<string | null>(null);
-  const [categoryFilter, setCategoryFilter] = useState<GPFilter>("all");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      setViewState("loading");
-      setError(null);
-      const filters = categoryFilter !== "all" ? { category: categoryFilter as any } : undefined;
-      const rows = await service.getAll(filters);
-
-      if (__DEV__) {
-        console.log("[Pagos] general count:", rows.length, "filter:", categoryFilter);
-      }
-
-      setPayments(rows);
-      setViewState(rows.length === 0 ? "empty" : "success");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar pagos generales";
-      if (__DEV__) {
-        console.error("[Pagos] general load failed:", err);
-      }
-      setError(msg);
-      setViewState("error");
+      await onRetry();
+    } finally {
+      setRefreshing(false);
     }
-  }, [service, categoryFilter]);
+  }, [onRetry]);
 
-  useFocusEffect(
-    useCallback(() => {
-      void load();
-    }, [load]),
-  );
+  const initialLoading = isLoading && payments.length === 0;
 
-  const cats = useMemo(
-    () => [
-      { value: "all" as GPFilter, label: "Todas" },
-      { value: "tag" as GPFilter, label: "TAG" },
-      { value: "accountant" as GPFilter, label: "Contador" },
-      { value: "savings" as GPFilter, label: "Ahorro" },
-    ],
-    [],
-  );
-
-  if (viewState === "loading") {
+  if (initialLoading) {
     return (
       <View style={styles.flex}>
         <View style={styles.filters}>
-          {cats.map((c) => (
-            <FilterChip key={c.value} label={c.label} selected={categoryFilter === c.value} onPress={() => {}} />
+          {CATEGORY_FILTERS.map((c) => (
+            <FilterChip
+              key={c.value}
+              label={c.label}
+              selected={categoryFilter === c.value}
+              onPress={() => onCategoryChange(c.value)}
+            />
           ))}
         </View>
         <View style={styles.skeletonList}>
@@ -110,33 +159,42 @@ function GeneralPaymentsView() {
     );
   }
 
-  if (viewState === "error") {
+  if (error) {
     return (
       <View style={styles.flex}>
-        <ErrorState message={error ?? "Error desconocido"} onRetry={load} />
+        <ErrorState message={error} onRetry={onRetry} />
       </View>
     );
   }
 
-  if (viewState === "empty") {
+  if (payments.length === 0) {
+    const isFiltered = categoryFilter !== "all";
     return (
       <View style={styles.flex}>
         <View style={styles.filters}>
-          {cats.map((c) => (
+          {CATEGORY_FILTERS.map((c) => (
             <FilterChip
               key={c.value}
               label={c.label}
               selected={categoryFilter === c.value}
-              onPress={() => setCategoryFilter(c.value)}
+              onPress={() => onCategoryChange(c.value)}
             />
           ))}
         </View>
         <View style={styles.centered}>
           <EmptyState
-            title="Aun no tienes pagos generales"
-            message="Registra pagos de TAG, contador o ahorro."
-            actionLabel="Registrar pago general"
-            onAction={() => router.push("/pagos/general/nueva")}
+            title={isFiltered ? "Sin resultados" : "Aun no tienes pagos generales"}
+            message={
+              isFiltered
+                ? "No hay pagos de esta categoria en el periodo seleccionado."
+                : "Registra pagos de TAG, contador o ahorro."
+            }
+            actionLabel={isFiltered ? undefined : "Registrar pago general"}
+            onAction={
+              isFiltered
+                ? undefined
+                : () => router.push("/pagos/general/nueva")
+            }
           />
         </View>
       </View>
@@ -146,20 +204,30 @@ function GeneralPaymentsView() {
   return (
     <View style={styles.flex}>
       <View style={styles.filters}>
-        {cats.map((c) => (
+        {CATEGORY_FILTERS.map((c) => (
           <FilterChip
             key={c.value}
             label={c.label}
             selected={categoryFilter === c.value}
-            onPress={() => setCategoryFilter(c.value)}
+            onPress={() => onCategoryChange(c.value)}
           />
         ))}
       </View>
 
-      <FlatList
+      <FlatList<GeneralPayment>
+        contentContainerStyle={styles.listContent}
         data={payments}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }: { item: any }) => (
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            colors={[colors.primary.main]}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
+            tintColor={colors.primary.main}
+          />
+        }
+        renderItem={({ item }) => (
           <AnimatedPressable
             onPress={() =>
               router.push({
@@ -171,70 +239,62 @@ function GeneralPaymentsView() {
             <View style={styles.card}>
               <View style={styles.cardTop}>
                 <Text style={styles.cardCategory}>
-                  {item.category === "tag" ? "TAG" : item.category === "accountant" ? "Contador" : "Ahorro"}
+                  {categoryLabel(item.category)}
                 </Text>
-                <Text style={styles.cardAmount}>{formatCurrency(item.amount)}</Text>
+                <Text style={styles.cardAmount}>
+                  {formatCurrency(item.amount)}
+                </Text>
               </View>
-              <Text style={styles.cardDate}>{formatDisplayDate(item.paymentDate)}</Text>
+              <Text style={styles.cardDate}>
+                {formatDisplayDate(item.paymentDate)}
+              </Text>
               {item.description ? (
-                <Text numberOfLines={1} style={styles.cardDesc}>{item.description}</Text>
+                <Text numberOfLines={1} style={styles.cardDesc}>
+                  {item.description}
+                </Text>
               ) : null}
             </View>
           </AnimatedPressable>
         )}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        refreshing={false}
-        onRefresh={load}
+        showsVerticalScrollIndicator={false}
       />
 
-      <AnimatedPressable
-        accessibilityRole="button"
+      <FloatingActionButton
+        accessibilityLabel="Registrar pago general"
         onPress={() => router.push("/pagos/general/nueva")}
-        style={styles.fab}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </AnimatedPressable>
+      />
     </View>
   );
 }
 
-function IvaPaymentsView() {
+interface TaxPaymentsViewProps {
+  payments: TaxPayment[];
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => Promise<void>;
+}
+
+function TaxPaymentsView({
+  payments,
+  isLoading,
+  error,
+  onRetry,
+}: TaxPaymentsViewProps) {
   const router = useRouter();
-  const service = useTaxPaymentService();
-  const [payments, setPayments] = useState<any[]>([]);
-  const [viewState, setViewState] = useState<ViewState>("loading");
-  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      setViewState("loading");
-      setError(null);
-      const rows = await service.getAll();
-
-      if (__DEV__) {
-        console.log("[Pagos] IVA count:", rows.length);
-      }
-
-      setPayments(rows);
-      setViewState(rows.length === 0 ? "empty" : "success");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error al cargar pagos de IVA";
-      if (__DEV__) {
-        console.error("[Pagos] IVA load failed:", err);
-      }
-      setError(msg);
-      setViewState("error");
+      await onRetry();
+    } finally {
+      setRefreshing(false);
     }
-  }, [service]);
+  }, [onRetry]);
 
-  useFocusEffect(
-    useCallback(() => {
-      void load();
-    }, [load]),
-  );
+  const initialLoading = isLoading && payments.length === 0;
 
-  if (viewState === "loading") {
+  if (initialLoading) {
     return (
       <View style={styles.flex}>
         <View style={styles.skeletonList}>
@@ -246,23 +306,23 @@ function IvaPaymentsView() {
     );
   }
 
-  if (viewState === "error") {
+  if (error) {
     return (
       <View style={styles.flex}>
-        <ErrorState message={error ?? "Error desconocido"} onRetry={load} />
+        <ErrorState message={error} onRetry={onRetry} />
       </View>
     );
   }
 
-  if (viewState === "empty") {
+  if (payments.length === 0) {
     return (
       <View style={styles.flex}>
         <View style={styles.centered}>
           <EmptyState
-            title="Aun no tienes pagos de IVA"
-            message="Registra el pago correspondiente a un periodo tributario."
             actionLabel="Registrar pago de IVA"
+            message="Registra el pago correspondiente a un periodo tributario."
             onAction={() => router.push("/pagos/iva/nueva")}
+            title="Aun no tienes pagos de IVA"
           />
         </View>
       </View>
@@ -271,10 +331,20 @@ function IvaPaymentsView() {
 
   return (
     <View style={styles.flex}>
-      <FlatList
+      <FlatList<TaxPayment>
+        contentContainerStyle={styles.listContent}
         data={payments}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }: { item: any }) => (
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            colors={[colors.primary.main]}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
+            tintColor={colors.primary.main}
+          />
+        }
+        renderItem={({ item }) => (
           <AnimatedPressable
             onPress={() =>
               router.push({
@@ -285,31 +355,29 @@ function IvaPaymentsView() {
           >
             <View style={styles.card}>
               <View style={styles.cardTop}>
-                <Text style={styles.cardCategory}>
-                  Periodo {item.taxPeriod}
+                <Text style={styles.cardCategory}>Periodo {item.taxPeriod}</Text>
+                <Text style={styles.cardAmount}>
+                  {formatCurrency(item.amount)}
                 </Text>
-                <Text style={styles.cardAmount}>{formatCurrency(item.amount)}</Text>
               </View>
-              <Text style={styles.cardDate}>{formatDisplayDate(item.paymentDate)}</Text>
+              <Text style={styles.cardDate}>
+                {formatDisplayDate(item.paymentDate)}
+              </Text>
               {item.description ? (
-                <Text numberOfLines={1} style={styles.cardDesc}>{item.description}</Text>
+                <Text numberOfLines={1} style={styles.cardDesc}>
+                  {item.description}
+                </Text>
               ) : null}
             </View>
           </AnimatedPressable>
         )}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        refreshing={false}
-        onRefresh={load}
+        showsVerticalScrollIndicator={false}
       />
 
-      <AnimatedPressable
-        accessibilityRole="button"
+      <FloatingActionButton
+        accessibilityLabel="Registrar pago de IVA"
         onPress={() => router.push("/pagos/iva/nueva")}
-        style={styles.fab}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </AnimatedPressable>
+      />
     </View>
   );
 }
@@ -369,26 +437,5 @@ const styles = StyleSheet.create({
   },
   skeletonList: {
     gap: spacing.gridGap,
-  },
-  fab: {
-    position: "absolute",
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary.main,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  fabText: {
-    fontSize: 28,
-    color: colors.text.inverse,
-    lineHeight: 30,
   },
 });

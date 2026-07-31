@@ -74,6 +74,22 @@ export default function RootLayout() {
             name="facturas/editar/[id]"
             options={{ title: "Editar factura" }}
           />
+          <Stack.Screen
+            name="pagos/general/nueva"
+            options={{ title: "Nuevo pago general" }}
+          />
+          <Stack.Screen
+            name="pagos/general/editar/[id]"
+            options={{ title: "Editar pago general" }}
+          />
+          <Stack.Screen
+            name="pagos/iva/nueva"
+            options={{ title: "Nuevo pago de IVA" }}
+          />
+          <Stack.Screen
+            name="pagos/iva/editar/[id]"
+            options={{ title: "Editar pago de IVA" }}
+          />
         </Stack>
       </SafeAreaProvider>
     </ServiceProvider>

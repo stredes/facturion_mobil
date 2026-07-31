@@ -1,4 +1,9 @@
 import { getDatabase } from "../../database/database";
+import {
+  calculateInvoiceTotal,
+  calculateTax,
+} from "../../domain/invoiceCalculations";
+import { validateMoney } from "../../domain/money";
 import type {
   CreateInvoiceInput,
   Invoice,
@@ -6,10 +11,6 @@ import type {
   MonthlyInvoiceSummary,
 } from "../../domain/Invoice";
 import type { InvoiceRepository } from "../../domain/InvoiceRepository";
-import {
-  calculateInvoiceTotal,
-  calculateTax,
-} from "../../services/invoiceCalculations";
 import { isValidISODate } from "../../utils/dates";
 import { createId } from "../../utils/ids";
 
@@ -81,14 +82,6 @@ function isUniqueConstraintError(error: unknown): boolean {
     error instanceof Error &&
     error.message.toLowerCase().includes("unique")
   );
-}
-
-function validateMoney(value: number, fieldName: string): void {
-  if (!Number.isSafeInteger(value) || value < 0) {
-    throw new Error(
-      `${fieldName} debe ser un numero entero igual o mayor que cero.`,
-    );
-  }
 }
 
 function normalizeInvoiceInput(

@@ -2,6 +2,38 @@
 
 Fecha: 2026-07-28
 
+Actualizacion: 2026-07-31
+
+## Refactor 2026-07-31 (Fases A-D)
+
+Se ejecuto el plan de refactor completo para eliminar deuda tecnica de tipado, arquitectura y pruebas. Resumen:
+
+### Fase A - Tipado y limpieza
+
+- `app/(tabs)/pagos/index.tsx`: reescrito sin `any`, con hooks `useGeneralPayments`/`useTaxPayments`, RefreshControl funcional y estados vacios/error/carga.
+- `ConfirmDialog.tsx` eliminado; `ConfirmModal.tsx` centrado con prop `destructive`; `app/facturas/[id].tsx` usa `ConfirmModal` + `AmountRow`.
+- `StatusBadge` integrado en `InvoiceCard.tsx`; `DateInput` (antes codigo muerto) ahora usado por los formularios de pagos.
+- Eliminados `parseMoneyInput` de `src/utils/currency.ts` y `screenPaddingExports` de `ScreenContainer.tsx`.
+- `Stack.Screen` con titulos para las 4 rutas de pagos en `app/_layout.tsx`.
+
+### Fase B - Logica de negocio a `src/domain/`
+
+- `src/services/` eliminado por completo. La logica vive ahora en `src/domain/invoiceCalculations.ts` (`calculateTax`, `calculateInvoiceTotal`) y `src/domain/money.ts` (`validateMoney`).
+- Validacion defensiva `validatePayment` en `SQLiteGeneralPaymentRepository` y `SQLiteTaxPaymentRepository` (categoria/periodo y fechas).
+- Imports actualizados en repositorios, `seedInvoices.ts` e `InvoiceForm.tsx`.
+
+### Fase C - Schemas y formularios de pagos
+
+- Creados `src/schemas/generalPaymentSchema.ts` y `src/schemas/taxPaymentSchema.ts` (Zod + `superRefine` de fechas/periodos).
+- Creados `GeneralPaymentForm` y `TaxPaymentForm` (react-hook-form + zodResolver + `MoneyInput`/`DateInput`, pie fijo de submit), reutilizados por las 4 pantallas de pagos.
+- Reescritas `app/pagos/general/nueva.tsx`, `app/pagos/general/editar/[id].tsx`, `app/pagos/iva/nueva.tsx` y `app/pagos/iva/editar/[id].tsx`.
+
+### Fase D - Pruebas automatizadas
+
+- `jest-expo` configurado en `package.json` (preset `jest-expo`, scripts `test` y `test:watch`).
+- 5 suites con 23 tests: calculos de dominio (`invoiceCalculations`, `money`) y schemas (`invoiceSchema`, `generalPaymentSchema`, `taxPaymentSchema`).
+- `react-dom@19.1.0` agregado para alinear el peer de `@expo/metro-runtime` con `react@19.1.0`.
+
 ## Alcance
 
 Auditoria del proyecto Expo/React Native local generado en este repositorio. Se reviso:
@@ -18,7 +50,7 @@ Auditoria del proyecto Expo/React Native local generado en este repositorio. Se 
 
 El proyecto esta en buen estado base: compila con TypeScript estricto, Expo Doctor no detecta problemas, no hay llamadas de red ni modulos fuera del alcance en `app/` o `src/`, y la persistencia esta correctamente aislada en un repositorio SQLite llamado `facturion.db`.
 
-Los riesgos principales pendientes son la falta de pruebas automatizadas y las vulnerabilidades moderadas reportadas por `npm audit` en dependencias transitivas de Expo. Los hallazgos de validacion defensiva y manejo de errores de edicion/eliminacion fueron corregidos.
+Los riesgos principales pendientes son las vulnerabilidades moderadas reportadas por `npm audit` en dependencias transitivas de Expo. La falta de pruebas automatizadas fue resuelta en el refactor del 2026-07-31.
 
 ## Verificaciones ejecutadas
 
@@ -29,16 +61,22 @@ npm run typecheck
 Resultado: OK. `tsc --noEmit` finalizo sin errores.
 
 ```bash
+npm test -- --watch=false
+```
+
+Resultado: OK. 23 tests en 5 suites pasaron (calculos de dominio y schemas Zod).
+
+```bash
 npx expo install --check
 ```
 
-Resultado: OK. Dependencias compatibles con Expo SDK 57.
+Resultado: OK. Dependencias compatibles con Expo SDK 54.
 
 ```bash
 npx expo-doctor
 ```
 
-Resultado: OK. 20/20 checks passed.
+Resultado: OK. 18/18 checks passed.
 
 ```bash
 npm audit --json
@@ -114,29 +152,23 @@ Impacto: UX.
 
 Recomendacion: validar mes entre `01` y `12`; aplicar anio solo con 4 digitos.
 
-### Bajo - No hay pruebas automatizadas
+### Resuelto - No hay pruebas automatizadas
 
 Referencia: `package.json`
 
-No existe runner de tests ni pruebas para calculos, schema, repositorio o filtros.
+No existia runner de tests ni pruebas para calculos o schema.
 
-Impacto: cambios futuros pueden romper reglas importantes sin aviso.
-
-Recomendacion minima:
-
-- Tests unitarios para `calculateTax`, `calculateInvoiceTotal`, `calculateRemainingAmount`.
-- Tests de Zod para fechas, negativos y separaciones mayores al total.
-- Tests de repositorio con base SQLite temporal si el entorno lo permite.
+Estado: corregido en el refactor del 2026-07-31. `jest-expo` configurado y 23 tests cubren `calculateTax`, `calculateInvoiceTotal`, `validateMoney` y los schemas de facturas y pagos. Pendiente como mejora: tests de repositorio con base SQLite temporal.
 
 ### Bajo - `npm audit` reporta vulnerabilidades moderadas transitivas
 
 Referencia: `package-lock.json`
 
-`npm audit` reporta 10 vulnerabilidades moderadas en dependencias transitivas de Expo/xcode/uuid. La correccion sugerida por npm apunta a un cambio mayor incompatible (`expo@46.0.21`), por lo que no debe aplicarse automaticamente.
+`npm audit` reporta 44 vulnerabilidades (10 moderadas, 34 altas) en dependencias transitivas de Expo/xcode/uuid. La correccion sugerida por npm apunta a un cambio mayor incompatible (`expo@46.0.21`), por lo que no debe aplicarse automaticamente.
 
 Impacto: principalmente cadena de tooling/desarrollo; no se detectaron dependencias directas vulnerables de la app.
 
-Recomendacion: monitorear actualizaciones de Expo SDK 57 y evitar `npm audit fix --force`.
+Recomendacion: monitorear actualizaciones de Expo SDK 54 y evitar `npm audit fix --force`.
 
 ## Cumplimiento de requisitos
 
@@ -163,7 +195,6 @@ Cumple con observacion:
 
 No cubierto aun:
 
-- Pruebas automatizadas.
 - Prueba manual documentada en dispositivo fisico o emulador.
 
 ## Arquitectura
@@ -172,8 +203,8 @@ Fortalezas:
 
 - Separacion clara entre dominio, infraestructura, hooks, componentes y rutas.
 - Las pantallas no contienen SQL directo.
-- Los calculos estan centralizados en `src/services/invoiceCalculations.ts`.
-- El form reutilizable evita duplicar pantalla de crear/editar.
+- Los calculos estan centralizados en `src/domain/invoiceCalculations.ts` (puerto/entidad en `src/domain/`, sin dependencias externas).
+- Los forms reutilizables (`InvoiceForm`, `GeneralPaymentForm`, `TaxPaymentForm`) evitan duplicar pantallas de crear/editar.
 - Los resumenes usan agregacion SQL eficiente.
 
 Riesgos:
@@ -228,11 +259,10 @@ Mejoras recomendadas:
 
 ## Prioridad sugerida de correccion
 
-1. Agregar pruebas unitarias para calculos y schema.
-2. Mejorar filtros de mes/anio.
-3. Revisar vulnerabilidades transitivas al actualizar Expo.
-4. Documentar una prueba manual en dispositivo fisico o emulador.
+1. Mejorar filtros de mes/anio.
+2. Revisar vulnerabilidades transitivas al actualizar Expo.
+3. Documentar una prueba manual en dispositivo fisico o emulador.
 
 ## Conclusion
 
-El proyecto esta apto como primera version funcional local. La base tecnica es razonable y el alcance esta bien contenido. Antes de considerarlo listo para uso prolongado, conviene cubrir reglas de negocio con pruebas y documentar una prueba manual en dispositivo fisico o emulador.
+El proyecto esta apto como primera version funcional local. La base tecnica es razonable y el alcance esta bien contenido. El refactor del 2026-07-31 elimino la deuda de tipado, migro la logica de negocio a `src/domain/` y cubrio calculos y schemas con pruebas automatizadas. Pendiente documentar una prueba manual en dispositivo fisico o emulador.

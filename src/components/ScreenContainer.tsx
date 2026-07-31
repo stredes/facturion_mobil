@@ -84,5 +84,3 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 });
-
-export { spacing as screenPaddingExports } from "../theme";

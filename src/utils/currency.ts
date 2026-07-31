@@ -6,12 +6,3 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function parseMoneyInput(value: string): number {
-  const cleanedValue = value.replace(/\D/g, "");
-
-  if (!cleanedValue) {
-    return 0;
-  }
-
-  return Number(cleanedValue);
-}

@@ -23,45 +23,42 @@ export function ConfirmModal({
   onCancel,
   destructive = false,
 }: ConfirmModalProps) {
-  if (!visible) return null;
-
   return (
-    <Modal animationType="fade" transparent={true} visible={visible}>
-      <View style={styles.overlay} accessible={false} />
-      <View style={[styles.modal, shadows.modal]}>
-        <View style={styles.header}>
+    <Modal animationType="fade" transparent visible={visible}>
+      <View style={styles.overlay}>
+        <View style={[styles.modal, shadows.modal]}>
           <Text style={styles.title}>{title}</Text>
-        </View>
-        <Text style={styles.message}>{message}</Text>
-        <View style={styles.actions}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onCancel}
-            style={({ pressed }) => [
-              styles.cancelButton,
-              pressed && styles.buttonPressed,
-            ]}
-          >
-            <Text style={styles.cancelText}>{cancelLabel}</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onConfirm}
-            style={({ pressed }) => [
-              styles.confirmButton,
-              destructive && styles.destructiveButton,
-              pressed && styles.buttonPressed,
-            ]}
-          >
-            <Text
-              style={[
-                styles.confirmText,
-                destructive && styles.destructiveText,
+          <Text style={styles.message}>{message}</Text>
+          <View style={styles.actions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onCancel}
+              style={({ pressed }) => [
+                styles.cancelButton,
+                pressed && styles.buttonPressed,
               ]}
             >
-              {confirmLabel}
-            </Text>
-          </Pressable>
+              <Text style={styles.cancelText}>{cancelLabel}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onConfirm}
+              style={({ pressed }) => [
+                styles.confirmButton,
+                destructive && styles.destructiveButton,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.confirmText,
+                  destructive && styles.destructiveText,
+                ]}
+              >
+                {confirmLabel}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </Modal>
@@ -70,19 +67,19 @@ export function ConfirmModal({
 
 const styles = StyleSheet.create({
   overlay: {
+    alignItems: "center",
     backgroundColor: colors.overlay,
     flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
   },
   modal: {
     backgroundColor: colors.surface.primary,
     borderRadius: radius.modal,
-    margin: spacing.lg,
-    maxHeight: "80%",
-    padding: spacing.lg,
-    width: "90%",
-  },
-  header: {
-    marginBottom: spacing.md,
+    gap: spacing.lg,
+    maxWidth: 420,
+    padding: spacing.xl,
+    width: "100%",
   },
   title: {
     ...typography.sectionTitle,
@@ -91,12 +88,11 @@ const styles = StyleSheet.create({
   message: {
     ...typography.body,
     color: colors.text.secondary,
-    marginBottom: spacing.xl,
   },
   actions: {
     flexDirection: "row",
     gap: spacing.md,
-    justifyContent: "flex-end",
+    marginTop: spacing.sm,
   },
   cancelButton: {
     alignItems: "center",
