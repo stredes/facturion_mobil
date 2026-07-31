@@ -84,11 +84,11 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="pagos/iva/nueva"
-            options={{ title: "Nuevo pago de IVA" }}
+            options={{ title: "Nuevo pago IVA" }}
           />
           <Stack.Screen
             name="pagos/iva/editar/[id]"
-            options={{ title: "Editar pago de IVA" }}
+            options={{ title: "Editar pago IVA" }}
           />
         </Stack>
       </SafeAreaProvider>
