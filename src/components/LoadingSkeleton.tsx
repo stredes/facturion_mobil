@@ -4,7 +4,7 @@ import { Animated, StyleSheet, View } from "react-native";
 import { colors, radius, spacing } from "../theme";
 
 interface SkeletonProps {
-  width?: number | string;
+  width?: number | `${number}%`;
   height: number;
   borderRadius?: number;
 }
@@ -39,7 +39,7 @@ export function Skeleton({
     <Animated.View
       style={[
         styles.skeleton,
-        { width: width as any, height, borderRadius, opacity },
+        { width, height, borderRadius, opacity },
       ]}
     />
   );

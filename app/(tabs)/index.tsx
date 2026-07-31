@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BarChart, PieChart } from "react-native-chart-kit";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -277,7 +277,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles: any = {
+const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
@@ -385,4 +385,4 @@ const styles: any = {
     fontSize: 14,
     marginTop: 8,
   },
-};
+});

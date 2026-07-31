@@ -6,6 +6,8 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,7 +16,7 @@ import { colors, spacing } from "../theme";
 interface ScreenContainerProps {
   children: ReactNode;
   scrollable?: boolean;
-  contentContainerStyle?: object;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   refreshing?: boolean;
   onRefresh?: () => void;
 }
