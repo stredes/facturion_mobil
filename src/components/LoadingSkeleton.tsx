@@ -4,7 +4,7 @@ import { Animated, StyleSheet, View } from "react-native";
 import { colors, radius, spacing } from "../theme";
 
 interface SkeletonProps {
-  width?: number | string;
+  width?: number | `${number}%`;
   height: number;
   borderRadius?: number;
 }
@@ -39,7 +39,7 @@ export function Skeleton({
     <Animated.View
       style={[
         styles.skeleton,
-        { width: width as any, height, borderRadius, opacity },
+        { width, height, borderRadius, opacity },
       ]}
     />
   );
@@ -59,15 +59,6 @@ export function InvoiceCardSkeleton() {
   );
 }
 
-export function SummaryCardSkeleton() {
-  return (
-    <View style={styles.summaryCard}>
-      <Skeleton width={40} height={11} />
-      <Skeleton width="70%" height={22} />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   skeleton: {
     backgroundColor: colors.border.light,
@@ -83,16 +74,5 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  summaryCard: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "47%",
-    flexGrow: 1,
-    gap: spacing.xs,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
   },
 });

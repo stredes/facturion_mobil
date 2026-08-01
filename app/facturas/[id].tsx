@@ -26,7 +26,7 @@ export default function InvoiceDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
 
   const loadInvoice = useCallback(async () => {
     if (!invoiceId) {
@@ -64,7 +64,7 @@ export default function InvoiceDetailScreen() {
       setIsDeleting(true);
       setDeleteError(null);
       await service.delete(invoice.id);
-      setShowDeleteDialog(false);
+      setIsDeleteDialogVisible(false);
       router.back();
     } catch (currentError) {
       setDeleteError(
@@ -72,7 +72,7 @@ export default function InvoiceDetailScreen() {
           ? currentError.message
           : "No se pudo eliminar la factura",
       );
-      setShowDeleteDialog(false);
+      setIsDeleteDialogVisible(false);
     } finally {
       setIsDeleting(false);
     }
@@ -178,7 +178,7 @@ export default function InvoiceDetailScreen() {
         <AnimatedPressable
           accessibilityRole="button"
           disabled={isDeleting}
-          onPress={() => setShowDeleteDialog(true)}
+          onPress={() => setIsDeleteDialogVisible(true)}
           style={[
             styles.actionButton,
             styles.deleteButton,
@@ -196,12 +196,12 @@ export default function InvoiceDetailScreen() {
         confirmLabel="Eliminar"
         destructive
         message={`Esta accion eliminara la factura N. ${invoice.invoiceNumber}. Deseas continuar?`}
-        onCancel={() => setShowDeleteDialog(false)}
+        onCancel={() => setIsDeleteDialogVisible(false)}
         onConfirm={() => {
           void deleteInvoice();
         }}
         title="Eliminar factura"
-        visible={showDeleteDialog}
+        visible={isDeleteDialogVisible}
       />
     </View>
   );

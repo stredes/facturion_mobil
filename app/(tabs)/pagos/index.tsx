@@ -36,7 +36,7 @@ const CATEGORY_FILTERS: { value: GPFilter; label: string }[] = [
   { value: "savings", label: "Ahorro" },
 ];
 
-function categoryLabel(category: GeneralPaymentCategory): string {
+function formatCategoryLabel(category: GeneralPaymentCategory): string {
   switch (category) {
     case "tag":
       return "TAG";
@@ -124,20 +124,20 @@ function GeneralPaymentsView({
   onRetry,
 }: GeneralPaymentsViewProps) {
   const router = useRouter();
-  const [refreshing, setRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+    setIsRefreshing(true);
     try {
       await onRetry();
     } finally {
-      setRefreshing(false);
+      setIsRefreshing(false);
     }
   }, [onRetry]);
 
-  const initialLoading = isLoading && payments.length === 0;
+  const isInitialLoading = isLoading && payments.length === 0;
 
-  if (initialLoading) {
+  if (isInitialLoading) {
     return (
       <View style={styles.flex}>
         <View style={styles.filters}>
@@ -223,7 +223,7 @@ function GeneralPaymentsView({
           <RefreshControl
             colors={[colors.primary.main]}
             onRefresh={onRefresh}
-            refreshing={refreshing}
+            refreshing={isRefreshing}
             tintColor={colors.primary.main}
           />
         }
@@ -239,7 +239,7 @@ function GeneralPaymentsView({
             <View style={styles.card}>
               <View style={styles.cardTop}>
                 <Text style={styles.cardCategory}>
-                  {categoryLabel(item.category)}
+                  {formatCategoryLabel(item.category)}
                 </Text>
                 <Text style={styles.cardAmount}>
                   {formatCurrency(item.amount)}
@@ -281,20 +281,20 @@ function TaxPaymentsView({
   onRetry,
 }: TaxPaymentsViewProps) {
   const router = useRouter();
-  const [refreshing, setRefreshing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
+    setIsRefreshing(true);
     try {
       await onRetry();
     } finally {
-      setRefreshing(false);
+      setIsRefreshing(false);
     }
   }, [onRetry]);
 
-  const initialLoading = isLoading && payments.length === 0;
+  const isInitialLoading = isLoading && payments.length === 0;
 
-  if (initialLoading) {
+  if (isInitialLoading) {
     return (
       <View style={styles.flex}>
         <View style={styles.skeletonList}>
@@ -340,7 +340,7 @@ function TaxPaymentsView({
           <RefreshControl
             colors={[colors.primary.main]}
             onRefresh={onRefresh}
-            refreshing={refreshing}
+            refreshing={isRefreshing}
             tintColor={colors.primary.main}
           />
         }
