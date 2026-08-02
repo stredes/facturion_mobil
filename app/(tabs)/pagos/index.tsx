@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { FilterChip } from "@/components/FilterChip";
@@ -72,6 +73,7 @@ export default function PagosScreen() {
 
   return (
     <ScreenContainer>
+      <AppHeader title="Pagos" subtitle="Registros de pagos generales e IVA" />
       <View style={styles.segmentRow}>
         <FilterChip
           label="Pagos generales"
@@ -229,6 +231,8 @@ function GeneralPaymentsView({
         }
         renderItem={({ item }) => (
           <AnimatedPressable
+            accessibilityLabel={`Pago de ${formatCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
+            accessibilityRole="button"
             onPress={() =>
               router.push({
                 pathname: "/pagos/general/editar/[id]",
@@ -346,6 +350,8 @@ function TaxPaymentsView({
         }
         renderItem={({ item }) => (
           <AnimatedPressable
+            accessibilityLabel={`Pago de IVA periodo ${item.taxPeriod} por ${formatCurrency(item.amount)}`}
+            accessibilityRole="button"
             onPress={() =>
               router.push({
                 pathname: "/pagos/iva/editar/[id]",

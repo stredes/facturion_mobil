@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { FilterChip } from "@/components/FilterChip";
@@ -65,6 +66,7 @@ export default function RetentionsScreen() {
   if (isInitialLoading) {
     return (
       <ScreenContainer>
+        <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <View style={styles.filters}>
           {CATEGORY_FILTERS.map((c) => (
             <FilterChip
@@ -87,6 +89,7 @@ export default function RetentionsScreen() {
   if (error) {
     return (
       <ScreenContainer>
+        <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <ErrorState message={error} onRetry={refresh} />
       </ScreenContainer>
     );
@@ -96,6 +99,7 @@ export default function RetentionsScreen() {
     const isFiltered = categoryFilter !== "all";
     return (
       <ScreenContainer>
+        <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <View style={styles.filters}>
           {CATEGORY_FILTERS.map((c) => (
             <FilterChip
@@ -126,6 +130,7 @@ export default function RetentionsScreen() {
 
   return (
     <ScreenContainer>
+      <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
       <View style={styles.filters}>
         {CATEGORY_FILTERS.map((c) => (
           <FilterChip
@@ -152,6 +157,8 @@ export default function RetentionsScreen() {
         }
         renderItem={({ item }) => (
           <AnimatedPressable
+            accessibilityLabel={`Retencion de ${formatRetentionCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
+            accessibilityRole="button"
             onPress={() =>
               router.push({
                 pathname: "/retenciones/editar/[id]",
