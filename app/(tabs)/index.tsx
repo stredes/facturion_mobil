@@ -45,7 +45,6 @@ export default function HomeScreen() {
   const paidAmount = invoices
     .filter((inv) => inv.paymentDate)
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const totalNet = invoices.reduce((sum, inv) => sum + inv.netAmount, 0);
   const totalTax = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
   const totalRemaining = invoices.reduce((sum, inv) => {
     const remaining = inv.totalAmount - inv.taxPayment - inv.tagAmount - inv.accountantAmount - inv.savingsAmount;
@@ -54,6 +53,7 @@ export default function HomeScreen() {
   const totalTag = invoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
   const totalAccountant = invoices.reduce((sum, inv) => sum + inv.accountantAmount, 0);
   const totalSavings = invoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
+  const totalTaxPayment = invoices.reduce((sum, inv) => sum + inv.taxPayment, 0);
 
   // Datos para grafico mensual (ultimos 6 meses)
   const monthlyData = invoices.reduce((acc, inv) => {
@@ -82,7 +82,7 @@ export default function HomeScreen() {
       },
       {
         data: sortedMonths.map(([, data]) => data.net / 1000000),
-        color: (opacity = 1) => `rgba(95, 180, 217, ${opacity})`,
+        color: () => colors.accent.main,
         strokeWidth: 2,
       },
     ],
@@ -95,7 +95,7 @@ export default function HomeScreen() {
     { name: "TAG", value: totalTag, color: colors.status.info },
     { name: "Contador", value: totalAccountant, color: colors.status.success },
     { name: "Ahorro", value: totalSavings, color: colors.status.warning },
-    { name: "Pago IVA", value: invoices.reduce((s, i) => s + i.taxPayment, 0), color: colors.primary.main },
+    { name: "Pago IVA", value: totalTaxPayment, color: colors.primary.main },
     { name: "Restante", value: invoices.reduce((s, i) => s + (i.totalAmount - i.taxPayment - i.tagAmount - i.accountantAmount - i.savingsAmount), 0), color: colors.status.error },
   ].filter(d => d.value > 0) : [];
 
@@ -107,16 +107,16 @@ export default function HomeScreen() {
     }).format(amount);
   };
 
-  const formatMonthKey = (dateStr: string) => {
+  function formatMonthKey(dateStr: string) {
     const [year, month] = dateStr.split("-");
     return `${year}-${month}`;
-  };
+  }
 
-  const formatMonthLabel = (monthKey: string) => {
+  function formatMonthLabel(monthKey: string) {
     const [year, month] = monthKey.split("-");
     const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     return `${months[parseInt(month) - 1]} ${year.slice(2)}`;
-  };
+  }
 
   return (
     <ScreenContainer>
@@ -181,49 +181,42 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Resumen principal - 4 tarjetas clave */}
+        {/* Seccion IVA */}
+        <SectionTitle title="IVA" />
         <View style={styles.summarySection}>
-          <SummaryCard
-            label="Neto"
-            value={formatCurrency(totalNet)}
-            icon="💰"
-            tone="strong"
-          />
           <SummaryCard
             label="IVA (19%)"
             value={formatCurrency(totalTax)}
             icon="📋"
           />
           <SummaryCard
-            label="Restante"
-            value={formatCurrency(
-              invoices.reduce((sum, inv) => sum + (inv.totalAmount - inv.taxPayment - inv.tagAmount - inv.accountantAmount - inv.savingsAmount), 0)
-            )}
-            icon="💵"
-            tone="strong"
-          />
-          <SummaryCard
             label="Pago IVA"
-            value={formatCurrency(invoices.reduce((s, i) => s + i.taxPayment, 0))}
+            value={formatCurrency(totalTaxPayment)}
             icon="✅"
           />
         </View>
 
-        {/* Distribuciones */}
-        <View style={styles.distributionSection}>
+        {/* Seccion Pagos extras */}
+        <SectionTitle title="Pagos extras" />
+        <View style={styles.summarySection}>
           <SummaryCard
             label="TAG"
-            value={formatCurrency(invoices.reduce((s, i) => s + i.tagAmount, 0))}
+            value={formatCurrency(totalTag)}
             icon="🏷️"
           />
           <SummaryCard
             label="Contador"
-            value={formatCurrency(invoices.reduce((s, i) => s + i.accountantAmount, 0))}
+            value={formatCurrency(totalAccountant)}
             icon="📊"
           />
+        </View>
+
+        {/* Seccion Ahorro */}
+        <SectionTitle title="Ahorro" />
+        <View style={styles.summarySection}>
           <SummaryCard
             label="Ahorro"
-            value={formatCurrency(invoices.reduce((s, i) => s + i.savingsAmount, 0))}
+            value={formatCurrency(totalSavings)}
             icon="💚"
           />
         </View>

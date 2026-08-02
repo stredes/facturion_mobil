@@ -1,6 +1,6 @@
 {
   "name": "factrion",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "main": "expo-router/entry",
   "dependencies": {
     "@hookform/resolvers": "^5.5.7",
@@ -11,7 +11,7 @@
     "expo-router": "~6.0.24",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
-    "react": "^19.1.0",
+    "react": "19.1.4",
     "react-hook-form": "^7.83.0",
     "react-native": "^0.81.5",
     "react-native-chart-kit": "^7.0.2",
