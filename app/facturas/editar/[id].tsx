@@ -1,9 +1,11 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "../../../src/components/EmptyState";
+import { ErrorState } from "../../../src/components/ErrorState";
 import { InvoiceForm } from "../../../src/components/InvoiceForm";
+import { LoadingState } from "../../../src/components/LoadingState";
 import type { CreateInvoiceInput, Invoice } from "../../../src/domain/Invoice";
 import { useInvoiceService } from "../../../src/infrastructure/di/ServiceContext";
 import { colors, spacing } from "../../../src/theme";
@@ -74,7 +76,15 @@ export default function EditInvoiceScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary.main} />
+        <LoadingState message="Cargando factura..." />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={styles.centered}>
+        <ErrorState message={loadError} onRetry={loadInvoice} />
       </View>
     );
   }
@@ -83,7 +93,7 @@ export default function EditInvoiceScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          message={loadError ?? "La factura no existe o fue eliminada."}
+          message="La factura no existe o fue eliminada."
           title="Factura no encontrada"
         />
       </View>

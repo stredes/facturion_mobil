@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../../theme";
+import { colors, radius, shadows, spacing, typography } from "../../theme";
 import { formatCurrency } from "../../utils/currency";
 import { formatMonthPeriod } from "../../utils/dates";
 import type { CombinedMonth } from "../../utils/monthlySummary";
@@ -22,7 +22,9 @@ export function MonthlySummaryCard({
   return (
     <View style={styles.monthBlock}>
       <Pressable
+        accessibilityLabel={isExpanded ? "Contraer resumen" : "Expandir resumen"}
         accessibilityRole="button"
+        accessibilityState={{ expanded: isExpanded }}
         onPress={onToggle}
         style={styles.monthHeader}
       >
@@ -44,7 +46,7 @@ export function MonthlySummaryCard({
         </View>
       </Pressable>
 
-      <View style={styles.summaryCard}>
+      <View style={[styles.summaryCard, shadows.card]}>
         <Text style={styles.summaryLabel}>Facturado</Text>
         <Text
           adjustsFontSizeToFit
@@ -126,11 +128,10 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     backgroundColor: colors.primary.main,
-    borderRadius: radius.mainCard,
+    borderRadius: radius.card,
     gap: spacing.xxs,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
     minHeight: 128,
+    padding: spacing.cardPadding,
   },
   summaryLabel: {
     ...typography.label,

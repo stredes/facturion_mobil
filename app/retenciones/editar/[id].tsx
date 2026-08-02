@@ -1,8 +1,10 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { RetentionForm } from "@/components/RetentionForm";
 import type { CreateRetentionInput, Retention } from "@/domain/Retention";
 import { useRetentionService } from "@/infrastructure/di/ServiceContext";
@@ -70,7 +72,15 @@ export default function EditRetentionScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary.main} />
+        <LoadingState message="Cargando retencion..." />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={styles.centered}>
+        <ErrorState message={loadError} onRetry={loadRetention} />
       </View>
     );
   }
@@ -79,7 +89,7 @@ export default function EditRetentionScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          message={loadError ?? "La retencion no existe o fue eliminada."}
+          message="La retencion no existe o fue eliminada."
           title="Retencion no encontrada"
         />
       </View>

@@ -163,6 +163,7 @@ export default function InvoiceDetailScreen() {
         ) : null}
 
         <AnimatedPressable
+          accessibilityLabel="Editar factura"
           accessibilityRole="button"
           onPress={() =>
             router.push({
@@ -176,6 +177,7 @@ export default function InvoiceDetailScreen() {
         </AnimatedPressable>
 
         <AnimatedPressable
+          accessibilityLabel="Eliminar factura"
           accessibilityRole="button"
           disabled={isDeleting}
           onPress={() => setIsDeleteDialogVisible(true)}

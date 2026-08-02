@@ -28,7 +28,11 @@ export function SummaryCard({
       ]}
     >
       <View style={styles.top}>
-        {icon ? <Text style={styles.icon}>{icon}</Text> : null}
+        {icon ? (
+          <View style={styles.iconBadge}>
+            <Text style={styles.icon}>{icon}</Text>
+          </View>
+        ) : null}
         <Text numberOfLines={1} style={styles.label}>
           {label}
         </Text>
@@ -65,29 +69,36 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     gap: spacing.xs,
     minHeight: 104,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    padding: spacing.cardPadding,
   },
   strongCard: {
+    backgroundColor: colors.primary.light,
     borderColor: colors.primary.main,
-    borderWidth: 2,
   },
   warningCard: {
+    backgroundColor: colors.statusLight.warning,
     borderColor: colors.status.warning,
-    borderWidth: 2,
   },
   errorCard: {
+    backgroundColor: colors.statusLight.error,
     borderColor: colors.status.error,
-    borderWidth: 2,
   },
   top: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xxs,
+    gap: spacing.xs,
+  },
+  iconBadge: {
+    alignItems: "center",
+    backgroundColor: colors.primary.light,
+    borderRadius: radius.badge,
+    height: 28,
+    justifyContent: "center",
+    width: 28,
   },
   icon: {
     fontSize: 14,
-    color: colors.text.tertiary,
+    color: colors.primary.main,
   },
   label: {
     ...typography.label,

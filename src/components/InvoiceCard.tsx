@@ -14,8 +14,14 @@ interface InvoiceCardProps {
 
 export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
   return (
-    <AnimatedPressable onPress={onPress}>
+    <AnimatedPressable
+      accessibilityLabel={`Factura ${invoice.invoiceNumber} de ${invoice.clientName}`}
+      accessibilityRole="button"
+      onPress={onPress}
+    >
       <View style={[styles.card, shadows.card]}>
+        <View style={styles.accent} />
+
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text numberOfLines={1} style={styles.title}>
@@ -69,7 +75,10 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
           </View>
         </View>
 
-        <Text style={styles.date}>{formatDisplayDate(invoice.invoiceDate)}</Text>
+        <View style={styles.footer}>
+          <Text style={styles.date}>{formatDisplayDate(invoice.invoiceDate)}</Text>
+          <Text style={styles.chevron}>{"\u203A"}</Text>
+        </View>
       </View>
     </AnimatedPressable>
   );
@@ -81,9 +90,19 @@ const styles = StyleSheet.create({
     borderColor: colors.border.light,
     borderRadius: radius.card,
     borderWidth: 1,
-    gap: spacing.sm,
+    gap: spacing.md,
     minHeight: 150,
+    overflow: "hidden",
     padding: spacing.cardPadding,
+  },
+  accent: {
+    backgroundColor: colors.primary.main,
+    borderRadius: radius.inner,
+    bottom: spacing.cardPadding,
+    opacity: 0.3,
+    position: "absolute",
+    top: spacing.cardPadding,
+    width: 3,
   },
   header: {
     flexDirection: "row",
@@ -107,7 +126,7 @@ const styles = StyleSheet.create({
   amountRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.background.primary,
+    backgroundColor: colors.surface.secondary,
     borderRadius: radius.inner,
     padding: spacing.sm,
     gap: 0,
@@ -140,8 +159,18 @@ const styles = StyleSheet.create({
     ...typography.cardAmount,
     color: colors.primary.main,
   },
+  footer: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   date: {
     ...typography.caption,
     color: colors.text.tertiary,
+  },
+  chevron: {
+    color: colors.text.tertiary,
+    fontSize: 18,
+    lineHeight: 20,
   },
 });

@@ -1,8 +1,10 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { TaxPaymentForm } from "@/components/TaxPaymentForm";
 import type {
   CreateTaxPaymentInput,
@@ -69,7 +71,15 @@ export default function EditTaxPaymentScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.primary.main} />
+        <LoadingState message="Cargando pago..." />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={styles.centered}>
+        <ErrorState message={loadError} onRetry={loadPayment} />
       </View>
     );
   }
@@ -78,7 +88,7 @@ export default function EditTaxPaymentScreen() {
     return (
       <View style={styles.centered}>
         <EmptyState
-          message={loadError ?? "El pago no existe o fue eliminado."}
+          message="El pago no existe o fue eliminado."
           title="Pago no encontrado"
         />
       </View>
