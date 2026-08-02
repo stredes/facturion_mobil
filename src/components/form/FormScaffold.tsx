@@ -5,11 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
 import { colors, radius, spacing, typography } from "../../theme";
 import { AnimatedPressable } from "../AnimatedPressable";
+import { hapticLight, hapticSuccess, hapticError } from "../../utils/haptics";
 
 interface FormScaffoldProps {
   children: ReactNode;
@@ -28,6 +30,11 @@ export function FormScaffold({
   onSubmit,
   gap = spacing.lg,
 }: FormScaffoldProps) {
+  const handleSubmit = () => {
+    hapticLight();
+    onSubmit();
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.select({ ios: "padding", default: undefined })}
@@ -51,11 +58,12 @@ export function FormScaffold({
         <AnimatedPressable
           accessibilityRole="button"
           disabled={isSubmitting}
-          onPress={onSubmit}
+          onPress={handleSubmit}
           style={[
             styles.submitButton,
             isSubmitting && styles.submitButtonDisabled,
           ]}
+          hapticOnPress={!isSubmitting}
         >
           <Text style={styles.submitText}>
             {isSubmitting ? "Guardando..." : submitLabel}

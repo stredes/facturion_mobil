@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import { springConfig } from "../theme";
+import { hapticLight } from "../utils/haptics";
 
 interface AnimatedPressableProps {
   children: ReactNode;
@@ -17,6 +18,7 @@ interface AnimatedPressableProps {
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
   scaleIn?: number;
+  hapticOnPress?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -24,6 +26,7 @@ export function AnimatedPressable({
   children,
   scaleIn = 0.97,
   style,
+  hapticOnPress = true,
   ...props
 }: AnimatedPressableProps) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -44,8 +47,13 @@ export function AnimatedPressable({
     }).start();
   }
 
+  function handlePress() {
+    if (hapticOnPress) hapticLight();
+    props.onPress?.();
+  }
+
   return (
-    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} {...props}>
+    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={handlePress} {...props}>
       <Animated.View style={[{ transform: [{ scale }] }, style]}>
         {children}
       </Animated.View>

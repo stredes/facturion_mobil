@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BarChart } from "react-native-chart-kit";
+import { BarChart, LineChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -17,24 +17,29 @@ import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
+import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { invoices, isLoading, error, refresh } = useInvoices();
-  const { summary: generalSummary } = useGeneralPayments();
-  const { summary: retentionSummary } = useRetentions();
+  const { invoices, isLoading: invoicesLoading, error: invoicesError, refresh: refreshInvoices } = useInvoices();
+  const { payments: generalPayments, isLoading: gpLoading } = useGeneralPayments();
+  const { retentions, isLoading: rLoading } = useRetentions();
+  const { payments: taxPayments, isLoading: tpLoading } = useTaxPayments();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const isLoading = invoicesLoading || gpLoading || rLoading || tpLoading;
+  const error = invoicesError;
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await refresh();
+      await Promise.all([refreshInvoices()]);
     } finally {
       setIsRefreshing(false);
     }
-  }, [refresh]);
+  }, [refreshInvoices]);
 
   if (isLoading) {
     return (
@@ -49,7 +54,7 @@ export default function HomeScreen() {
     return (
       <ScreenContainer>
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
-        <ErrorState message={error} onRetry={refresh} />
+        <ErrorState message={error} onRetry={refreshInvoices} />
       </ScreenContainer>
     );
   }
@@ -72,7 +77,10 @@ export default function HomeScreen() {
   const totalSavings = invoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
   const totalTaxPayment = invoices.reduce((sum, inv) => sum + inv.taxPayment, 0);
 
-  // Acumulaciones: facturado + retencion - pagos
+  const { summary: generalSummary } = useGeneralPayments();
+  const { summary: retentionSummary } = useRetentions();
+
+  // Acumulaciones globales
   const sobranteIva =
     totalTax - totalTaxPayment + retentionSummary.totalTax;
   const tagBalance =
@@ -86,33 +94,79 @@ export default function HomeScreen() {
     retentionSummary.totalSavings -
     generalSummary.totalSavings;
 
-  // Datos para grafico mensual (ultimos 6 meses)
-  const monthlyData = invoices.reduce((acc, inv) => {
-    const monthKey = formatMonthKey(inv.invoiceDate);
-    if (!acc[monthKey]) {
-      acc[monthKey] = { net: 0, tax: 0, total: 0, count: 0 };
-    }
-    acc[monthKey].net += inv.netAmount;
-    acc[monthKey].tax += inv.taxAmount;
-    acc[monthKey].total += inv.totalAmount;
-    acc[monthKey].count += 1;
-    return acc;
-  }, {} as Record<string, { net: number; tax: number; total: number; count: number }>);
+  // Serie acumulada de todos los balances (últimos 6 meses)
+  const monthData: Record<string, Record<string, number>> = {};
 
-  const sortedMonths = Object.entries(monthlyData)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-6);
+  function add(date: string, key: string, value: number) {
+    const month = formatMonthKey(date);
+    if (!monthData[month]) monthData[month] = {};
+    monthData[month][key] = (monthData[month][key] ?? 0) + value;
+  }
 
+  invoices.forEach((inv) => {
+    add(inv.invoiceDate, "tax", inv.taxAmount);
+    add(inv.invoiceDate, "tag", inv.tagAmount);
+    add(inv.invoiceDate, "accountant", inv.accountantAmount);
+    add(inv.invoiceDate, "savings", inv.savingsAmount);
+  });
+  taxPayments.forEach((p) => add(p.paymentDate, "taxPaid", p.amount));
+  generalPayments.forEach((p) => add(p.paymentDate, `pay${p.category}`, p.amount));
+  retentions.forEach((r) => add(r.retentionDate, `ret${r.category.charAt(0).toUpperCase() + r.category.slice(1)}`, r.amount));
+
+  const months = Object.keys(monthData).sort();
+  const series: Record<string, number[]> = {
+    ivaGenerado: [],
+    ivaPagado: [],
+    sobrante: [],
+    tag: [],
+    accountant: [],
+    savings: [],
+  };
+  let rTax = 0, rPaid = 0, rSobrante = 0, rTag = 0, rAcc = 0, rSav = 0;
+  for (const key of months) {
+    const d = monthData[key] ?? {};
+    const tax = d.tax ?? 0;
+    const paid = d.taxPaid ?? 0;
+    const retTax = d.retTax ?? 0;
+    const tag = (d.tag ?? 0) + (d.retTag ?? 0) - (d.payTag ?? 0);
+    const acc = (d.accountant ?? 0) + (d.retAccountant ?? 0) - (d.payAccountant ?? 0);
+    const sav = (d.savings ?? 0) + (d.retSavings ?? 0) - (d.paySavings ?? 0);
+    rTax += tax;
+    rPaid += paid;
+    rSobrante += tax - paid + retTax;
+    rTag += tag;
+    rAcc += acc;
+    rSav += sav;
+    series.ivaGenerado.push(rTax);
+    series.ivaPagado.push(rPaid);
+    series.sobrante.push(rSobrante);
+    series.tag.push(rTag);
+    series.accountant.push(rAcc);
+    series.savings.push(rSav);
+  }
+
+  const rgba = (hex: string, opacity: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const last6 = <T,>(arr: T[]) => arr.slice(-6);
+  const inM = (v: number) => v / 1000000;
+
+  const chartMonths = months.slice(-6);
   const chartData = {
-    labels: sortedMonths.map(([month]) => formatMonthLabel(month)),
+    labels: chartMonths.map((m) => formatMonthLabel(m)),
     datasets: [
-      {
-        data: sortedMonths.map(([, data]) => data.tax / 1000000),
-        color: (opacity = 1) => `rgba(249, 115, 22, ${opacity})`,
-        strokeWidth: 2,
-      },
+      { data: last6(series.ivaGenerado).map(inM), color: (o = 1) => rgba(colors.primary.main, o), strokeWidth: 2 },
+      { data: last6(series.ivaPagado).map(inM), color: (o = 1) => rgba(colors.status.success, o), strokeWidth: 2 },
+      { data: last6(series.sobrante).map(inM), color: (o = 1) => rgba(colors.status.warning, o), strokeWidth: 2 },
+      { data: last6(series.tag).map(inM), color: (o = 1) => rgba(colors.status.info, o), strokeWidth: 2 },
+      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba("#8B5CF6", o), strokeWidth: 2 },
+      { data: last6(series.savings).map(inM), color: (o = 1) => rgba("#10B981", o), strokeWidth: 2 },
     ],
-    legend: ["IVA"],
+    legend: ["IVA gen.", "IVA pag.", "Sobrante", "TAG", "Contador", "Ahorro"],
   };
 
   // Datos para grafico de distribucion (una sola torta con las acumulaciones)
@@ -187,33 +241,26 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Grafico mensual */}
+        {/* Grafico de acumulados */}
         <View style={styles.chartCard}>
-          <SectionTitle title="Evolución mensual" subtitle="Últimos 6 meses" />
+          <SectionTitle title="Saldos acumulados" subtitle="Últimos 6 meses" />
           <View style={styles.chartContainer}>
-            <BarChart
+            <LineChart
               data={chartData}
               width={350}
-              height={220}
-              yAxisLabel=""
+              height={260}
               yAxisSuffix="M"
               chartConfig={{
                 backgroundColor: "#FFFFFF",
                 backgroundGradientFrom: "#FFFFFF",
                 backgroundGradientTo: "#FFFFFF",
-                decimalPlaces: 1,
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForDots: {
-                  r: 6,
-                  strokeWidth: 2,
-                  stroke: "#000000",
-                },
+                decimalPlaces: 0,
+                color: (opacity = 1) => rgba(colors.text.tertiary, opacity),
+                labelColor: (opacity = 1) => rgba("#334155", opacity),
+                propsForDots: { r: "4" },
               }}
               style={styles.chart}
+              bezier
             />
           </View>
         </View>

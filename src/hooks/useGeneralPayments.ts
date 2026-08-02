@@ -8,6 +8,7 @@ import type {
 } from "../domain/GeneralPayment";
 import { useGeneralPaymentService } from "../infrastructure/di/ServiceContext";
 import { filtersToKey } from "../utils/filters";
+import { hapticLight } from "../utils/haptics";
 
 export function useGeneralPayments(filters?: GeneralPaymentFilters) {
   const service = useGeneralPaymentService();
@@ -50,6 +51,7 @@ export function useGeneralPayments(filters?: GeneralPaymentFilters) {
     } finally {
       if (requestId === requestIdRef.current) {
         setIsLoading(false);
+        hapticLight();
       }
     }
   }, [service, filtersKey]);

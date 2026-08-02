@@ -1,17 +1,41 @@
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../../theme";
+import { springConfig } from "../../theme";
 
 interface FormSectionProps {
   icon: string;
   title: string;
   children: ReactNode;
+  delay?: number;
 }
 
-export function FormSection({ icon, title, children }: FormSectionProps) {
+export function FormSection({ icon, title, children, delay = 0 }: FormSectionProps) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(16)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        ...springConfig,
+      }),
+    ]).start();
+  }, []);
+
   return (
-    <View style={styles.block}>
+    <Animated.View
+      style={[{ opacity, transform: [{ translateY }] }, styles.block]}
+    >
       <View style={styles.blockHeader}>
         <View style={styles.blockIcon}>
           <Text style={styles.blockIconText}>{icon}</Text>
@@ -19,7 +43,7 @@ export function FormSection({ icon, title, children }: FormSectionProps) {
         <Text style={styles.blockTitle}>{title}</Text>
       </View>
       {children}
-    </View>
+    </Animated.View>
   );
 }
 
