@@ -1,9 +1,12 @@
 import { useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
 
 import { AppHeader } from "@/components/AppHeader";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { SummaryCard } from "@/components/SummaryCard";
 import { SectionTitle } from "@/components/SectionTitle";
@@ -22,6 +25,16 @@ export default function HomeScreen() {
   const { invoices, isLoading, error, refresh } = useInvoices();
   const { summary: generalSummary } = useGeneralPayments();
   const { summary: retentionSummary } = useRetentions();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refresh]);
 
   if (isLoading) {
     return (
@@ -36,9 +49,7 @@ export default function HomeScreen() {
     return (
       <ScreenContainer>
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
+        <ErrorState message={error} onRetry={refresh} />
       </ScreenContainer>
     );
   }
@@ -143,7 +154,12 @@ export default function HomeScreen() {
     <ScreenContainer>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={false} onRefresh={() => refresh()} />
+          <RefreshControl
+            colors={[colors.primary.main]}
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+            tintColor={colors.primary.main}
+          />
         }
         contentContainerStyle={styles.scrollContent}
       >
@@ -262,6 +278,8 @@ export default function HomeScreen() {
           ))}
         </View>
         <AnimatedPressable
+          accessibilityLabel="Ver todas las retenciones"
+          accessibilityRole="button"
           onPress={() => router.push("/retenciones")}
           style={styles.retentionLink}
         >
@@ -282,10 +300,12 @@ export default function HomeScreen() {
         <SectionTitle title="Facturas recientes" subtitle={`${invoices.length} facturas totales`} />
 
         {invoices.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Aún no tienes facturas</Text>
-            <Text style={styles.emptySubtext}>Registra tu primera factura para comenzar</Text>
-          </View>
+          <EmptyState
+            actionLabel="Crear factura"
+            message="Registra tu primera factura para comenzar"
+            onAction={() => router.push("/facturas/nueva")}
+            title="Aun no tienes facturas"
+          />
         ) : (
           <View style={styles.list}>
             {invoices.slice(0, 5).map((invoice) => (
@@ -311,17 +331,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  errorText: {
-    color: "#EF4444",
-    fontSize: 16,
-    textAlign: "center",
   },
   mainCard: {
     backgroundColor: "#0A4C6B",
@@ -421,19 +430,5 @@ const styles = StyleSheet.create({
   list: {
     gap: 12,
     paddingBottom: 100,
-  },
-  emptyState: {
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyText: {
-    color: "#1E293B",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  emptySubtext: {
-    color: "#64748B",
-    fontSize: 14,
-    marginTop: 8,
   },
 });
