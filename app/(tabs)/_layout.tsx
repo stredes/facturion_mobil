@@ -1,15 +1,9 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Tabs } from "expo-router";
 import React from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, spacing } from "@/theme";
-import HomeScreen from "./index";
-import FacturasScreen from "./facturas";
-import SummaryScreen from "./resumen";
-import PagosScreen from "./pagos/index";
-
-const Tab = createBottomTabNavigator();
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
@@ -50,7 +44,7 @@ export default function TabsLayout() {
   const insets = useSafeAreaInsets();
 
   return (
-    <Tab.Navigator
+    <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary.main,
         tabBarInactiveTintColor: colors.text.tertiary,
@@ -72,9 +66,8 @@ export default function TabsLayout() {
         },
       }}
     >
-      <Tab.Screen
+      <Tabs.Screen
         name="index"
-        component={HomeScreen}
         options={{
           title: "Inicio",
           tabBarIcon: ({ focused }) => (
@@ -82,9 +75,8 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="facturas"
-        component={FacturasScreen}
         options={{
           title: "Facturas",
           tabBarIcon: ({ focused }) => (
@@ -92,9 +84,8 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="pagos"
-        component={PagosScreen}
         options={{
           title: "Pagos",
           tabBarIcon: ({ focused }) => (
@@ -102,9 +93,8 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="resumen"
-        component={SummaryScreen}
         options={{
           title: "Resumen",
           tabBarIcon: ({ focused }) => (
@@ -112,6 +102,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-    </Tab.Navigator>
+    </Tabs>
   );
 }
