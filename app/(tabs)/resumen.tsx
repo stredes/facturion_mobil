@@ -1,26 +1,38 @@
 import { useCallback, useState } from "react";
 import {
   FlatList,
+  RefreshControl,
   StyleSheet,
   useWindowDimensions,
   View,
 } from "react-native";
 
+import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { MonthlySummaryCard } from "@/components/summary/MonthlySummaryCard";
 import { MonthlySummarySkeleton } from "@/components/summary/MonthlySummarySkeleton";
 import { useMonthlySummary } from "@/hooks/useMonthlySummary";
-import { spacing } from "@/theme";
+import { colors, spacing } from "@/theme";
 
 export default function SummaryScreen() {
   const { combined, isLoading, error, refresh } = useMonthlySummary();
   const [expandedPeriods, setExpandedPeriods] = useState<Set<string>>(
     new Set(),
   );
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 360;
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refresh]);
 
   const toggleExpand = useCallback((period: string) => {
     setExpandedPeriods((prev) => {
@@ -37,6 +49,7 @@ export default function SummaryScreen() {
   if (error) {
     return (
       <ScreenContainer>
+        <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
         <ErrorState message={error} onRetry={refresh} />
       </ScreenContainer>
     );
@@ -45,6 +58,7 @@ export default function SummaryScreen() {
   if (isLoading) {
     return (
       <ScreenContainer scrollable>
+        <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
         <MonthlySummarySkeleton />
       </ScreenContainer>
     );
@@ -53,6 +67,7 @@ export default function SummaryScreen() {
   if (combined.length === 0) {
     return (
       <ScreenContainer>
+        <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
         <EmptyState
           title="Sin resumen"
           message="Registra una factura para construir el resumen."
@@ -63,6 +78,7 @@ export default function SummaryScreen() {
 
   return (
     <ScreenContainer>
+      <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
       <FlatList
         data={combined}
         keyExtractor={(item) => item.period}
@@ -77,6 +93,14 @@ export default function SummaryScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshControl={
+          <RefreshControl
+            colors={[colors.primary.main]}
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+            tintColor={colors.primary.main}
+          />
+        }
       />
     </ScreenContainer>
   );
