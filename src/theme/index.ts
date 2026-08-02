@@ -1,6 +1,7 @@
-export { colors, type Colors } from "./colors";
+export { colors, darkColors, type Colors, type DarkColors } from "./colors";
 export { spacing, type Spacing } from "./spacing";
 export { typography } from "./typography";
 export { radius } from "./radius";
 export { shadows } from "./shadows";
-export { springConfig } from "./animations";
+export { springConfig, durations, easing, haptics, type HapticFeedback } from "./animations";
+export { useTheme, useThemeColors } from "./useTheme";

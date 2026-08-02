@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, typography } from "../theme";
+import { typography, useThemeColors } from "../theme";
 
 interface AppHeaderProps {
   title: string;
@@ -8,10 +8,16 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ title, subtitle }: AppHeaderProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
+      {subtitle ? (
+        <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+          {subtitle}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -23,10 +29,8 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.screenTitle,
-    color: colors.text.primary,
   },
   subtitle: {
     ...typography.caption,
-    color: colors.text.secondary,
   },
 });

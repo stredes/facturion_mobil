@@ -1,4 +1,7 @@
+import { useWindowDimensions } from "react-native";
 import { PieChart } from "react-native-chart-kit";
+
+import { spacing, useThemeColors } from "../theme";
 
 type SliceData = {
   name: string;
@@ -15,12 +18,16 @@ interface PieChart3DProps {
   endAngle?: number;
 }
 
-export const PieChart3D: React.FC<PieChart3DProps> = ({
-  data,
-  size = 350,
-}) => {
+export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size }) => {
+  const { width } = useWindowDimensions();
+  const colors = useThemeColors();
   const total = data.reduce((sum, d) => sum + d.value, 0);
   if (total === 0) return null;
+
+  const availableWidth = width - spacing.screenPadding * 2;
+  const chartSize = size
+    ? Math.min(size, availableWidth)
+    : Math.min(availableWidth, 350);
 
   const chartData = data.map((d) => {
     const pct = ((d.value / total) * 100).toFixed(1);
@@ -28,7 +35,7 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({
       name: `${d.name} · ${pct}%`,
       population: d.value,
       color: d.color,
-      legendFontColor: "#1E293B",
+      legendFontColor: colors.text.secondary,
       legendFontSize: 13,
     };
   });
@@ -36,7 +43,7 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({
   return (
     <PieChart
       data={chartData}
-      width={size}
+      width={chartSize}
       height={220}
       chartConfig={{
         color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,

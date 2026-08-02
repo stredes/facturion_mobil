@@ -1,6 +1,6 @@
 import { StyleSheet, Text } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface PrimaryButtonProps {
@@ -18,6 +18,7 @@ export function PrimaryButton({
   loading = false,
   fullWidth = true,
 }: PrimaryButtonProps) {
+  const colors = useThemeColors();
   const isDisabled = disabled || loading;
 
   return (
@@ -27,11 +28,18 @@ export function PrimaryButton({
       onPress={onPress}
       style={[
         styles.button,
+        { backgroundColor: colors.primary.main },
         fullWidth && styles.fullWidth,
-        isDisabled && styles.disabled,
+        isDisabled && { backgroundColor: colors.text.disabled },
       ]}
     >
-      <Text style={[styles.text, isDisabled && styles.textDisabled]}>
+      <Text
+        style={[
+          styles.text,
+          { color: colors.text.inverse },
+          isDisabled && { color: colors.text.tertiary },
+        ]}
+      >
         {loading ? "Guardando..." : label}
       </Text>
     </AnimatedPressable>
@@ -41,23 +49,15 @@ export function PrimaryButton({
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: colors.primary.main,
     borderRadius: radius.button,
     minHeight: spacing.buttonHeight,
     justifyContent: "center",
-    paddingHorizontal: 18,
+    paddingHorizontal: spacing.lg,
   },
   fullWidth: {
     width: "100%",
   },
-  disabled: {
-    backgroundColor: colors.text.disabled,
-  },
   text: {
     ...typography.bodyMedium,
-    color: colors.text.inverse,
-  },
-  textDisabled: {
-    color: colors.text.tertiary,
   },
 });

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, spacing } from "../theme";
+import { spacing, useThemeColors } from "../theme";
 
 interface ScreenContainerProps {
   children: ReactNode;
@@ -29,6 +29,7 @@ export function ScreenContainer({
   onRefresh,
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
 
   const content = (
     <KeyboardAvoidingView
@@ -40,7 +41,12 @@ export function ScreenContainer({
   );
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.screen,
+        { backgroundColor: colors.background.primary, paddingTop: insets.top },
+      ]}
+    >
       {scrollable ? (
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -75,7 +81,6 @@ export function ScreenContainer({
 
 const styles = StyleSheet.create({
   screen: {
-    backgroundColor: colors.background.primary,
     flex: 1,
     paddingHorizontal: spacing.screenPadding,
   },

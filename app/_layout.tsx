@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { colors, spacing, typography } from "../src/theme";
+import { spacing, typography, useTheme } from "../src/theme";
 import { initializeDatabase } from "../src/database/database";
 import { ServiceProvider } from "../src/infrastructure/di/ServiceContext";
 
 export default function RootLayout() {
+  const { colors, isDark } = useTheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,13 +28,22 @@ export default function RootLayout() {
   if (!isReady) {
     return (
       <SafeAreaProvider>
-        <View style={styles.loadingScreen}>
+        <View
+          style={[
+            styles.loadingScreen,
+            { backgroundColor: colors.background.primary },
+          ]}
+        >
           {error ? (
-            <Text style={styles.error}>{error}</Text>
+            <Text style={[styles.error, { color: colors.status.error }]}>
+              {error}
+            </Text>
           ) : (
             <>
               <ActivityIndicator color={colors.primary.main} size="large" />
-              <Text style={styles.loadingText}>Preparando facturas...</Text>
+              <Text style={[styles.loadingText, { color: colors.text.secondary }]}>
+                Preparando facturas...
+              </Text>
             </>
           )}
         </View>
@@ -44,7 +54,7 @@ export default function RootLayout() {
   return (
     <ServiceProvider>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? "light" : "dark"} />
         <Stack
           screenOptions={{
             contentStyle: {
@@ -111,7 +121,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loadingScreen: {
     alignItems: "center",
-    backgroundColor: colors.background.primary,
     flex: 1,
     gap: spacing.md,
     justifyContent: "center",
@@ -119,11 +128,9 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     ...typography.bodyMedium,
-    color: colors.text.secondary,
   },
   error: {
     ...typography.bodyMedium,
-    color: colors.status.error,
     textAlign: "center",
   },
 });

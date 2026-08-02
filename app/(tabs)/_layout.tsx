@@ -1,29 +1,32 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import type { ComponentProps } from "react";
+import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, spacing } from "@/theme";
+import { spacing, useThemeColors } from "@/theme";
+
+type IconName = ComponentProps<typeof Ionicons>["name"];
+
+const tabIcons: Record<string, { filled: IconName; outline: IconName }> = {
+  Inicio: { filled: "home", outline: "home-outline" },
+  Facturas: { filled: "document-text", outline: "document-text-outline" },
+  Pagos: { filled: "wallet", outline: "wallet-outline" },
+  Resumen: { filled: "pie-chart", outline: "pie-chart-outline" },
+  Retención: { filled: "file-tray-full", outline: "file-tray-full-outline" },
+};
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
-  const icons: Record<string, string> = {
-    Inicio: "\u2302",
-    Facturas: "\u2630",
-    Pagos: "\u25CF",
-    Resumen: "\u2261",
-    Retención: "\u2691",
-  };
+  const colors = useThemeColors();
+  const icons = tabIcons[label] ?? { filled: "add", outline: "add" };
 
   return (
     <View style={tabStyles.iconContainer}>
-      <Text
-        style={[
-          tabStyles.icon,
-          { color: focused ? colors.primary.main : colors.text.tertiary },
-        ]}
-      >
-        {icons[label] || "\u2022"}
-      </Text>
+      <Ionicons
+        name={focused ? icons.filled : icons.outline}
+        size={22}
+        color={focused ? colors.primary.main : colors.text.tertiary}
+      />
     </View>
   );
 }
@@ -35,14 +38,11 @@ const tabStyles = StyleSheet.create({
     width: 28,
     height: 28,
   },
-  icon: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
 });
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
 
   return (
     <Tabs
