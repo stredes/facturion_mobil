@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BarChart, PieChart } from "react-native-chart-kit";
+import { BarChart } from "react-native-chart-kit";
+import { PieChart3D } from "@/components/PieChart3D";
 
 import { AppHeader } from "@/components/AppHeader";
 import { ScreenContainer } from "@/components/ScreenContainer";
@@ -232,19 +233,7 @@ export default function HomeScreen() {
           <View style={styles.chartCard}>
             <SectionTitle title="Distribución de fondos" subtitle="Desglose de pagos y ahorros" />
             <View style={styles.pieContainer}>
-              <PieChart
-                data={pieData}
-                width={350}
-                height={220}
-                chartConfig={{
-                  backgroundColor: "transparent",
-                  backgroundGradientFrom: "transparent",
-                  backgroundGradientTo: "transparent",
-                }}
-                accessor="value"
-                backgroundColor="transparent"
-                paddingLeft="10"
-              />
+              <PieChart3D data={pieData} size={350} innerRadius={90} depth={10} />
             </View>
           </View>
         )}
