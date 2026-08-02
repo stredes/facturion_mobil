@@ -1,27 +1,35 @@
-import { StyleSheet, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import type { ComponentProps } from "react";
+import { StyleSheet } from "react-native";
 
-import { colors, radius, shadows, spacing } from "../theme";
+import { radius, shadows, spacing, useThemeColors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface FloatingActionButtonProps {
   onPress: () => void;
   accessibilityLabel?: string;
-  icon?: string;
+  icon?: ComponentProps<typeof Ionicons>["name"];
 }
 
 export function FloatingActionButton({
   onPress,
   accessibilityLabel = "Agregar",
-  icon = "+",
+  icon = "add",
 }: FloatingActionButtonProps) {
+  const colors = useThemeColors();
+
   return (
     <AnimatedPressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
-      style={[styles.button, shadows.fab]}
+      style={[
+        styles.button,
+        { backgroundColor: colors.primary.main },
+        shadows.fab,
+      ]}
     >
-      <Text style={styles.icon}>{icon}</Text>
+      <Ionicons name={icon} size={28} color={colors.text.inverse} />
     </AnimatedPressable>
   );
 }
@@ -29,20 +37,13 @@ export function FloatingActionButton({
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    backgroundColor: colors.primary.main,
     borderRadius: radius.fab,
-    bottom: 24,
+    bottom: spacing.xl,
     justifyContent: "center",
     position: "absolute",
-    right: 24,
+    right: spacing.xl,
     width: 52,
     height: 52,
     zIndex: 10,
-  },
-  icon: {
-    color: colors.text.inverse,
-    fontSize: 24,
-    fontWeight: "700",
-    lineHeight: 28,
   },
 });
