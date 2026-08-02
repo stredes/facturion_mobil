@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
+import { hapticLight } from "../utils/haptics";
 import {
   formatMoneyInput,
   parseMoneyInput,
@@ -19,12 +21,19 @@ export function MoneyInput({
   error,
   onChangeValue,
 }: MoneyInputProps) {
+  const [focused, setFocused] = useState(false);
   const formattedValue = formatMoneyInput(value);
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputWrapper, error && styles.inputError]}>
+      <View
+        style={[
+          styles.inputWrapper,
+          error && !focused && styles.inputError,
+          focused && styles.inputFocused,
+        ]}
+      >
         <Text style={styles.prefix}>$</Text>
         <TextInput
           accessibilityLabel={label}
@@ -32,8 +41,14 @@ export function MoneyInput({
           onChangeText={(text) => {
             onChangeValue(parseMoneyInput(text));
           }}
+          onFocus={() => {
+            setFocused(true);
+            hapticLight();
+          }}
+          onBlur={() => setFocused(false)}
           placeholder="0"
           placeholderTextColor={colors.text.tertiary}
+          returnKeyType="done"
           style={styles.input}
           value={formattedValue}
         />
@@ -65,6 +80,9 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.status.error,
+  },
+  inputFocused: {
+    borderColor: colors.primary.main,
   },
   prefix: {
     ...typography.body,

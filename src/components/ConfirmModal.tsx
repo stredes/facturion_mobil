@@ -1,6 +1,15 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  Animated,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { colors, radius, shadows, spacing, typography } from "../theme";
+import { hapticError, hapticSuccess } from "../utils/haptics";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -23,16 +32,43 @@ export function ConfirmModal({
   onCancel,
   destructive = false,
 }: ConfirmModalProps) {
+  const scale = useRef(new Animated.Value(0.96)).current;
+
+  useEffect(() => {
+    if (visible) {
+      scale.setValue(0.96);
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible, scale]);
+
   return (
-    <Modal animationType="fade" transparent visible={visible}>
+    <Modal
+      accessibilityViewIsModal
+      animationType="fade"
+      transparent
+      visible={visible}
+    >
       <View style={styles.overlay}>
-        <View style={[styles.modal, shadows.modal]}>
+        <Animated.View
+          accessibilityRole="alert"
+          accessibilityLabel={`${title}. ${message}`}
+          style={[styles.modal, shadows.modal, { transform: [{ scale }] }]}
+        >
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
-              onPress={onCancel}
+              accessibilityLabel={cancelLabel}
+              hitSlop={8}
+              onPress={() => {
+                hapticError();
+                onCancel();
+              }}
               style={({ pressed }) => [
                 styles.cancelButton,
                 pressed && styles.buttonPressed,
@@ -42,7 +78,12 @@ export function ConfirmModal({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              onPress={onConfirm}
+              accessibilityLabel={confirmLabel}
+              hitSlop={8}
+              onPress={() => {
+                hapticSuccess();
+                onConfirm();
+              }}
               style={({ pressed }) => [
                 styles.confirmButton,
                 destructive && styles.destructiveButton,
@@ -59,7 +100,7 @@ export function ConfirmModal({
               </Text>
             </Pressable>
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );

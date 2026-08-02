@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
+import { hapticLight } from "../utils/haptics";
 
 interface TextInputFieldProps {
   label: string;
@@ -23,6 +25,8 @@ export function TextInputField({
   onBlur,
   onChangeText,
 }: TextInputFieldProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -30,14 +34,23 @@ export function TextInputField({
         accessibilityLabel={label}
         keyboardType={keyboardType}
         multiline={multiline}
-        onBlur={onBlur}
+        onBlur={() => {
+          setFocused(false);
+          onBlur?.();
+        }}
         onChangeText={onChangeText}
+        onFocus={() => {
+          setFocused(true);
+          hapticLight();
+        }}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
+        returnKeyType={multiline ? "default" : "done"}
         style={[
           styles.input,
           multiline && styles.multiline,
-          error && styles.inputError,
+          error && !focused && styles.inputError,
+          focused && styles.inputFocused,
         ]}
         value={value}
       />
@@ -73,6 +86,9 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.status.error,
+  },
+  inputFocused: {
+    borderColor: colors.primary.main,
   },
   error: {
     color: colors.status.error,

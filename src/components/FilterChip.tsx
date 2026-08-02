@@ -1,6 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
+import { hapticLight } from "../utils/haptics";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface FilterChipProps {
@@ -13,7 +14,11 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
   return (
     <AnimatedPressable
       accessibilityRole="button"
-      onPress={onPress}
+      accessibilityLabel={label}
+      onPress={() => {
+        hapticLight();
+        onPress();
+      }}
       scaleIn={0.95}
       style={[styles.chip, selected && styles.selected]}
     >

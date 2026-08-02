@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing } from "../theme";
+import { hapticLight } from "../utils/haptics";
 
 interface SearchInputProps {
   value: string;
@@ -15,9 +16,16 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{"\u2315"}</Text>
+      <Text
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+        style={styles.icon}
+      >
+        {"\u2315"}
+      </Text>
       <TextInput
         accessibilityLabel="Buscar"
+        returnKeyType="search"
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
@@ -26,8 +34,13 @@ export function SearchInput({
       />
       {value.length > 0 ? (
         <Pressable
+          accessibilityRole="button"
           accessibilityLabel="Limpiar busqueda"
-          onPress={() => onChangeText("")}
+          hitSlop={8}
+          onPress={() => {
+            hapticLight();
+            onChangeText("");
+          }}
           style={styles.clearButton}
         >
           <Text style={styles.clearIcon}>{"\u2715"}</Text>
