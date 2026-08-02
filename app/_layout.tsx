@@ -90,6 +90,18 @@ export default function RootLayout() {
             name="pagos/iva/editar/[id]"
             options={{ title: "Editar pago IVA" }}
           />
+          <Stack.Screen
+            name="retenciones/index"
+            options={{ title: "Retenciones" }}
+          />
+          <Stack.Screen
+            name="retenciones/nueva"
+            options={{ title: "Nueva retencion" }}
+          />
+          <Stack.Screen
+            name="retenciones/editar/[id]"
+            options={{ title: "Editar retencion" }}
+          />
         </Stack>
       </SafeAreaProvider>
     </ServiceProvider>

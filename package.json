@@ -1,6 +1,6 @@
 {
   "name": "factrion",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "expo-router/entry",
   "dependencies": {
     "@hookform/resolvers": "^5.5.7",

@@ -10,12 +10,18 @@ import { SectionTitle } from "@/components/SectionTitle";
 import { InvoiceCard } from "@/components/InvoiceCard";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { LoadingState } from "@/components/LoadingState";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useInvoices } from "@/hooks/useInvoices";
+import { useGeneralPayments } from "@/hooks/useGeneralPayments";
+import { useRetentions } from "@/hooks/useRetentions";
 import { colors } from "@/theme";
+import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { invoices, isLoading, error, refresh } = useInvoices();
+  const { summary: generalSummary } = useGeneralPayments();
+  const { summary: retentionSummary } = useRetentions();
 
   if (isLoading) {
     return (
@@ -55,6 +61,20 @@ export default function HomeScreen() {
   const totalSavings = invoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
   const totalTaxPayment = invoices.reduce((sum, inv) => sum + inv.taxPayment, 0);
 
+  // Acumulaciones: facturado + retencion - pagos
+  const sobranteIva =
+    totalTax - totalTaxPayment + retentionSummary.totalTax;
+  const tagBalance =
+    totalTag + retentionSummary.totalTag - generalSummary.totalTag;
+  const accountantBalance =
+    totalAccountant +
+    retentionSummary.totalAccountant -
+    generalSummary.totalAccountant;
+  const savingsBalance =
+    totalSavings +
+    retentionSummary.totalSavings -
+    generalSummary.totalSavings;
+
   // Datos para grafico mensual (ultimos 6 meses)
   const monthlyData = invoices.reduce((acc, inv) => {
     const monthKey = formatMonthKey(inv.invoiceDate);
@@ -76,28 +96,22 @@ export default function HomeScreen() {
     labels: sortedMonths.map(([month]) => formatMonthLabel(month)),
     datasets: [
       {
-        data: sortedMonths.map(([, data]) => data.total / 1000000),
-        color: (opacity = 1) => `rgba(10, 76, 107, ${opacity})`,
-        strokeWidth: 2,
-      },
-      {
-        data: sortedMonths.map(([, data]) => data.net / 1000000),
-        color: () => colors.accent.main,
+        data: sortedMonths.map(([, data]) => data.tax / 1000000),
+        color: (opacity = 1) => `rgba(249, 115, 22, ${opacity})`,
         strokeWidth: 2,
       },
     ],
-    legend: ["Total", "Neto"],
+    legend: ["IVA"],
   };
 
-  // Datos para grafico de distribucion
-  const totalDistributed = totalTag + totalAccountant + totalSavings;
-  const pieData = totalDistributed > 0 ? [
-    { name: "TAG", value: totalTag, color: colors.status.info },
-    { name: "Contador", value: totalAccountant, color: colors.status.success },
-    { name: "Ahorro", value: totalSavings, color: colors.status.warning },
-    { name: "Pago IVA", value: totalTaxPayment, color: colors.primary.main },
+  // Datos para grafico de distribucion (una sola torta con las acumulaciones)
+  const pieData = [
+    { name: "Sobrante IVA", value: sobranteIva, color: colors.primary.main },
+    { name: "Saldo TAG", value: tagBalance, color: colors.status.info },
+    { name: "Saldo Contador", value: accountantBalance, color: colors.status.success },
+    { name: "Saldo Ahorro", value: savingsBalance, color: colors.status.warning },
     { name: "Restante", value: invoices.reduce((s, i) => s + (i.totalAmount - i.taxPayment - i.tagAmount - i.accountantAmount - i.savingsAmount), 0), color: colors.status.error },
-  ].filter(d => d.value > 0) : [];
+  ].filter((d) => d.value > 0);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CL", {
@@ -105,6 +119,13 @@ export default function HomeScreen() {
       currency: "CLP",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const retentionValues: Record<string, number> = {
+    tax: retentionSummary.totalTax,
+    tag: retentionSummary.totalTag,
+    accountant: retentionSummary.totalAccountant,
+    savings: retentionSummary.totalSavings,
   };
 
   function formatMonthKey(dateStr: string) {
@@ -161,19 +182,19 @@ export default function HomeScreen() {
               yAxisLabel=""
               yAxisSuffix="M"
               chartConfig={{
-                backgroundColor: "transparent",
-                backgroundGradientFrom: "transparent",
-                backgroundGradientTo: "transparent",
+                backgroundColor: "#FFFFFF",
+                backgroundGradientFrom: "#FFFFFF",
+                backgroundGradientTo: "#FFFFFF",
                 decimalPlaces: 1,
-                color: (opacity = 1) => `rgba(10, 76, 107, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(102, 114, 126, ${opacity})`,
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                 style: {
                   borderRadius: 16,
                 },
                 propsForDots: {
                   r: 6,
                   strokeWidth: 2,
-                  stroke: colors.primary.main,
+                  stroke: "#000000",
                 },
               }}
               style={styles.chart}
@@ -185,14 +206,21 @@ export default function HomeScreen() {
         <SectionTitle title="IVA" />
         <View style={styles.summarySection}>
           <SummaryCard
-            label="IVA (19%)"
+            label="IVA Total"
             value={formatCurrency(totalTax)}
             icon="📋"
           />
           <SummaryCard
-            label="Pago IVA"
+            label="IVA Pagado"
             value={formatCurrency(totalTaxPayment)}
             icon="✅"
+            tone="warning"
+          />
+          <SummaryCard
+            label="IVA Sobrante"
+            value={formatCurrency(sobranteIva)}
+            icon="💰"
+            tone="strong"
           />
         </View>
 
@@ -200,13 +228,13 @@ export default function HomeScreen() {
         <SectionTitle title="Pagos extras" />
         <View style={styles.summarySection}>
           <SummaryCard
-            label="TAG"
-            value={formatCurrency(totalTag)}
+            label="Saldo TAG"
+            value={formatCurrency(tagBalance)}
             icon="🏷️"
           />
           <SummaryCard
-            label="Contador"
-            value={formatCurrency(totalAccountant)}
+            label="Saldo Contador"
+            value={formatCurrency(accountantBalance)}
             icon="📊"
           />
         </View>
@@ -215,11 +243,31 @@ export default function HomeScreen() {
         <SectionTitle title="Ahorro" />
         <View style={styles.summarySection}>
           <SummaryCard
-            label="Ahorro"
-            value={formatCurrency(totalSavings)}
+            label="Saldo Ahorro"
+            value={formatCurrency(savingsBalance)}
             icon="💚"
           />
         </View>
+
+        {/* Seccion Retencion */}
+        <SectionTitle title="Retención" />
+        <View style={styles.summarySection}>
+          {RETENTION_CATEGORIES.map((category) => (
+            <SummaryCard
+              key={category.value}
+              label={category.label}
+              value={formatCurrency(retentionValues[category.value])}
+              icon="🔖"
+            />
+          ))}
+        </View>
+        <AnimatedPressable
+          onPress={() => router.push("/retenciones")}
+          style={styles.retentionLink}
+        >
+          <Text style={styles.retentionLinkText}>Ver todas las retenciones</Text>
+          <Text style={styles.retentionLinkArrow}>›</Text>
+        </AnimatedPressable>
 
         {/* Grafico de distribucion */}
         {pieData.length > 0 && (
@@ -342,6 +390,27 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     marginBottom: 16,
+  },
+  retentionLink: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  retentionLinkText: {
+    color: colors.primary.main,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  retentionLinkArrow: {
+    color: colors.text.tertiary,
+    fontSize: 20,
   },
   distributionSection: {
     flexDirection: "row",

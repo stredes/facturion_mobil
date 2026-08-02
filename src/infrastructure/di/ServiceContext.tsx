@@ -2,15 +2,18 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 
 import { GeneralPaymentService } from "../../application/GeneralPaymentService";
 import { InvoiceService } from "../../application/InvoiceService";
+import { RetentionService } from "../../application/RetentionService";
 import { TaxPaymentService } from "../../application/TaxPaymentService";
 import { SQLiteGeneralPaymentRepository } from "../repositories/SQLiteGeneralPaymentRepository";
 import { SQLiteInvoiceRepository } from "../repositories/SQLiteInvoiceRepository";
+import { SQLiteRetentionRepository } from "../repositories/SQLiteRetentionRepository";
 import { SQLiteTaxPaymentRepository } from "../repositories/SQLiteTaxPaymentRepository";
 
 interface Services {
   invoiceService: InvoiceService;
   generalPaymentService: GeneralPaymentService;
   taxPaymentService: TaxPaymentService;
+  retentionService: RetentionService;
 }
 
 const ServiceContext = createContext<Services | null>(null);
@@ -24,6 +27,9 @@ export function ServiceProvider({ children }: { children: ReactNode }) {
       ),
       taxPaymentService: new TaxPaymentService(
         new SQLiteTaxPaymentRepository(),
+      ),
+      retentionService: new RetentionService(
+        new SQLiteRetentionRepository(),
       ),
     }),
     [],
@@ -64,4 +70,14 @@ export function useTaxPaymentService(): TaxPaymentService {
     );
   }
   return ctx.taxPaymentService;
+}
+
+export function useRetentionService(): RetentionService {
+  const ctx = useContext(ServiceContext);
+  if (!ctx) {
+    throw new Error(
+      "useRetentionService debe usarse dentro de un ServiceProvider",
+    );
+  }
+  return ctx.retentionService;
 }

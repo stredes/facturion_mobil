@@ -11,6 +11,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Facturas: "\u2630",
     Pagos: "\u25CF",
     Resumen: "\u2261",
+    Retención: "\u2691",
   };
 
   return (
@@ -90,6 +91,15 @@ export default function TabsLayout() {
           title: "Pagos",
           tabBarIcon: ({ focused }) => (
             <TabIcon label="Pagos" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="retencion"
+        options={{
+          title: "Retención",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon label="Retención" focused={focused} />
           ),
         }}
       />

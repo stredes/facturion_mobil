@@ -2,7 +2,7 @@ import type * as SQLite from "expo-sqlite";
 
 import { seedInitialInvoices } from "./seedInvoices";
 
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 export async function runMigrations(
   db: SQLite.SQLiteDatabase,
@@ -16,6 +16,27 @@ export async function runMigrations(
     "PRAGMA user_version",
   );
   const currentVersion = result?.user_version ?? 0;
+
+  // Safety net: garantiza que la tabla retentions exista aunque el marcador
+  // de version este adelantado (evita "no such table: retentions").
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS retentions (
+      id TEXT PRIMARY KEY NOT NULL,
+      category TEXT NOT NULL CHECK (category IN ('tax', 'tag', 'accountant', 'savings')),
+      retention_date TEXT NOT NULL,
+      amount INTEGER NOT NULL DEFAULT 0,
+      description TEXT,
+      reference TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_retentions_category
+    ON retentions(category);
+
+    CREATE INDEX IF NOT EXISTS idx_retentions_date
+    ON retentions(retention_date);
+  `);
 
   if (currentVersion >= DATABASE_VERSION) {
     return;
@@ -219,6 +240,27 @@ export async function runMigrations(
         }
       });
     }
+  }
+
+  if (currentVersion < 4) {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS retentions (
+        id TEXT PRIMARY KEY NOT NULL,
+        category TEXT NOT NULL CHECK (category IN ('tax', 'tag', 'accountant', 'savings')),
+        retention_date TEXT NOT NULL,
+        amount INTEGER NOT NULL DEFAULT 0,
+        description TEXT,
+        reference TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_retentions_category
+      ON retentions(category);
+
+      CREATE INDEX IF NOT EXISTS idx_retentions_date
+      ON retentions(retention_date);
+    `);
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
