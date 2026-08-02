@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
+import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { InvoiceCard } from "@/components/InvoiceCard";
 import { InvoiceCardSkeleton } from "@/components/LoadingSkeleton";
@@ -24,6 +26,17 @@ export default function FacturasScreen() {
 
   const { invoices, isLoading, error, refresh } = useInvoices(filters);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refresh]);
+
   const handlePress = useCallback(
     (id: string) => {
       router.push({ pathname: "/facturas/[id]", params: { id } });
@@ -43,6 +56,8 @@ export default function FacturasScreen() {
   const ListHeaderComponent = useMemo(
     () => (
       <View style={styles.headerSection}>
+        <AppHeader title="Facturas" subtitle="Todas tus facturas registradas" />
+
         <SearchInput
           value={search}
           onChangeText={setSearch}
@@ -67,8 +82,9 @@ export default function FacturasScreen() {
     return (
       <View style={styles.wrapper}>
         <ScreenContainer>
+          <AppHeader title="Facturas" subtitle="Todas tus facturas registradas" />
           <View style={styles.centeredBody}>
-            <Text style={styles.errorText}>{error}</Text>
+            <ErrorState message={error} onRetry={refresh} />
           </View>
         </ScreenContainer>
       </View>
@@ -80,6 +96,7 @@ export default function FacturasScreen() {
       <ScreenContainer>
         {!isLoading && invoices.length === 0 ? (
           <View style={styles.centeredBody}>
+            <AppHeader title="Facturas" subtitle="Todas tus facturas registradas" />
             <EmptyState
               title="Sin facturas"
               message={
@@ -102,6 +119,14 @@ export default function FacturasScreen() {
             showsVerticalScrollIndicator={false}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl
+                colors={[colors.primary.main]}
+                onRefresh={onRefresh}
+                refreshing={isRefreshing}
+                tintColor={colors.primary.main}
+              />
+            }
           />
         )}
       </ScreenContainer>
@@ -134,9 +159,5 @@ const styles = StyleSheet.create({
   centeredBody: {
     flex: 1,
     justifyContent: "center",
-  },
-  errorText: {
-    color: colors.status.error,
-    textAlign: "center",
   },
 });
