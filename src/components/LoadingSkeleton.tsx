@@ -14,18 +14,18 @@ export function Skeleton({
   height,
   borderRadius = radius.inner,
 }: SkeletonProps) {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
-          toValue: 1,
+          toValue: 0.9,
           duration: 800,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
-          toValue: 0.3,
+          toValue: 0.4,
           duration: 800,
           useNativeDriver: true,
         }),

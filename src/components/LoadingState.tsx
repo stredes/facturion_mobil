@@ -12,7 +12,12 @@ export function LoadingState({
   size = "large",
 }: LoadingStateProps) {
   return (
-    <View style={[styles.container, styles[size]]}>
+    <View
+      accessibilityLabel={message}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      style={[styles.container, styles[size]]}
+    >
       <ActivityIndicator color={colors.primary.main} size={size} />
       {message && <Text style={styles.message}>{message}</Text>}
     </View>
