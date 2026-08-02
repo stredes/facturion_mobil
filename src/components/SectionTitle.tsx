@@ -10,7 +10,9 @@ interface SectionTitleProps {
 export function SectionTitle({ title, subtitle }: SectionTitleProps) {
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, typography.sectionTitle]}>{title}</Text>
+      <Text accessibilityRole="header" style={[styles.title, typography.sectionTitle]}>
+        {title}
+      </Text>
       {subtitle && (
         <Text style={[styles.subtitle, typography.caption]}>{subtitle}</Text>
       )}
