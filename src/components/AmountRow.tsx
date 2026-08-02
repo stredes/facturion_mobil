@@ -19,9 +19,9 @@ export function AmountRow({ label, value, tone = "default" }: AmountRowProps) {
         : colors.text.primary;
 
   return (
-    <View style={styles.row}>
+    <View style={styles.row} accessibilityRole="summary" accessibilityLabel={`${label}: ${value}`}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
+      <Text style={[styles.value, { color: valueColor }]} accessibilityRole="text">{value}</Text>
     </View>
   );
 }

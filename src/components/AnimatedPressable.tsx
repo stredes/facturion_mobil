@@ -3,6 +3,7 @@ import {
   Animated,
   Pressable,
   type AccessibilityRole,
+  type AccessibilityState,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
@@ -17,6 +18,8 @@ interface AnimatedPressableProps {
   disabled?: boolean;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
+  accessibilityState?: AccessibilityState;
+  accessibilitySelected?: boolean;
   scaleIn?: number;
   hapticOnPress?: boolean;
   style?: StyleProp<ViewStyle>;

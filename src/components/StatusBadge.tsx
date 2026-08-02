@@ -43,11 +43,14 @@ export function StatusBadge({ status, label }: StatusBadgeProps) {
   const config = badgeConfig[status];
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }]}>
-      <View style={[styles.dot, { backgroundColor: config.dot }]} />
-      <Text style={[styles.label, { color: config.text }]}>
-        {label ?? config.label}
-      </Text>
+    <View
+      accessibilityRole="summary"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={label ?? config.label}
+      style={[styles.badge, { backgroundColor: config.bg }]}
+    >
+      <View style={[styles.dot, { backgroundColor: config.dot }]} importantForAccessibility="no-hide-descendants" />
+      <Text style={[styles.label, { color: config.text }]}>{label ?? config.label}</Text>
     </View>
   );
 }

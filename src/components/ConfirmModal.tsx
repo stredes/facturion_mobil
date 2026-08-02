@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
   Animated,
+  BackHandler,
   Modal,
   Pressable,
   StyleSheet,
@@ -45,6 +46,18 @@ export function ConfirmModal({
     }
   }, [visible, scale]);
 
+  const handleBack = () => {
+    hapticError();
+    onCancel();
+    return true;
+  };
+
+  useEffect(() => {
+    if (!visible) return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", handleBack);
+    return () => subscription.remove();
+  }, [visible]);
+
   return (
     <Modal
       accessibilityViewIsModal
@@ -52,7 +65,7 @@ export function ConfirmModal({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} importantForAccessibility="auto">
         <Animated.View
           accessibilityRole="alert"
           accessibilityLabel={`${title}. ${message}`}
@@ -105,6 +118,7 @@ export function ConfirmModal({
     </Modal>
   );
 }
+
 
 const styles = StyleSheet.create({
   overlay: {
