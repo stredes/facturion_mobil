@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
     flexBasis: "47%",
     flexGrow: 1,
     gap: spacing.xs,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    padding: spacing.cardPadding,
   },
 });
