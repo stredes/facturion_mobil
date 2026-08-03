@@ -161,7 +161,7 @@ export default function RetentionsScreen() {
             accessibilityRole="button"
             onPress={() =>
               router.push({
-                pathname: "/retenciones/editar/[id]",
+                pathname: "/retenciones/[id]",
                 params: { id: item.id },
               })
             }

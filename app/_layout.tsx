@@ -89,12 +89,20 @@ export default function RootLayout() {
             options={{ title: "Nuevo pago general" }}
           />
           <Stack.Screen
+            name="pagos/general/[id]"
+            options={{ title: "Detalle de pago general" }}
+          />
+          <Stack.Screen
             name="pagos/general/editar/[id]"
             options={{ title: "Editar pago general" }}
           />
           <Stack.Screen
             name="pagos/iva/nueva"
             options={{ title: "Nuevo pago IVA" }}
+          />
+          <Stack.Screen
+            name="pagos/iva/[id]"
+            options={{ title: "Detalle de pago IVA" }}
           />
           <Stack.Screen
             name="pagos/iva/editar/[id]"
@@ -105,8 +113,8 @@ export default function RootLayout() {
             options={{ title: "Retenciones" }}
           />
           <Stack.Screen
-            name="retenciones/nueva"
-            options={{ title: "Nueva retencion" }}
+            name="retenciones/[id]"
+            options={{ title: "Detalle de retencion" }}
           />
           <Stack.Screen
             name="retenciones/editar/[id]"

@@ -235,7 +235,7 @@ function GeneralPaymentsView({
             accessibilityRole="button"
             onPress={() =>
               router.push({
-                pathname: "/pagos/general/editar/[id]",
+                pathname: "/pagos/general/[id]",
                 params: { id: item.id },
               })
             }
@@ -354,7 +354,7 @@ function TaxPaymentsView({
             accessibilityRole="button"
             onPress={() =>
               router.push({
-                pathname: "/pagos/iva/editar/[id]",
+                pathname: "/pagos/iva/[id]",
                 params: { id: item.id },
               })
             }
