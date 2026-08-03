@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { CreateGeneralPaymentInput } from "../domain/GeneralPayment";
 import { generalPaymentSchema } from "../schemas/generalPaymentSchema";
 import type { GeneralPaymentFormValues } from "../schemas/generalPaymentSchema";
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography, useThemeColors, type Colors } from "../theme";
 import { toISODate } from "../utils/dates";
 import { FilterChip } from "./FilterChip";
 import { DateField } from "./form/DateField";
@@ -60,6 +60,8 @@ export function GeneralPaymentForm({
     () => buildDefaultValues(initialValues),
     [initialValues],
   );
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {
     control,
     handleSubmit,
@@ -132,14 +134,15 @@ export function GeneralPaymentForm({
   );
 }
 
-const styles = StyleSheet.create({
-  sectionTitle: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-  },
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    sectionTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+    },
+    chips: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+    },
+  });

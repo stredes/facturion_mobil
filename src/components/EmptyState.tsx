@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { PrimaryButton } from "./PrimaryButton";
 
 interface EmptyStateProps {
@@ -34,6 +34,8 @@ export function EmptyState({
 }: EmptyStateProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     Animated.parallel([
@@ -76,33 +78,34 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    backgroundColor: colors.surface.secondary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: spacing.md,
-    padding: spacing.xl,
-  },
-  iconContainer: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: 36,
-    padding: spacing.lg,
-  },
-  icon: {
-    fontSize: 26,
-    color: colors.text.tertiary,
-  },
-  title: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-    textAlign: "center",
-  },
-  message: {
-    ...typography.body,
-    color: colors.text.secondary,
-    textAlign: "center",
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      alignItems: "center",
+      backgroundColor: c.surface.secondary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.md,
+      padding: spacing.xl,
+    },
+    iconContainer: {
+      backgroundColor: c.surface.primary,
+      borderRadius: 36,
+      padding: spacing.lg,
+    },
+    icon: {
+      fontSize: 26,
+      color: c.text.tertiary,
+    },
+    title: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      textAlign: "center",
+    },
+    message: {
+      ...typography.body,
+      color: c.text.secondary,
+      textAlign: "center",
+    },
+  });

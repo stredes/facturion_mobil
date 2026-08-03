@@ -1,9 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { ReactNode } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../../theme";
-import { springConfig } from "../../theme";
+import { radius, spacing, springConfig, typography, useThemeColors, type Colors } from "../../theme";
 
 interface FormSectionProps {
   icon: string;
@@ -13,8 +12,10 @@ interface FormSectionProps {
 }
 
 export function FormSection({ icon, title, children, delay = 0 }: FormSectionProps) {
+  const colors = useThemeColors();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     Animated.parallel([
@@ -53,32 +54,33 @@ export function FormSection({ icon, title, children, delay = 0 }: FormSectionPro
   );
 }
 
-const styles = StyleSheet.create({
-  block: {
-    gap: spacing.md,
-  },
-  blockHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  blockIcon: {
-    backgroundColor: colors.primary.light,
-    borderRadius: radius.inner,
-    width: 28,
-    height: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  blockIconText: {
-    ...typography.label,
-    color: colors.primary.main,
-    fontWeight: "700",
-  },
-  blockTitle: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-    flex: 1,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    block: {
+      gap: spacing.md,
+    },
+    blockHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    blockIcon: {
+      backgroundColor: c.primary.light,
+      borderRadius: radius.inner,
+      width: 28,
+      height: 28,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    blockIconText: {
+      ...typography.label,
+      color: c.primary.main,
+      fontWeight: "700",
+    },
+    blockTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      flex: 1,
+    },
+  });

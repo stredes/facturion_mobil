@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../theme";
+import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
 
 interface SummaryCardProps {
   label: string;
@@ -17,6 +18,9 @@ export function SummaryCard({
   tone = "default",
   secondary,
 }: SummaryCardProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       style={[
@@ -59,67 +63,68 @@ export function SummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    flexBasis: "47%",
-    flexGrow: 1,
-    gap: spacing.xs,
-    minHeight: 104,
-    padding: spacing.cardPadding,
-  },
-  strongCard: {
-    backgroundColor: colors.primary.light,
-    borderColor: colors.primary.main,
-  },
-  warningCard: {
-    backgroundColor: colors.statusLight.warning,
-    borderColor: colors.status.warning,
-  },
-  errorCard: {
-    backgroundColor: colors.statusLight.error,
-    borderColor: colors.status.error,
-  },
-  top: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  iconBadge: {
-    alignItems: "center",
-    backgroundColor: colors.primary.light,
-    borderRadius: radius.badge,
-    height: 28,
-    justifyContent: "center",
-    width: 28,
-  },
-  icon: {
-    fontSize: 14,
-    color: colors.primary.main,
-  },
-  label: {
-    ...typography.label,
-    color: colors.text.secondary,
-    flex: 1,
-  },
-  value: {
-    ...typography.cardAmount,
-    color: colors.text.primary,
-  },
-  strongValue: {
-    color: colors.primary.main,
-  },
-  warningValue: {
-    color: colors.status.warning,
-  },
-  errorValue: {
-    color: colors.status.error,
-  },
-  secondary: {
-    ...typography.small,
-    color: colors.text.tertiary,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "47%",
+      flexGrow: 1,
+      gap: spacing.xs,
+      minHeight: 104,
+      padding: spacing.cardPadding,
+    },
+    strongCard: {
+      backgroundColor: c.primary.light,
+      borderColor: c.primary.main,
+    },
+    warningCard: {
+      backgroundColor: c.statusLight.warning,
+      borderColor: c.status.warning,
+    },
+    errorCard: {
+      backgroundColor: c.statusLight.error,
+      borderColor: c.status.error,
+    },
+    top: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.xs,
+    },
+    iconBadge: {
+      alignItems: "center",
+      backgroundColor: c.primary.light,
+      borderRadius: radius.badge,
+      height: 28,
+      justifyContent: "center",
+      width: 28,
+    },
+    icon: {
+      fontSize: 14,
+      color: c.primary.main,
+    },
+    label: {
+      ...typography.label,
+      color: c.text.secondary,
+      flex: 1,
+    },
+    value: {
+      ...typography.cardAmount,
+      color: c.text.primary,
+    },
+    strongValue: {
+      color: c.primary.main,
+    },
+    warningValue: {
+      color: c.status.warning,
+    },
+    errorValue: {
+      color: c.status.error,
+    },
+    secondary: {
+      ...typography.small,
+      color: c.text.tertiary,
+    },
+  });

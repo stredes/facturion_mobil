@@ -23,7 +23,7 @@ import type {
 import type { TaxPayment } from "@/domain/TaxPayment";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
-import { colors, radius, spacing, typography } from "@/theme";
+import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
 
@@ -49,6 +49,8 @@ function formatCategoryLabel(category: GeneralPaymentCategory): string {
 }
 
 export default function PagosScreen() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [segment, setSegment] = useState<Segment>("general");
   const [categoryFilter, setCategoryFilter] = useState<GPFilter>("all");
 
@@ -126,6 +128,8 @@ function GeneralPaymentsView({
   onRetry,
 }: GeneralPaymentsViewProps) {
   const router = useRouter();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -297,6 +301,8 @@ function TaxPaymentsView({
   onRetry,
 }: TaxPaymentsViewProps) {
   const router = useRouter();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -412,60 +418,61 @@ function TaxPaymentsView({
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  segmentRow: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  filters: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  listContent: {
-    paddingBottom: 120,
-  },
-  separator: {
-    height: spacing.gridGap,
-  },
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: spacing.xs,
-    padding: spacing.cardPadding,
-  },
-  cardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cardCategory: {
-    ...typography.cardTitle,
-    color: colors.text.primary,
-  },
-  cardAmount: {
-    ...typography.cardAmount,
-    color: colors.primary.main,
-    fontVariant: ["tabular-nums"],
-  },
-  cardDate: {
-    ...typography.caption,
-    color: colors.text.tertiary,
-  },
-  cardDesc: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  skeletonList: {
-    gap: spacing.gridGap,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    segmentRow: {
+      flexDirection: "row",
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    filters: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    listContent: {
+      paddingBottom: 120,
+    },
+    separator: {
+      height: spacing.gridGap,
+    },
+    card: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.xs,
+      padding: spacing.cardPadding,
+    },
+    cardTop: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    cardCategory: {
+      ...typography.cardTitle,
+      color: c.text.primary,
+    },
+    cardAmount: {
+      ...typography.cardAmount,
+      color: c.primary.main,
+      fontVariant: ["tabular-nums"],
+    },
+    cardDate: {
+      ...typography.caption,
+      color: c.text.tertiary,
+    },
+    cardDesc: {
+      ...typography.bodyMedium,
+      color: c.text.secondary,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    skeletonList: {
+      gap: spacing.gridGap,
+    },
+  });

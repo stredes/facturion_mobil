@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { hapticSelect } from "../utils/haptics";
 import { AnimatedPressable } from "./AnimatedPressable";
 
@@ -11,6 +12,9 @@ interface FilterChipProps {
 }
 
 export function FilterChip({ label, selected, onPress }: FilterChipProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <AnimatedPressable
       accessibilityHint={
@@ -42,24 +46,25 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  chip: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.chip,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  selected: {
-    backgroundColor: colors.primary.main,
-    borderColor: colors.primary.main,
-  },
-  text: {
-    ...typography.label,
-    color: colors.text.secondary,
-  },
-  textSelected: {
-    color: colors.text.inverse,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    chip: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.chip,
+      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+    },
+    selected: {
+      backgroundColor: c.primary.main,
+      borderColor: c.primary.main,
+    },
+    text: {
+      ...typography.label,
+      color: c.text.secondary,
+    },
+    textSelected: {
+      color: c.text.inverse,
+    },
+  });

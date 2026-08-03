@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../theme";
+import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { ConfirmModal } from "./ConfirmModal";
 
@@ -44,9 +44,11 @@ export function DetailScreen({
   onEdit,
   onDelete,
 }: DetailScreenProps) {
+  const colors = useThemeColors();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 360;
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.screen}>
@@ -132,6 +134,9 @@ interface DetailRowProps {
 }
 
 export function DetailRow({ label, value }: DetailRowProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -153,6 +158,9 @@ interface DetailBlockProps {
 }
 
 export function DetailBlock({ title, children }: DetailBlockProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.block}>
       <Text style={styles.blockTitle}>{title}</Text>
@@ -161,111 +169,112 @@ export function DetailBlock({ title, children }: DetailBlockProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: colors.background.primary,
-    flex: 1,
-  },
-  container: {
-    gap: spacing.lg,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl * 2,
-  },
-  headerSection: {
-    gap: spacing.sm,
-  },
-  title: {
-    ...typography.screenTitle,
-    color: colors.text.primary,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.text.secondary,
-  },
-  totalCard: {
-    backgroundColor: colors.primary.main,
-    borderRadius: radius.mainCard,
-    gap: spacing.xxs,
-    minHeight: 128,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  totalLabel: {
-    ...typography.label,
-    color: colors.text.inverse,
-    opacity: 0.9,
-  },
-  totalValue: {
-    ...typography.primaryAmount,
-    color: colors.text.inverse,
-    marginTop: spacing.xxs,
-  },
-  block: {
-    gap: spacing.sm,
-  },
-  blockTitle: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-    marginBottom: spacing.xxs,
-  },
-  detailRow: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: spacing.md,
-  },
-  detailLabel: {
-    ...typography.label,
-    color: colors.text.secondary,
-    flexShrink: 0,
-  },
-  detailValue: {
-    ...typography.bodyMedium,
-    color: colors.text.primary,
-    flex: 1,
-    textAlign: "right",
-    marginLeft: spacing.md,
-    minWidth: 0,
-  },
-  actionButton: {
-    alignItems: "center",
-    borderRadius: radius.button,
-    minHeight: spacing.buttonHeight,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-  },
-  editButton: {
-    backgroundColor: colors.primary.main,
-  },
-  editButtonText: {
-    ...typography.bodyMedium,
-    color: colors.text.inverse,
-  },
-  deleteButton: {
-    backgroundColor: colors.statusLight.error,
-    borderColor: colors.status.error + "40",
-    borderWidth: 1,
-  },
-  deleteButtonText: {
-    ...typography.bodyMedium,
-    color: colors.status.error,
-  },
-  inlineError: {
-    backgroundColor: colors.statusLight.error,
-    borderColor: colors.status.error + "40",
-    borderRadius: radius.input,
-    borderWidth: 1,
-    padding: spacing.md,
-  },
-  inlineErrorText: {
-    ...typography.bodyMedium,
-    color: colors.status.error,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    screen: {
+      backgroundColor: c.background.primary,
+      flex: 1,
+    },
+    container: {
+      gap: spacing.lg,
+      padding: spacing.lg,
+      paddingBottom: spacing.xxl * 2,
+    },
+    headerSection: {
+      gap: spacing.sm,
+    },
+    title: {
+      ...typography.screenTitle,
+      color: c.text.primary,
+    },
+    subtitle: {
+      ...typography.body,
+      color: c.text.secondary,
+    },
+    totalCard: {
+      backgroundColor: c.primary.main,
+      borderRadius: radius.mainCard,
+      gap: spacing.xxs,
+      minHeight: 128,
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+    },
+    totalLabel: {
+      ...typography.label,
+      color: c.text.inverse,
+      opacity: 0.9,
+    },
+    totalValue: {
+      ...typography.primaryAmount,
+      color: c.text.inverse,
+      marginTop: spacing.xxs,
+    },
+    block: {
+      gap: spacing.sm,
+    },
+    blockTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      marginBottom: spacing.xxs,
+    },
+    detailRow: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: spacing.md,
+    },
+    detailLabel: {
+      ...typography.label,
+      color: c.text.secondary,
+      flexShrink: 0,
+    },
+    detailValue: {
+      ...typography.bodyMedium,
+      color: c.text.primary,
+      flex: 1,
+      textAlign: "right",
+      marginLeft: spacing.md,
+      minWidth: 0,
+    },
+    actionButton: {
+      alignItems: "center",
+      borderRadius: radius.button,
+      minHeight: spacing.buttonHeight,
+      justifyContent: "center",
+      paddingHorizontal: spacing.lg,
+    },
+    editButton: {
+      backgroundColor: c.primary.main,
+    },
+    editButtonText: {
+      ...typography.bodyMedium,
+      color: c.text.inverse,
+    },
+    deleteButton: {
+      backgroundColor: c.statusLight.error,
+      borderColor: c.status.error + "40",
+      borderWidth: 1,
+    },
+    deleteButtonText: {
+      ...typography.bodyMedium,
+      color: c.status.error,
+    },
+    inlineError: {
+      backgroundColor: c.statusLight.error,
+      borderColor: c.status.error + "40",
+      borderRadius: radius.input,
+      borderWidth: 1,
+      padding: spacing.md,
+    },
+    inlineErrorText: {
+      ...typography.bodyMedium,
+      color: c.status.error,
+    },
+    disabledButton: {
+      opacity: 0.6,
+    },
+  });

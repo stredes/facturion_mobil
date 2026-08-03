@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Easing,
@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { hapticMedium } from "../utils/haptics";
 
 interface ErrorStateProps {
@@ -24,6 +24,8 @@ export function ErrorState({
 }: ErrorStateProps) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     Animated.parallel([
@@ -78,56 +80,57 @@ export function ErrorState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    backgroundColor: colors.statusLight.error,
-    borderColor: colors.statusLight.error,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: spacing.md,
-    padding: spacing.xxl,
-  },
-  iconCircle: {
-    backgroundColor: colors.statusLight.error,
-    borderRadius: 24,
-    width: 48,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  icon: {
-    ...typography.sectionTitle,
-    color: colors.status.error,
-    fontWeight: "700",
-  },
-  title: {
-    ...typography.sectionTitle,
-    color: colors.status.error,
-    textAlign: "center",
-  },
-  message: {
-    ...typography.body,
-    color: colors.text.secondary,
-    textAlign: "center",
-  },
-  retryButton: {
-    alignItems: "center",
-    backgroundColor: colors.status.error,
-    borderRadius: radius.button,
-    marginTop: spacing.sm,
-    minHeight: 52,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    width: "100%",
-  },
-  retryPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
-  },
-  retryText: {
-    ...typography.bodyMedium,
-    color: colors.text.inverse,
-    fontWeight: "700",
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      alignItems: "center",
+      backgroundColor: c.statusLight.error,
+      borderColor: c.statusLight.error,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.md,
+      padding: spacing.xxl,
+    },
+    iconCircle: {
+      backgroundColor: c.statusLight.error,
+      borderRadius: 24,
+      width: 48,
+      height: 48,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    icon: {
+      ...typography.sectionTitle,
+      color: c.status.error,
+      fontWeight: "700",
+    },
+    title: {
+      ...typography.sectionTitle,
+      color: c.status.error,
+      textAlign: "center",
+    },
+    message: {
+      ...typography.body,
+      color: c.text.secondary,
+      textAlign: "center",
+    },
+    retryButton: {
+      alignItems: "center",
+      backgroundColor: c.status.error,
+      borderRadius: radius.button,
+      marginTop: spacing.sm,
+      minHeight: 52,
+      paddingHorizontal: 28,
+      paddingVertical: 12,
+      width: "100%",
+    },
+    retryPressed: {
+      opacity: 0.85,
+      transform: [{ scale: 0.98 }],
+    },
+    retryText: {
+      ...typography.bodyMedium,
+      color: c.text.inverse,
+      fontWeight: "700",
+    },
+  });

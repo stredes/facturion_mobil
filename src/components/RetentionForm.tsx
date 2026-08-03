@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { CreateRetentionInput } from "../domain/Retention";
 import { retentionSchema } from "../schemas/retentionSchema";
 import type { RetentionFormValues } from "../schemas/retentionSchema";
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography, useThemeColors, type Colors } from "../theme";
 import { toISODate } from "../utils/dates";
 import { RETENTION_CATEGORIES } from "../utils/retentionLabels";
 import { FilterChip } from "./FilterChip";
@@ -47,6 +47,8 @@ export function RetentionForm({
     () => buildDefaultValues(initialValues),
     [initialValues],
   );
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {
     control,
     handleSubmit,
@@ -115,14 +117,15 @@ export function RetentionForm({
   );
 }
 
-const styles = StyleSheet.create({
-  sectionTitle: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-  },
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    sectionTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+    },
+    chips: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+    },
+  });

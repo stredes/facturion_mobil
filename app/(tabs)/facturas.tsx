@@ -13,10 +13,11 @@ import { SearchInput } from "@/components/SearchInput";
 import { SectionTitle } from "@/components/SectionTitle";
 import type { Invoice, InvoiceFilters } from "@/domain/Invoice";
 import { useInvoices } from "@/hooks/useInvoices";
-import { colors, spacing } from "@/theme";
+import { useThemeColors, spacing } from "@/theme";
 
 export default function FacturasScreen() {
   const router = useRouter();
+  const colors = useThemeColors();
   const [search, setSearch] = useState("");
   const listRef = useRef<FlatList<Invoice>>(null);
 

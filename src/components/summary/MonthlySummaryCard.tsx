@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../../theme";
+import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../../theme";
 import { formatCurrency } from "../../utils/currency";
 import { formatMonthPeriod } from "../../utils/dates";
 import type { CombinedMonth } from "../../utils/monthlySummary";
@@ -19,6 +20,9 @@ export function MonthlySummaryCard({
   isSmallScreen,
   onToggle,
 }: MonthlySummaryCardProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.monthBlock}>
       <Pressable
@@ -89,63 +93,64 @@ export function MonthlySummaryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  monthBlock: {
-    gap: spacing.md,
-  },
-  monthHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  monthTitle: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-    textTransform: "capitalize",
-    flex: 1,
-    minWidth: 0,
-  },
-  monthRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    flexShrink: 0,
-  },
-  countBadge: {
-    backgroundColor: colors.primary.light,
-    borderRadius: radius.badge,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-  },
-  countText: {
-    ...typography.small,
-    fontWeight: "600",
-    color: colors.primary.main,
-  },
-  expandIcon: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-  },
-  summaryCard: {
-    backgroundColor: colors.primary.main,
-    borderRadius: radius.card,
-    gap: spacing.xxs,
-    minHeight: 128,
-    padding: spacing.cardPadding,
-  },
-  summaryLabel: {
-    ...typography.label,
-    color: colors.text.inverse,
-    opacity: 0.9,
-  },
-  summaryValue: {
-    ...typography.primaryAmount,
-    color: colors.text.inverse,
-    marginTop: spacing.xxs,
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.gridGap,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    monthBlock: {
+      gap: spacing.md,
+    },
+    monthHeader: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    monthTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      textTransform: "capitalize",
+      flex: 1,
+      minWidth: 0,
+    },
+    monthRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      flexShrink: 0,
+    },
+    countBadge: {
+      backgroundColor: c.primary.light,
+      borderRadius: radius.badge,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+    },
+    countText: {
+      ...typography.small,
+      fontWeight: "600",
+      color: c.primary.main,
+    },
+    expandIcon: {
+      fontSize: 12,
+      color: c.text.tertiary,
+    },
+    summaryCard: {
+      backgroundColor: c.primary.main,
+      borderRadius: radius.card,
+      gap: spacing.xxs,
+      minHeight: 128,
+      padding: spacing.cardPadding,
+    },
+    summaryLabel: {
+      ...typography.label,
+      color: c.text.inverse,
+      opacity: 0.9,
+    },
+    summaryValue: {
+      ...typography.primaryAmount,
+      color: c.text.inverse,
+      marginTop: spacing.xxs,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.gridGap,
+    },
+  });

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { radius, spacing, useThemeColors, type Colors } from "../theme";
 
 interface SkeletonProps {
   width?: number | `${number}%`;
@@ -14,7 +14,9 @@ export function Skeleton({
   height,
   borderRadius = radius.inner,
 }: SkeletonProps) {
+  const colors = useThemeColors();
   const opacity = useRef(new Animated.Value(0.4)).current;
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -46,6 +48,9 @@ export function Skeleton({
 }
 
 export function InvoiceCardSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel="Cargando contenido"
@@ -65,6 +70,9 @@ export function InvoiceCardSkeleton() {
 }
 
 export function PaymentCardSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel="Cargando contenido"
@@ -83,6 +91,9 @@ export function PaymentCardSkeleton() {
 }
 
 export function RetentionCardSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel="Cargando contenido"
@@ -101,6 +112,9 @@ export function RetentionCardSkeleton() {
 }
 
 export function DetailSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel="Cargando contenido"
@@ -134,6 +148,9 @@ export function DetailSkeleton() {
 }
 
 export function FormSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel="Cargando contenido"
@@ -164,6 +181,9 @@ export function FormSkeleton() {
 }
 
 function DetailRowSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.detailRow}>
       <Skeleton width="30%" height={14} />
@@ -173,6 +193,9 @@ function DetailRowSkeleton() {
 }
 
 function InputSkeleton() {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.formField}>
       <Skeleton width="30%" height={12} />
@@ -181,59 +204,60 @@ function InputSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: colors.border.light,
-  },
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: spacing.sm,
-    padding: spacing.cardPadding,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  detailScreen: {
-    gap: spacing.lg,
-    padding: spacing.lg,
-  },
-  totalCard: {
-    backgroundColor: colors.background.tertiary,
-    borderRadius: radius.mainCard,
-    gap: spacing.sm,
-    minHeight: 128,
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-  },
-  detailBlock: {
-    gap: spacing.sm,
-  },
-  detailRow: {
-    alignItems: "center",
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: spacing.md,
-  },
-  formScreen: {
-    gap: spacing.xl,
-    padding: spacing.lg,
-  },
-  formHeader: {
-    gap: spacing.sm,
-  },
-  formSection: {
-    gap: spacing.md,
-  },
-  formField: {
-    gap: spacing.xxs,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    skeleton: {
+      backgroundColor: c.border.light,
+    },
+    card: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.sm,
+      padding: spacing.cardPadding,
+    },
+    row: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    detailScreen: {
+      gap: spacing.lg,
+      padding: spacing.lg,
+    },
+    totalCard: {
+      backgroundColor: c.background.tertiary,
+      borderRadius: radius.mainCard,
+      gap: spacing.sm,
+      minHeight: 128,
+      justifyContent: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 18,
+    },
+    detailBlock: {
+      gap: spacing.sm,
+    },
+    detailRow: {
+      alignItems: "center",
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      padding: spacing.md,
+    },
+    formScreen: {
+      gap: spacing.xl,
+      padding: spacing.lg,
+    },
+    formHeader: {
+      gap: spacing.sm,
+    },
+    formSection: {
+      gap: spacing.md,
+    },
+    formField: {
+      gap: spacing.xxs,
+    },
+  });
