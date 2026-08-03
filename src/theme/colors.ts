@@ -29,6 +29,7 @@ export const colors = {
     success: "#E7F5EC",
     warning: "#FFF4D8",
     error: "#FDECEC",
+    info: "#E8F2F9",
   },
   border: {
     light: "#DDE3E8",
@@ -73,6 +74,7 @@ export const darkColors = {
     success: "rgba(63, 174, 116, 0.18)",
     warning: "rgba(226, 165, 58, 0.18)",
     error: "rgba(226, 96, 96, 0.18)",
+    info: "rgba(76, 143, 192, 0.18)",
   },
   border: {
     light: "#1B2433",
