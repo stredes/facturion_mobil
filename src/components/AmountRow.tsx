@@ -9,9 +9,10 @@ interface AmountRowProps {
   tone?: "default" | "success" | "warning" | "error";
 }
 
-export function AmountRow({ label, value }: AmountRowProps) {
+export function AmountRow({ label, value, tone = "default" }: AmountRowProps) {
   const colors = useThemeColors();
-  const valueColor = colors.text.primary;
+  const valueColor =
+    tone === "default" ? colors.text.primary : colors.status[tone];
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (

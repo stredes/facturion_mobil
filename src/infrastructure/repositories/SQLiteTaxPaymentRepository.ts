@@ -3,7 +3,6 @@ import type {
   CreateTaxPaymentInput,
   TaxPayment,
   TaxPaymentFilters,
-  TaxPeriodSummary,
   UpdateTaxPaymentInput,
 } from "../../domain/TaxPayment";
 import type { TaxPaymentRepository } from "../../domain/TaxPaymentRepository";
@@ -175,36 +174,6 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
     return row?.total ?? 0;
   }
 
-  async getPeriodSummary(period: string): Promise<TaxPeriodSummary> {
-    const db = await getDatabase();
-
-    const generatedResult = await db.getFirstAsync<{
-      generated_tax: number;
-    }>(
-      `SELECT COALESCE(SUM(tax_amount), 0) AS generated_tax
-       FROM invoices
-       WHERE SUBSTR(invoice_date, 1, 7) = ?`,
-      [period],
-    );
-
-    const paidResult = await db.getFirstAsync<{ paid_tax: number }>(
-      `SELECT COALESCE(SUM(amount), 0) AS paid_tax
-       FROM tax_payments
-       WHERE tax_period = ?`,
-      [period],
-    );
-
-    const generatedTax = generatedResult?.generated_tax ?? 0;
-    const paidTax = paidResult?.paid_tax ?? 0;
-
-    return {
-      period,
-      generatedTax,
-      paidTax,
-      difference: generatedTax - paidTax,
-    };
-  }
-
   async getMonthlySummary(): Promise<
     { period: string; paidTax: number }[]
   > {
@@ -225,16 +194,5 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
       period: row.period,
       paidTax: row.paid_tax,
     }));
-  }
-
-  async findRecent(limit: number): Promise<TaxPayment[]> {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync<TaxPaymentRow>(
-      `SELECT * FROM tax_payments
-       ORDER BY payment_date DESC, created_at DESC
-       LIMIT ?`,
-      [limit],
-    );
-    return rows.map(mapRow);
   }
 }

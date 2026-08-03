@@ -51,8 +51,4 @@ export class RetentionService {
   > {
     return this.repository.getMonthlySummary();
   }
-
-  async findRecent(limit: number): Promise<Retention[]> {
-    return this.repository.findRecent(limit);
-  }
 }

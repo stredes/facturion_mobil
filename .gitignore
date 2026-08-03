@@ -42,3 +42,8 @@ yarn-error.*
 
 # Build artifacts
 build/
+
+# SQLite databases (regeneradas al inicializar)
+*.db
+*.db-shm
+*.db-wal

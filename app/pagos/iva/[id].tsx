@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { AmountRow } from "@/components/AmountRow";
@@ -9,7 +9,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { DetailSkeleton } from "@/components/LoadingSkeleton";
 import type { TaxPayment } from "@/domain/TaxPayment";
 import { useTaxPaymentService } from "@/infrastructure/di/ServiceContext";
-import { colors, spacing } from "@/theme";
+import { spacing, useThemeColors, type Colors } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
 
@@ -18,6 +18,8 @@ export default function TaxPaymentDetailScreen() {
   const paymentId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const service = useTaxPaymentService();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [payment, setPayment] = useState<TaxPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,12 +145,13 @@ export default function TaxPaymentDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    backgroundColor: colors.background.primary,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.xl,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: "center",
+      backgroundColor: c.background.primary,
+      flex: 1,
+      justifyContent: "center",
+      padding: spacing.xl,
+    },
+  });

@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { BarChart, LineChart } from "react-native-chart-kit";
+import { LineChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -18,7 +18,7 @@ import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
-import { useThemeColors, type Colors } from "@/theme";
+import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 import { formatCurrency } from "@/utils/currency";
 
@@ -416,27 +416,25 @@ const createStyles = (c: Colors) =>
     },
     mainCard: {
       backgroundColor: c.primary.dark,
-      borderRadius: 16,
-      marginBottom: 20,
-      padding: 20,
+      borderRadius: radius.mainCard,
+      marginBottom: spacing.lg,
+      padding: spacing.lg,
     },
     mainLabel: {
+      ...typography.label,
       color: c.text.inverse,
-      fontSize: 16,
-      fontWeight: "600",
       opacity: 0.9,
     },
     mainAmount: {
+      ...typography.primaryAmount,
       color: c.text.inverse,
-      fontSize: 36,
-      fontWeight: "700",
-      marginTop: 4,
+      marginTop: spacing.xxs,
     },
     mainStats: {
       flexDirection: "row",
       justifyContent: "space-around",
-      marginTop: 16,
-      paddingTop: 16,
+      marginTop: spacing.md,
+      paddingTop: spacing.md,
       borderTopWidth: 1,
       borderTopColor: c.text.inverse,
     },
@@ -445,14 +443,13 @@ const createStyles = (c: Colors) =>
       flex: 1,
     },
     statValue: {
+      ...typography.cardAmount,
       color: c.text.inverse,
-      fontSize: 18,
-      fontWeight: "700",
     },
     statLabel: {
+      ...typography.caption,
       color: c.text.inverse,
-      fontSize: 12,
-      marginTop: 2,
+      marginTop: spacing.xxs,
       opacity: 0.7,
     },
     statDivider: {
@@ -464,16 +461,16 @@ const createStyles = (c: Colors) =>
     chartCard: {
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
-      borderRadius: 16,
+      borderRadius: radius.card,
       borderWidth: 1,
-      marginBottom: 20,
-      padding: 16,
+      marginBottom: spacing.lg,
+      padding: spacing.cardPadding,
     },
     chartContainer: {
       alignItems: "center",
     },
     chart: {
-      borderRadius: 16,
+      borderRadius: radius.card,
     },
     pieContainer: {
       alignItems: "center",
@@ -481,32 +478,32 @@ const createStyles = (c: Colors) =>
     summarySection: {
       flexDirection: "row",
       flexWrap: "wrap",
-      gap: 12,
-      marginBottom: 16,
+      gap: spacing.gridGap,
+      marginBottom: spacing.md,
     },
     retentionLink: {
       alignItems: "center",
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
-      borderRadius: 16,
+      borderRadius: radius.card,
       borderWidth: 1,
       flexDirection: "row",
       justifyContent: "space-between",
-      marginBottom: 20,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
+      marginBottom: spacing.lg,
+      paddingHorizontal: spacing.cardPadding,
+      paddingVertical: spacing.md,
     },
     retentionLinkText: {
+      ...typography.bodyMedium,
       color: c.primary.main,
-      fontSize: 15,
       fontWeight: "600",
     },
     retentionLinkArrow: {
       color: c.text.tertiary,
-      fontSize: 20,
+      fontSize: typography.screenTitle.fontSize,
     },
     list: {
-      gap: 12,
+      gap: spacing.gridGap,
       paddingBottom: 100,
     },
   });

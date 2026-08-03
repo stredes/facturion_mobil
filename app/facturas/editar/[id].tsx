@@ -6,9 +6,9 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { FormSkeleton } from "@/components/LoadingSkeleton";
-import type { CreateInvoiceInput, Invoice } from "../../../src/domain/Invoice";
-import { useInvoiceService } from "../../../src/infrastructure/di/ServiceContext";
-import { spacing, useThemeColors, type Colors } from "../../../src/theme";
+import type { CreateInvoiceInput, Invoice } from "@/domain/Invoice";
+import { useInvoiceService } from "@/infrastructure/di/ServiceContext";
+import { spacing, useThemeColors, type Colors } from "@/theme";
 
 export default function EditInvoiceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

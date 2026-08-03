@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { spacing, typography, useTheme } from "../src/theme";
-import { initializeDatabase } from "../src/database/database";
-import { ServiceProvider } from "../src/infrastructure/di/ServiceContext";
+import { spacing, typography, useTheme } from "@/theme";
+import { initializeDatabase } from "@/database/database";
+import { ServiceProvider } from "@/infrastructure/di/ServiceContext";
 
 export default function RootLayout() {
   const { colors, isDark } = useTheme();

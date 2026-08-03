@@ -31,10 +31,3 @@ export interface TaxPaymentFilters {
   taxPeriod?: string;
   year?: string;
 }
-
-export interface TaxPeriodSummary {
-  period: string;
-  generatedTax: number;
-  paidTax: number;
-  difference: number;
-}

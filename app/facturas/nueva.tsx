@@ -1,9 +1,9 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
-import { InvoiceForm } from "../../src/components/InvoiceForm";
-import type { CreateInvoiceInput } from "../../src/domain/Invoice";
-import { useInvoiceService } from "../../src/infrastructure/di/ServiceContext";
+import { InvoiceForm } from "@/components/InvoiceForm";
+import type { CreateInvoiceInput } from "@/domain/Invoice";
+import { useInvoiceService } from "@/infrastructure/di/ServiceContext";
 
 export default function NewInvoiceScreen() {
   const router = useRouter();

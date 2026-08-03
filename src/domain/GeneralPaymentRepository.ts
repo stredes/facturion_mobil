@@ -16,5 +16,4 @@ export interface GeneralPaymentRepository {
   getMonthlySummary(): Promise<
     { period: string; tagAmount: number; accountantAmount: number; savingsAmount: number; totalGeneralPayments: number }[]
   >;
-  findRecent(limit: number): Promise<GeneralPayment[]>;
 }
