@@ -4,7 +4,7 @@ import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
-import { LoadingState } from "@/components/LoadingState";
+import { FormSkeleton } from "@/components/LoadingSkeleton";
 import { TaxPaymentForm } from "@/components/TaxPaymentForm";
 import type {
   CreateTaxPaymentInput,
@@ -83,11 +83,7 @@ export default function EditTaxPaymentScreen() {
   );
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <LoadingState message="Cargando pago..." />
-      </View>
-    );
+    return <FormSkeleton />;
   }
 
   if (loadError) {

@@ -4,7 +4,7 @@ import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
-import { LoadingState } from "@/components/LoadingState";
+import { FormSkeleton } from "@/components/LoadingSkeleton";
 import { RetentionForm } from "@/components/RetentionForm";
 import type { CreateRetentionInput, Retention } from "@/domain/Retention";
 import { useRetentionService } from "@/infrastructure/di/ServiceContext";
@@ -84,11 +84,7 @@ export default function EditRetentionScreen() {
   );
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <LoadingState message="Cargando retencion..." />
-      </View>
-    );
+    return <FormSkeleton />;
   }
 
   if (loadError) {
