@@ -32,11 +32,11 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size }) => {
   const chartData = data.map((d) => {
     const pct = ((d.value / total) * 100).toFixed(1);
     return {
-      name: `${d.name} · ${pct}%`,
+      name: `${d.name} ${pct}%`,
       population: d.value,
       color: d.color,
       legendFontColor: colors.text.secondary,
-      legendFontSize: 13,
+      legendFontSize: 11,
     };
   });
 
@@ -44,7 +44,7 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size }) => {
     <PieChart
       data={chartData}
       width={chartSize}
-      height={220}
+      height={250}
       chartConfig={{
         color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
       }}

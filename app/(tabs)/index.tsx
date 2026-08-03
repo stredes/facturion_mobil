@@ -279,8 +279,11 @@ export default function HomeScreen() {
             <LineChart
               data={chartData}
               width={350}
-              height={260}
+              height={280}
               yAxisSuffix="M"
+              yAxisLabel="CLP"
+              yLabelsOffset={-10}
+              xLabelsOffset={10}
               chartConfig={{
                 backgroundColor: colors.surface.primary,
                 backgroundGradientFrom: colors.surface.primary,
