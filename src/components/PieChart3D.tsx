@@ -1,7 +1,14 @@
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View, type AccessibilityRole } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 
 import { spacing, useThemeColors } from "../theme";
+
+const rgba = (hex: string, opacity: number) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 type SliceData = {
   name: string;
@@ -16,9 +23,11 @@ interface PieChart3DProps {
   depth?: number;
   startAngle?: number;
   endAngle?: number;
+  accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
 }
 
-export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size }) => {
+export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size, accessibilityLabel, accessibilityRole }) => {
   const { width } = useWindowDimensions();
   const colors = useThemeColors();
   const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -35,24 +44,29 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size }) => {
       name: `${d.name} ${pct}%`,
       population: d.value,
       color: d.color,
-      legendFontColor: colors.text.secondary,
+      legendFontColor: colors.chart.legend,
       legendFontSize: 11,
     };
   });
 
   return (
-    <PieChart
-      data={chartData}
-      width={chartSize}
-      height={250}
-      chartConfig={{
-        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-      }}
-      accessor="population"
-      backgroundColor="transparent"
-      paddingLeft="15"
-      center={[10, 0]}
-    />
+    <View
+      accessibilityRole={accessibilityRole ?? "image"}
+      accessibilityLabel={accessibilityLabel}
+    >
+      <PieChart
+        data={chartData}
+        width={chartSize}
+        height={250}
+        chartConfig={{
+          color: (opacity = 1) => rgba(colors.chart.tooltipBg, opacity),
+        }}
+        accessor="population"
+        backgroundColor="transparent"
+        paddingLeft="15"
+        center={[10, 0]}
+      />
+    </View>
   );
 };
 

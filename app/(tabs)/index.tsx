@@ -14,6 +14,7 @@ import { InvoiceCard } from "@/components/InvoiceCard";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { LoadingState } from "@/components/LoadingState";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { ChartSkeleton } from "@/components/LoadingSkeleton";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
@@ -275,28 +276,32 @@ export default function HomeScreen() {
         {/* Grafico de acumulados */}
         <View style={styles.chartCard}>
           <SectionTitle title="Saldos acumulados" subtitle="Últimos 6 meses" />
-          <View style={styles.chartContainer}>
-            <LineChart
-              data={chartData}
-              width={350}
-              height={280}
-              yAxisSuffix="M"
-              yAxisLabel="CLP"
-              yLabelsOffset={-10}
-              xLabelsOffset={10}
-              chartConfig={{
-                backgroundColor: colors.surface.primary,
-                backgroundGradientFrom: colors.surface.primary,
-                backgroundGradientTo: colors.surface.primary,
-                decimalPlaces: 0,
-                color: (opacity = 1) => rgba(colors.text.tertiary, opacity),
-                labelColor: (opacity = 1) => rgba(colors.text.primary, opacity),
-                propsForDots: { r: "4" },
-              }}
-              style={styles.chart}
-              bezier
-            />
-          </View>
+          {isLoading ? (
+            <ChartSkeleton height={280} width={350} />
+          ) : (
+            <View style={styles.chartContainer} accessibilityRole="image" accessibilityLabel="Gráfico de líneas: saldos acumulados de IVA, TAG, Contador y Ahorro en los últimos 6 meses">
+              <LineChart
+                data={chartData}
+                width={350}
+                height={280}
+                yAxisSuffix="M"
+                yAxisLabel="CLP"
+                yLabelsOffset={-10}
+                xLabelsOffset={10}
+                chartConfig={{
+                  backgroundColor: colors.surface.primary,
+                  backgroundGradientFrom: colors.surface.primary,
+                  backgroundGradientTo: colors.surface.primary,
+                  decimalPlaces: 0,
+                  color: (opacity = 1) => rgba(colors.chart.axis, opacity),
+                  labelColor: (opacity = 1) => rgba(colors.text.primary, opacity),
+                  propsForDots: { r: "4" },
+                }}
+                style={styles.chart}
+                bezier
+              />
+            </View>
+          )}
         </View>
 
         {/* Seccion IVA */}
@@ -372,9 +377,13 @@ export default function HomeScreen() {
         {pieData.length > 0 && (
           <View style={styles.chartCard}>
             <SectionTitle title="Distribución de fondos" subtitle="Desglose de pagos y ahorros" />
-            <View style={styles.pieContainer}>
-              <PieChart3D data={pieData} size={350} innerRadius={90} depth={10} />
-            </View>
+            {isLoading ? (
+              <ChartSkeleton height={250} width={350} />
+            ) : (
+              <View style={styles.pieContainer} accessibilityRole="image" accessibilityLabel="Gráfico circular: distribución de fondos por categoría (IVA, TAG, Contador, Ahorro, Retenciones)">
+                <PieChart3D data={pieData} size={350} innerRadius={90} depth={10} />
+              </View>
+            )}
           </View>
         )}
 

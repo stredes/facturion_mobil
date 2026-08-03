@@ -39,6 +39,13 @@ export const colors = {
     accountant: "#8B5CF6",
     savings: "#10B981",
   },
+  chart: {
+    axis: "#8A949E",
+    grid: "#CBD5E1",
+    legend: "#66727E",
+    tooltipBg: "#17212B",
+    tooltipBorder: "#CBD5E1",
+  },
   overlay: "rgba(18, 59, 93, 0.4)",
   shadow: "rgba(18, 59, 93, 0.08)",
 };
@@ -84,6 +91,13 @@ export const darkColors = {
     accountant: "#8B5CF6",
     savings: "#10B981",
   },
+  chart: {
+    axis: "#64748B",
+    grid: "#26324A",
+    legend: "#9AA7B7",
+    tooltipBg: "#E8EDF3",
+    tooltipBorder: "#26324A",
+  },
   overlay: "rgba(0, 0, 0, 0.5)",
   shadow: "rgba(0, 0, 0, 0.5)",
 };
@@ -97,6 +111,7 @@ export interface ThemeColors {
   statusLight: { success: string; warning: string; error: string; info: string };
   border: { light: string; medium: string };
   series: { accountant: string; savings: string };
+  chart: { axis: string; grid: string; legend: string; tooltipBg: string; tooltipBorder: string };
   overlay: string;
   shadow: string;
 }

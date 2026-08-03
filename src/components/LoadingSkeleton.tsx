@@ -204,6 +204,22 @@ function InputSkeleton() {
   );
 }
 
+export function ChartSkeleton({ height = 280, width = 350 }: { height?: number; width?: number }) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  return (
+    <View
+      accessibilityLabel="Cargando gráfico"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.chartContainer}
+    >
+      <Skeleton width={width} height={height} borderRadius={radius.card} />
+    </View>
+  );
+}
+
 const createStyles = (c: Colors) =>
   StyleSheet.create({
     skeleton: {
@@ -259,5 +275,9 @@ const createStyles = (c: Colors) =>
     },
     formField: {
       gap: spacing.xxs,
+    },
+    chartContainer: {
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
