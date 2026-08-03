@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
 import { StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, shadows, spacing, useThemeColors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
@@ -17,19 +18,22 @@ export function FloatingActionButton({
   icon = "add",
 }: FloatingActionButtonProps) {
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <AnimatedPressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      hitSlop={8}
       onPress={onPress}
       style={[
         styles.button,
         { backgroundColor: colors.primary.main },
         shadows.fab,
+        { top: spacing.sm + insets.top },
       ]}
     >
-      <Ionicons name={icon} size={28} color={colors.text.inverse} />
+      <Ionicons name={icon} size={24} color={colors.text.inverse} />
     </AnimatedPressable>
   );
 }
@@ -38,12 +42,12 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     borderRadius: radius.fab,
-    bottom: spacing.xl,
+    top: 0,
     justifyContent: "center",
     position: "absolute",
-    right: spacing.xl,
-    width: 52,
-    height: 52,
+    right: spacing.screenPadding,
+    width: 44,
+    height: 44,
     zIndex: 10,
   },
 });

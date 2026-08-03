@@ -2,7 +2,6 @@ import type {
   CreateTaxPaymentInput,
   TaxPayment,
   TaxPaymentFilters,
-  TaxPeriodSummary,
   UpdateTaxPaymentInput,
 } from "./TaxPayment";
 
@@ -13,9 +12,7 @@ export interface TaxPaymentRepository {
   findAll(filters?: TaxPaymentFilters): Promise<TaxPayment[]>;
   delete(id: string): Promise<void>;
   getTotalPaidTax(): Promise<number>;
-  getPeriodSummary(period: string): Promise<TaxPeriodSummary>;
   getMonthlySummary(): Promise<
     { period: string; paidTax: number }[]
   >;
-  findRecent(limit: number): Promise<TaxPayment[]>;
 }

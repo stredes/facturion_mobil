@@ -8,13 +8,15 @@ import { FormSkeleton } from "@/components/LoadingSkeleton";
 import { RetentionForm } from "@/components/RetentionForm";
 import type { CreateRetentionInput, Retention } from "@/domain/Retention";
 import { useRetentionService } from "@/infrastructure/di/ServiceContext";
-import { colors, spacing } from "@/theme";
+import { spacing, useThemeColors, type Colors } from "@/theme";
 
 export default function EditRetentionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const retentionId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const service = useRetentionService();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [retention, setRetention] = useState<Retention | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -117,12 +119,13 @@ export default function EditRetentionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    backgroundColor: colors.background.primary,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.xxl,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: "center",
+      backgroundColor: c.background.primary,
+      flex: 1,
+      justifyContent: "center",
+      padding: spacing.xxl,
+    },
+  });

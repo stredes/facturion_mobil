@@ -11,6 +11,7 @@ import {
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { hapticLight, hapticSuccess } from "../utils/haptics";
+import { SecondaryButton } from "./SecondaryButton";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -79,21 +80,16 @@ export function ConfirmModal({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={cancelLabel}
-              hitSlop={8}
+          <View style={styles.cancelButton}>
+            <SecondaryButton
+              fullWidth
+              label={cancelLabel}
               onPress={() => {
                 hapticLight();
                 onCancel();
               }}
-              style={({ pressed }) => [
-                styles.cancelButton,
-                pressed && styles.buttonPressed,
-              ]}
-            >
-              <Text style={styles.cancelText}>{cancelLabel}</Text>
-            </Pressable>
+            />
+          </View>
             <Pressable
               ref={confirmRef}
               accessibilityRole="button"
@@ -159,10 +155,7 @@ const createStyles = (c: Colors) =>
     cancelButton: {
       alignItems: "center",
       flex: 1,
-      minHeight: 48,
       justifyContent: "center",
-      paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.md,
     },
     confirmButton: {
       alignItems: "center",
@@ -176,10 +169,6 @@ const createStyles = (c: Colors) =>
     },
     destructiveButton: {
       backgroundColor: c.status.error,
-    },
-    cancelText: {
-      ...typography.bodyMedium,
-      color: c.text.secondary,
     },
     confirmText: {
       ...typography.bodyMedium,

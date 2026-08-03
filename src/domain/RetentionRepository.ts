@@ -23,5 +23,4 @@ export interface RetentionRepository {
       totalRetentions: number;
     }[]
   >;
-  findRecent(limit: number): Promise<Retention[]>;
 }

@@ -240,15 +240,4 @@ export class SQLiteGeneralPaymentRepository
         row.tag_amount + row.accountant_amount + row.savings_amount,
     }));
   }
-
-  async findRecent(limit: number): Promise<GeneralPayment[]> {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync<GeneralPaymentRow>(
-      `SELECT * FROM general_payments
-       ORDER BY payment_date DESC, created_at DESC
-       LIMIT ?`,
-      [limit],
-    );
-    return rows.map(mapRow);
-  }
 }

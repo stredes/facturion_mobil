@@ -49,6 +49,7 @@ function formatCategoryLabel(category: GeneralPaymentCategory): string {
 }
 
 export default function PagosScreen() {
+  const router = useRouter();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [segment, setSegment] = useState<Segment>("general");
@@ -74,39 +75,53 @@ export default function PagosScreen() {
   } = useTaxPayments();
 
   return (
-    <ScreenContainer>
-      <AppHeader title="Pagos" subtitle="Registros de pagos generales e IVA" />
-      <View style={styles.segmentRow}>
-        <FilterChip
-          label="Pagos generales"
-          selected={segment === "general"}
-          onPress={() => setSegment("general")}
-        />
-        <FilterChip
-          label="IVA"
-          selected={segment === "iva"}
-          onPress={() => setSegment("iva")}
-        />
-      </View>
+    <View style={styles.flex}>
+      <ScreenContainer>
+        <AppHeader title="Pagos" subtitle="Registros de pagos generales e IVA" />
+        <View style={styles.segmentRow}>
+          <FilterChip
+            label="Pagos generales"
+            selected={segment === "general"}
+            onPress={() => setSegment("general")}
+          />
+          <FilterChip
+            label="IVA"
+            selected={segment === "iva"}
+            onPress={() => setSegment("iva")}
+          />
+        </View>
+
+        {segment === "general" ? (
+          <GeneralPaymentsView
+            categoryFilter={categoryFilter}
+            error={generalError}
+            isLoading={generalLoading}
+            onCategoryChange={setCategoryFilter}
+            onRetry={generalRefresh}
+            payments={generalPayments}
+          />
+        ) : (
+          <TaxPaymentsView
+            error={taxError}
+            isLoading={taxLoading}
+            onRetry={taxRefresh}
+            payments={taxPayments}
+          />
+        )}
+      </ScreenContainer>
 
       {segment === "general" ? (
-        <GeneralPaymentsView
-          categoryFilter={categoryFilter}
-          error={generalError}
-          isLoading={generalLoading}
-          onCategoryChange={setCategoryFilter}
-          onRetry={generalRefresh}
-          payments={generalPayments}
+        <FloatingActionButton
+          accessibilityLabel="Registrar pago general"
+          onPress={() => router.push("/pagos/general/nueva")}
         />
       ) : (
-        <TaxPaymentsView
-          error={taxError}
-          isLoading={taxLoading}
-          onRetry={taxRefresh}
-          payments={taxPayments}
+        <FloatingActionButton
+          accessibilityLabel="Registrar pago de IVA"
+          onPress={() => router.push("/pagos/iva/nueva")}
         />
       )}
-    </ScreenContainer>
+    </View>
   );
 }
 
@@ -278,11 +293,6 @@ function GeneralPaymentsView({
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
-
-      <FloatingActionButton
-        accessibilityLabel="Registrar pago general"
-        onPress={() => router.push("/pagos/general/nueva")}
-      />
     </View>
   );
 }
@@ -408,11 +418,6 @@ function TaxPaymentsView({
         }
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-      />
-
-      <FloatingActionButton
-        accessibilityLabel="Registrar pago de IVA"
-        onPress={() => router.push("/pagos/iva/nueva")}
       />
     </View>
   );

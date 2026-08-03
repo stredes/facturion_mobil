@@ -2,7 +2,6 @@ import type {
   CreateTaxPaymentInput,
   TaxPayment,
   TaxPaymentFilters,
-  TaxPeriodSummary,
   UpdateTaxPaymentInput,
 } from "../domain/TaxPayment";
 import type { TaxPaymentRepository } from "../domain/TaxPaymentRepository";
@@ -39,17 +38,9 @@ export class TaxPaymentService {
     return this.repository.getTotalPaidTax();
   }
 
-  async getPeriodSummary(period: string): Promise<TaxPeriodSummary> {
-    return this.repository.getPeriodSummary(period);
-  }
-
   async getMonthlySummary(): Promise<
     { period: string; paidTax: number }[]
   > {
     return this.repository.getMonthlySummary();
-  }
-
-  async findRecent(limit: number): Promise<TaxPayment[]> {
-    return this.repository.findRecent(limit);
   }
 }

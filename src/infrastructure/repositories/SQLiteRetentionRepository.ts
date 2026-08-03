@@ -254,15 +254,4 @@ export class SQLiteRetentionRepository implements RetentionRepository {
         row.savings_amount,
     }));
   }
-
-  async findRecent(limit: number): Promise<Retention[]> {
-    const db = await getDatabase();
-    const rows = await db.getAllAsync<RetentionRow>(
-      `SELECT * FROM retentions
-       ORDER BY retention_date DESC, created_at DESC
-       LIMIT ?`,
-      [limit],
-    );
-    return rows.map(mapRow);
-  }
 }

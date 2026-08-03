@@ -172,46 +172,49 @@ export default function RetencionScreen() {
   }
 
   return (
-    <ScreenContainer>
-      <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
-      <View style={styles.filters}>
-        {CATEGORY_FILTERS.map((c) => (
-          <FilterChip
-            key={c.value}
-            label={c.label}
-            selected={categoryFilter === c.value}
-            onPress={() => setCategoryFilter(c.value)}
-          />
-        ))}
-      </View>
+    <View style={styles.flex}>
+      <ScreenContainer>
+        <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
+        <View style={styles.filters}>
+          {CATEGORY_FILTERS.map((c) => (
+            <FilterChip
+              key={c.value}
+              label={c.label}
+              selected={categoryFilter === c.value}
+              onPress={() => setCategoryFilter(c.value)}
+            />
+          ))}
+        </View>
 
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        data={retentions}
-        ItemSeparatorComponent={ItemSeparatorComponent}
-        keyExtractor={keyExtractor}
-        refreshControl={
-          <RefreshControl
-            colors={[colors.primary.main]}
-            onRefresh={onRefresh}
-            refreshing={isRefreshing}
-            tintColor={colors.primary.main}
-          />
-        }
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={retentions}
+          ItemSeparatorComponent={ItemSeparatorComponent}
+          keyExtractor={keyExtractor}
+          refreshControl={
+            <RefreshControl
+              colors={[colors.primary.main]}
+              onRefresh={onRefresh}
+              refreshing={isRefreshing}
+              tintColor={colors.primary.main}
+            />
+          }
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
+      </ScreenContainer>
 
       <FloatingActionButton
         accessibilityLabel="Registrar retencion"
         onPress={() => router.push("/retenciones/nueva")}
       />
-    </ScreenContainer>
+    </View>
   );
 }
 
 const createStyles = (c: Colors) =>
   StyleSheet.create({
+    flex: { flex: 1 },
     filters: {
       flexDirection: "row",
       flexWrap: "wrap",

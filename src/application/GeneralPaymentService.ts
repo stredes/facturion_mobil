@@ -44,8 +44,4 @@ export class GeneralPaymentService {
   > {
     return this.repository.getMonthlySummary();
   }
-
-  async findRecent(limit: number): Promise<GeneralPayment[]> {
-    return this.repository.findRecent(limit);
-  }
 }
