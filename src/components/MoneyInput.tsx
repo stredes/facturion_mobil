@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import {
   formatMoneyInput,
   parseMoneyInput,
@@ -21,6 +21,8 @@ export function MoneyInput({
   onChangeValue,
 }: MoneyInputProps) {
   const [focused, setFocused] = useState(false);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const formattedValue = formatMoneyInput(value);
 
   return (
@@ -60,50 +62,51 @@ export function MoneyInput({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.label,
-    color: colors.text.primary,
-    marginBottom: spacing.xxs,
-  },
-  inputWrapper: {
-    alignItems: "center",
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    flexDirection: "row",
-    minHeight: spacing.inputHeight,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  inputError: {
-    borderColor: colors.status.error,
-  },
-  inputFocused: {
-    borderColor: colors.primary.main,
-  },
-  prefix: {
-    ...typography.body,
-    color: colors.text.tertiary,
-    fontWeight: "600",
-    marginRight: spacing.xs,
-  },
-  input: {
-    color: colors.text.primary,
-    flex: 1,
-    fontSize: 15,
-    lineHeight: 20,
-    paddingVertical: 0,
-    textAlign: "right",
-  },
-  error: {
-    color: colors.status.error,
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 5,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.label,
+      color: c.text.primary,
+      marginBottom: spacing.xxs,
+    },
+    inputWrapper: {
+      alignItems: "center",
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      flexDirection: "row",
+      minHeight: spacing.inputHeight,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    inputError: {
+      borderColor: c.status.error,
+    },
+    inputFocused: {
+      borderColor: c.primary.main,
+    },
+    prefix: {
+      ...typography.body,
+      color: c.text.tertiary,
+      fontWeight: "600",
+      marginRight: spacing.xs,
+    },
+    input: {
+      color: c.text.primary,
+      flex: 1,
+      fontSize: 15,
+      lineHeight: 20,
+      paddingVertical: 0,
+      textAlign: "right",
+    },
+    error: {
+      color: c.status.error,
+      fontSize: 12,
+      lineHeight: 16,
+      marginTop: 5,
+    },
+  });

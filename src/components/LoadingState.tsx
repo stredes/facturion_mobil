@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography, useThemeColors, type Colors } from "../theme";
 
 interface LoadingStateProps {
   message?: string;
@@ -11,6 +12,9 @@ export function LoadingState({
   message = "Cargando...",
   size = "large",
 }: LoadingStateProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityLabel={message}
@@ -24,21 +28,22 @@ export function LoadingState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    gap: spacing.md,
-    justifyContent: "center",
-    padding: spacing.lg,
-  },
-  large: {
-    paddingVertical: spacing.xxl,
-  },
-  small: {
-    paddingVertical: spacing.lg,
-  },
-  message: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      alignItems: "center",
+      gap: spacing.md,
+      justifyContent: "center",
+      padding: spacing.lg,
+    },
+    large: {
+      paddingVertical: spacing.xxl,
+    },
+    small: {
+      paddingVertical: spacing.lg,
+    },
+    message: {
+      ...typography.caption,
+      color: c.text.secondary,
+    },
+  });

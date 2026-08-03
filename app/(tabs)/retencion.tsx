@@ -18,7 +18,7 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { Skeleton } from "@/components/LoadingSkeleton";
 import type { Retention, RetentionCategory } from "@/domain/Retention";
 import { useRetentions } from "@/hooks/useRetentions";
-import { colors, radius, spacing, typography } from "@/theme";
+import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
 import { formatRetentionCategoryLabel } from "@/utils/retentionLabels";
@@ -35,6 +35,8 @@ const CATEGORY_FILTERS: { value: RetentionFilter; label: string }[] = [
 
 export default function RetencionScreen() {
   const router = useRouter();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [categoryFilter, setCategoryFilter] = useState<RetentionFilter>("all");
 
   const filters = useMemo(
@@ -208,54 +210,55 @@ export default function RetencionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  filters: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  listContent: {
-    paddingBottom: 120,
-  },
-  separator: {
-    height: spacing.gridGap,
-  },
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    gap: spacing.xs,
-    padding: spacing.cardPadding,
-  },
-  cardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cardCategory: {
-    ...typography.cardTitle,
-    color: colors.text.primary,
-  },
-  cardAmount: {
-    ...typography.cardAmount,
-    color: colors.primary.main,
-    fontVariant: ["tabular-nums"],
-  },
-  cardDate: {
-    ...typography.caption,
-    color: colors.text.tertiary,
-  },
-  cardDesc: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  skeletonList: {
-    gap: spacing.gridGap,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    filters: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    listContent: {
+      paddingBottom: 120,
+    },
+    separator: {
+      height: spacing.gridGap,
+    },
+    card: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.xs,
+      padding: spacing.cardPadding,
+    },
+    cardTop: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    cardCategory: {
+      ...typography.cardTitle,
+      color: c.text.primary,
+    },
+    cardAmount: {
+      ...typography.cardAmount,
+      color: c.primary.main,
+      fontVariant: ["tabular-nums"],
+    },
+    cardDate: {
+      ...typography.caption,
+      color: c.text.tertiary,
+    },
+    cardDesc: {
+      ...typography.bodyMedium,
+      color: c.text.secondary,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    skeletonList: {
+      gap: spacing.gridGap,
+    },
+  });

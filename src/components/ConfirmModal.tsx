@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentRef } from "react";
+import { useEffect, useMemo, useRef, type ComponentRef } from "react";
 import {
   Animated,
   BackHandler,
@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { colors, radius, shadows, spacing, typography } from "../theme";
+import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { hapticLight, hapticSuccess } from "../utils/haptics";
 
 interface ConfirmModalProps {
@@ -33,8 +33,10 @@ export function ConfirmModal({
   onCancel,
   destructive = false,
 }: ConfirmModalProps) {
+  const colors = useThemeColors();
   const scale = useRef(new Animated.Value(0.96)).current;
   const confirmRef = useRef<ComponentRef<typeof Pressable>>(null);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     if (visible) {
@@ -124,68 +126,69 @@ export function ConfirmModal({
 }
 
 
-const styles = StyleSheet.create({
-  overlay: {
-    alignItems: "center",
-    backgroundColor: colors.overlay,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.lg,
-  },
-  modal: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radius.modal,
-    gap: spacing.lg,
-    maxWidth: 420,
-    padding: spacing.xl,
-    width: "100%",
-  },
-  title: {
-    ...typography.sectionTitle,
-    color: colors.text.primary,
-  },
-  message: {
-    ...typography.body,
-    color: colors.text.secondary,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  cancelButton: {
-    alignItems: "center",
-    flex: 1,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  confirmButton: {
-    alignItems: "center",
-    backgroundColor: colors.primary.main,
-    borderRadius: radius.button,
-    flex: 1,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  destructiveButton: {
-    backgroundColor: colors.status.error,
-  },
-  cancelText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-  },
-  confirmText: {
-    ...typography.bodyMedium,
-    color: colors.surface.primary,
-  },
-  destructiveText: {
-    color: colors.surface.primary,
-  },
-  buttonPressed: {
-    opacity: 0.85,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    overlay: {
+      alignItems: "center",
+      backgroundColor: c.overlay,
+      flex: 1,
+      justifyContent: "center",
+      padding: spacing.lg,
+    },
+    modal: {
+      backgroundColor: c.surface.primary,
+      borderRadius: radius.modal,
+      gap: spacing.lg,
+      maxWidth: 420,
+      padding: spacing.xl,
+      width: "100%",
+    },
+    title: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+    },
+    message: {
+      ...typography.body,
+      color: c.text.secondary,
+    },
+    actions: {
+      flexDirection: "row",
+      gap: spacing.md,
+      marginTop: spacing.sm,
+    },
+    cancelButton: {
+      alignItems: "center",
+      flex: 1,
+      minHeight: 48,
+      justifyContent: "center",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    confirmButton: {
+      alignItems: "center",
+      backgroundColor: c.primary.main,
+      borderRadius: radius.button,
+      flex: 1,
+      minHeight: 48,
+      justifyContent: "center",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    destructiveButton: {
+      backgroundColor: c.status.error,
+    },
+    cancelText: {
+      ...typography.bodyMedium,
+      color: c.text.secondary,
+    },
+    confirmText: {
+      ...typography.bodyMedium,
+      color: c.surface.primary,
+    },
+    destructiveText: {
+      color: c.surface.primary,
+    },
+    buttonPressed: {
+      opacity: 0.85,
+    },
+  });

@@ -9,7 +9,7 @@ import {
 } from "../domain/invoiceCalculations";
 import { invoiceSchema } from "../schemas/invoiceSchema";
 import type { InvoiceFormValues } from "../schemas/invoiceSchema";
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { formatCurrency } from "../utils/currency";
 import { toISODate } from "../utils/dates";
 import { FormSection } from "./form/FormSection";
@@ -137,6 +137,9 @@ function ReadonlyBox({
   value: string;
   hint?: string;
 }) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessible
@@ -155,30 +158,31 @@ function ReadonlyBox({
   );
 }
 
-const styles = StyleSheet.create({
-  readonlyBox: {
-    backgroundColor: colors.background.tertiary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    gap: spacing.xs,
-    padding: spacing.lg,
-  },
-  readonlyHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  readonlyLabel: {
-    ...typography.label,
-    color: colors.text.secondary,
-  },
-  readonlyHint: {
-    ...typography.small,
-    color: colors.text.tertiary,
-  },
-  readonlyValue: {
-    ...typography.cardAmount,
-    color: colors.text.primary,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    readonlyBox: {
+      backgroundColor: c.background.tertiary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      gap: spacing.xs,
+      padding: spacing.lg,
+    },
+    readonlyHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    readonlyLabel: {
+      ...typography.label,
+      color: c.text.secondary,
+    },
+    readonlyHint: {
+      ...typography.small,
+      color: c.text.tertiary,
+    },
+    readonlyValue: {
+      ...typography.cardAmount,
+      color: c.text.primary,
+    },
+  });

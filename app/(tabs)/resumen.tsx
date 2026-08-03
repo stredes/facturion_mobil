@@ -15,10 +15,11 @@ import { MonthlySummaryCard } from "@/components/summary/MonthlySummaryCard";
 import { MonthlySummarySkeleton } from "@/components/summary/MonthlySummarySkeleton";
 import { useMonthlySummary } from "@/hooks/useMonthlySummary";
 import type { CombinedMonth } from "@/utils/monthlySummary";
-import { colors, spacing } from "@/theme";
+import { useThemeColors, spacing } from "@/theme";
 
 export default function SummaryScreen() {
   const { combined, isLoading, error, refresh } = useMonthlySummary();
+  const colors = useThemeColors();
   const [expandedPeriods, setExpandedPeriods] = useState<Set<string>>(
     new Set(),
   );

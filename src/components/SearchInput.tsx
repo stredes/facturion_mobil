@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { radius, spacing, useThemeColors, type Colors } from "../theme";
 import { hapticLight } from "../utils/haptics";
 
 interface SearchInputProps {
@@ -26,6 +26,8 @@ export function SearchInput({
 }: SearchInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     setDisplayValue(value);
@@ -87,36 +89,37 @@ export function SearchInput({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: spacing.sm,
-    minHeight: spacing.inputHeight,
-    paddingHorizontal: 14,
-  },
-  icon: {
-    color: colors.text.tertiary,
-    fontSize: 16,
-  },
-  input: {
-    color: colors.text.primary,
-    flex: 1,
-    fontSize: 15,
-    lineHeight: 20,
-    minHeight: spacing.inputHeight - 2,
-    paddingVertical: 0,
-  },
-  clearButton: {
-    padding: 4,
-  },
-  clearIcon: {
-    color: colors.text.tertiary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      alignItems: "center",
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      flexDirection: "row",
+      gap: spacing.sm,
+      minHeight: spacing.inputHeight,
+      paddingHorizontal: 14,
+    },
+    icon: {
+      color: c.text.tertiary,
+      fontSize: 16,
+    },
+    input: {
+      color: c.text.primary,
+      flex: 1,
+      fontSize: 15,
+      lineHeight: 20,
+      minHeight: spacing.inputHeight - 2,
+      paddingVertical: 0,
+    },
+    clearButton: {
+      padding: 4,
+    },
+    clearIcon: {
+      color: c.text.tertiary,
+      fontSize: 14,
+      fontWeight: "600",
+    },
+  });

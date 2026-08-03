@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 
 interface TextInputFieldProps {
   label: string;
@@ -25,6 +25,8 @@ export function TextInputField({
   onChangeText,
 }: TextInputFieldProps) {
   const [focused, setFocused] = useState(false);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
@@ -61,41 +63,42 @@ export function TextInputField({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.label,
-    color: colors.text.primary,
-    marginBottom: spacing.xxs,
-  },
-  input: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    color: colors.text.primary,
-    fontSize: 15,
-    lineHeight: 20,
-    minHeight: spacing.inputHeight,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  multiline: {
-    minHeight: 94,
-    textAlignVertical: "top",
-  },
-  inputError: {
-    borderColor: colors.status.error,
-  },
-  inputFocused: {
-    borderColor: colors.primary.main,
-  },
-  error: {
-    color: colors.status.error,
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 5,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.label,
+      color: c.text.primary,
+      marginBottom: spacing.xxs,
+    },
+    input: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      color: c.text.primary,
+      fontSize: 15,
+      lineHeight: 20,
+      minHeight: spacing.inputHeight,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    multiline: {
+      minHeight: 94,
+      textAlignVertical: "top",
+    },
+    inputError: {
+      borderColor: c.status.error,
+    },
+    inputFocused: {
+      borderColor: c.primary.main,
+    },
+    error: {
+      color: c.status.error,
+      fontSize: 12,
+      lineHeight: 16,
+      marginTop: 5,
+    },
+  });

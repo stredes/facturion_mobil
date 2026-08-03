@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../../theme";
 import { AnimatedPressable } from "../AnimatedPressable";
 import { hapticLight, hapticSuccess, hapticError } from "../../utils/haptics";
 
@@ -38,6 +38,9 @@ export function FormScaffold({
   cancelLabel = "Cancelar",
   onCancel,
 }: FormScaffoldProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const handleSubmit = () => {
     hapticLight();
     onSubmit();
@@ -105,87 +108,88 @@ export function FormScaffold({
   );
 }
 
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-  },
-  header: {
-    alignItems: "center",
-    borderBottomColor: colors.border.light,
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  headerText: {
-    flex: 1,
-    gap: spacing.xxs,
-    minWidth: 0,
-  },
-  headerTitle: {
-    ...typography.screenTitle,
-    color: colors.text.primary,
-  },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  cancelButton: {
-    borderColor: colors.border.light,
-    borderRadius: radius.button,
-    borderWidth: 1,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  cancelText: {
-    ...typography.bodyMedium,
-    color: colors.text.secondary,
-  },
-  scrollContent: {
-    padding: spacing.lg,
-    paddingBottom: spacing.lg,
-  },
-  submitErrorBox: {
-    backgroundColor: colors.statusLight.error,
-    borderColor: colors.statusLight.error,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    padding: spacing.lg,
-  },
-  submitErrorText: {
-    ...typography.bodyMedium,
-    color: colors.status.error,
-  },
-  footerSpacer: {
-    height: spacing.xl,
-  },
-  stickyFooter: {
-    backgroundColor: colors.surface.primary,
-    borderTopColor: colors.border.light,
-    borderTopWidth: 1,
-    padding: spacing.lg,
-    paddingBottom: spacing.lg + 6,
-  },
-  submitButton: {
-    alignItems: "center",
-    backgroundColor: colors.primary.main,
-    borderRadius: radius.button,
-    minHeight: spacing.buttonHeight,
-    justifyContent: "center",
-    paddingHorizontal: 18,
-  },
-  submitButtonDisabled: {
-    backgroundColor: colors.text.disabled,
-  },
-  submitText: {
-    ...typography.bodyMedium,
-    color: colors.text.inverse,
-  },
-  submitTextDisabled: {
-    color: colors.text.secondary,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    keyboardView: {
+      flex: 1,
+    },
+    header: {
+      alignItems: "center",
+      borderBottomColor: c.border.light,
+      borderBottomWidth: 1,
+      flexDirection: "row",
+      gap: spacing.md,
+      justifyContent: "space-between",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    headerText: {
+      flex: 1,
+      gap: spacing.xxs,
+      minWidth: 0,
+    },
+    headerTitle: {
+      ...typography.screenTitle,
+      color: c.text.primary,
+    },
+    headerSubtitle: {
+      ...typography.caption,
+      color: c.text.secondary,
+    },
+    cancelButton: {
+      borderColor: c.border.light,
+      borderRadius: radius.button,
+      borderWidth: 1,
+      minHeight: 48,
+      justifyContent: "center",
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    cancelText: {
+      ...typography.bodyMedium,
+      color: c.text.secondary,
+    },
+    scrollContent: {
+      padding: spacing.lg,
+      paddingBottom: spacing.lg,
+    },
+    submitErrorBox: {
+      backgroundColor: c.statusLight.error,
+      borderColor: c.statusLight.error,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      padding: spacing.lg,
+    },
+    submitErrorText: {
+      ...typography.bodyMedium,
+      color: c.status.error,
+    },
+    footerSpacer: {
+      height: spacing.xl,
+    },
+    stickyFooter: {
+      backgroundColor: c.surface.primary,
+      borderTopColor: c.border.light,
+      borderTopWidth: 1,
+      padding: spacing.lg,
+      paddingBottom: spacing.lg + 6,
+    },
+    submitButton: {
+      alignItems: "center",
+      backgroundColor: c.primary.main,
+      borderRadius: radius.button,
+      minHeight: spacing.buttonHeight,
+      justifyContent: "center",
+      paddingHorizontal: 18,
+    },
+    submitButtonDisabled: {
+      backgroundColor: c.text.disabled,
+    },
+    submitText: {
+      ...typography.bodyMedium,
+      color: c.text.inverse,
+    },
+    submitTextDisabled: {
+      color: c.text.secondary,
+    },
+  });

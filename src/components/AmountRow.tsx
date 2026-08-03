@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, typography } from "../theme";
+import { typography, useThemeColors, type Colors } from "../theme";
 
 interface AmountRowProps {
   label: string;
@@ -9,7 +10,9 @@ interface AmountRowProps {
 }
 
 export function AmountRow({ label, value }: AmountRowProps) {
+  const colors = useThemeColors();
   const valueColor = colors.text.primary;
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.row} accessibilityRole="summary" accessibilityLabel={`${label}: ${value}`}>
@@ -19,18 +22,19 @@ export function AmountRow({ label, value }: AmountRowProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  label: {
-    ...typography.label,
-    color: colors.text.secondary,
-  },
-  value: {
-    ...typography.body,
-    fontWeight: "600",
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    row: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    label: {
+      ...typography.label,
+      color: c.text.secondary,
+    },
+    value: {
+      ...typography.body,
+      fontWeight: "600",
+    },
+  });

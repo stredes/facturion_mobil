@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography, useThemeColors, type Colors } from "../theme";
 
 interface SectionTitleProps {
   title: string;
@@ -11,6 +12,9 @@ export function SectionTitle({
   title,
   subtitle,
 }: SectionTitleProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text
@@ -26,15 +30,16 @@ export function SectionTitle({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xxs,
-    marginBottom: spacing.xxs,
-  },
-  title: {
-    color: colors.text.primary,
-  },
-  subtitle: {
-    color: colors.text.tertiary,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      gap: spacing.xxs,
+      marginBottom: spacing.xxs,
+    },
+    title: {
+      color: c.text.primary,
+    },
+    subtitle: {
+      color: c.text.tertiary,
+    },
+  });

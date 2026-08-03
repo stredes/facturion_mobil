@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
@@ -18,7 +18,7 @@ import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
-import { colors } from "@/theme";
+import { useThemeColors, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 import { formatCurrency } from "@/utils/currency";
 
@@ -41,6 +41,8 @@ const rgba = (hex: string, opacity: number) => {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {
     invoices,
     isLoading: invoicesLoading,
@@ -403,107 +405,108 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 100,
-  },
-  mainCard: {
-    backgroundColor: colors.primary.dark,
-    borderRadius: 16,
-    marginBottom: 20,
-    padding: 20,
-  },
-  mainLabel: {
-    color: colors.text.inverse,
-    fontSize: 16,
-    fontWeight: "600",
-    opacity: 0.9,
-  },
-  mainAmount: {
-    color: colors.text.inverse,
-    fontSize: 36,
-    fontWeight: "700",
-    marginTop: 4,
-  },
-  mainStats: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.text.inverse,
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statValue: {
-    color: colors.text.inverse,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  statLabel: {
-    color: colors.text.inverse,
-    fontSize: 12,
-    marginTop: 2,
-    opacity: 0.7,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: colors.text.inverse,
-    opacity: 0.2,
-  },
-  chartCard: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 20,
-    padding: 16,
-  },
-  chartContainer: {
-    alignItems: "center",
-  },
-  chart: {
-    borderRadius: 16,
-  },
-  pieContainer: {
-    alignItems: "center",
-  },
-  summarySection: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 16,
-  },
-  retentionLink: {
-    alignItems: "center",
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: 16,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  retentionLinkText: {
-    color: colors.primary.main,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  retentionLinkArrow: {
-    color: colors.text.tertiary,
-    fontSize: 20,
-  },
-  list: {
-    gap: 12,
-    paddingBottom: 100,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingBottom: 100,
+    },
+    mainCard: {
+      backgroundColor: c.primary.dark,
+      borderRadius: 16,
+      marginBottom: 20,
+      padding: 20,
+    },
+    mainLabel: {
+      color: c.text.inverse,
+      fontSize: 16,
+      fontWeight: "600",
+      opacity: 0.9,
+    },
+    mainAmount: {
+      color: c.text.inverse,
+      fontSize: 36,
+      fontWeight: "700",
+      marginTop: 4,
+    },
+    mainStats: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      marginTop: 16,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: c.text.inverse,
+    },
+    statItem: {
+      alignItems: "center",
+      flex: 1,
+    },
+    statValue: {
+      color: c.text.inverse,
+      fontSize: 18,
+      fontWeight: "700",
+    },
+    statLabel: {
+      color: c.text.inverse,
+      fontSize: 12,
+      marginTop: 2,
+      opacity: 0.7,
+    },
+    statDivider: {
+      width: 1,
+      height: 30,
+      backgroundColor: c.text.inverse,
+      opacity: 0.2,
+    },
+    chartCard: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: 16,
+      borderWidth: 1,
+      marginBottom: 20,
+      padding: 16,
+    },
+    chartContainer: {
+      alignItems: "center",
+    },
+    chart: {
+      borderRadius: 16,
+    },
+    pieContainer: {
+      alignItems: "center",
+    },
+    summarySection: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 12,
+      marginBottom: 16,
+    },
+    retentionLink: {
+      alignItems: "center",
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: 16,
+      borderWidth: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 20,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    retentionLinkText: {
+      color: c.primary.main,
+      fontSize: 15,
+      fontWeight: "600",
+    },
+    retentionLinkArrow: {
+      color: c.text.tertiary,
+      fontSize: 20,
+    },
+    list: {
+      gap: 12,
+      paddingBottom: 100,
+    },
+  });

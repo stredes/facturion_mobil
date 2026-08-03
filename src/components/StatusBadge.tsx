@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 
 type BadgeVariant = "paid" | "pending" | "registered" | "none";
 
@@ -9,38 +10,43 @@ interface StatusBadgeProps {
   label?: string;
 }
 
-const badgeConfig: Record<
-  BadgeVariant,
-  { label: string; bg: string; text: string; dot: string }
-> = {
-  paid: {
-    label: "Pagada",
-    bg: colors.statusLight.success,
-    text: colors.text.primary,
-    dot: colors.status.success,
-  },
-  pending: {
-    label: "Pendiente",
-    bg: colors.statusLight.warning,
-    text: colors.text.primary,
-    dot: colors.status.warning,
-  },
-  registered: {
-    label: "Pago registrado",
-    bg: colors.statusLight.info,
-    text: colors.text.primary,
-    dot: colors.status.info,
-  },
-  none: {
-    label: "Sin fecha de pago",
-    bg: colors.border.light + "80",
-    text: colors.text.secondary,
-    dot: colors.text.tertiary,
-  },
-};
+function buildBadgeConfig(
+  c: Colors,
+): Record<BadgeVariant, { label: string; bg: string; text: string; dot: string }> {
+  return {
+    paid: {
+      label: "Pagada",
+      bg: c.statusLight.success,
+      text: c.text.primary,
+      dot: c.status.success,
+    },
+    pending: {
+      label: "Pendiente",
+      bg: c.statusLight.warning,
+      text: c.text.primary,
+      dot: c.status.warning,
+    },
+    registered: {
+      label: "Pago registrado",
+      bg: c.statusLight.info,
+      text: c.text.primary,
+      dot: c.status.info,
+    },
+    none: {
+      label: "Sin fecha de pago",
+      bg: c.border.light + "80",
+      text: c.text.secondary,
+      dot: c.text.tertiary,
+    },
+  };
+}
 
 export function StatusBadge({ status, label }: StatusBadgeProps) {
-  const config = badgeConfig[status];
+  const colors = useThemeColors();
+  const config = useMemo(
+    () => buildBadgeConfig(colors)[status],
+    [colors, status],
+  );
 
   return (
     <View

@@ -41,7 +41,7 @@ export const colors = {
   },
   overlay: "rgba(18, 59, 93, 0.4)",
   shadow: "rgba(18, 59, 93, 0.08)",
-} as const;
+};
 
 export const darkColors = {
   primary: {
@@ -81,13 +81,25 @@ export const darkColors = {
     medium: "#26324A",
   },
   series: {
-    accountant: "#A78BFA",
-    savings: "#34D399",
+    accountant: "#8B5CF6",
+    savings: "#10B981",
   },
-  overlay: "rgba(3, 8, 18, 0.6)",
+  overlay: "rgba(0, 0, 0, 0.5)",
   shadow: "rgba(0, 0, 0, 0.5)",
-} as const;
+};
 
-export type Colors = typeof colors;
+export interface ThemeColors {
+  primary: { main: string; light: string; dark: string };
+  background: { primary: string; tertiary: string };
+  surface: { primary: string; secondary: string };
+  text: { primary: string; secondary: string; tertiary: string; inverse: string; disabled: string };
+  status: { success: string; warning: string; error: string; info: string };
+  statusLight: { success: string; warning: string; error: string; info: string };
+  border: { light: string; medium: string };
+  series: { accountant: string; savings: string };
+  overlay: string;
+  shadow: string;
+}
 
-export type DarkColors = typeof darkColors;
+export type Colors = ThemeColors;
+export type DarkColors = ThemeColors;

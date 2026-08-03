@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { radius, spacing, useThemeColors, type Colors } from "../theme";
 
 interface DateInputProps {
   label: string;
@@ -19,6 +19,8 @@ export function DateInput({
   onChangeText,
 }: DateInputProps) {
   const [focused, setFocused] = useState(false);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
@@ -54,34 +56,35 @@ export function DateInput({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xs,
-  },
-  label: {
-    color: colors.text.primary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  input: {
-    backgroundColor: colors.surface.primary,
-    borderColor: colors.border.light,
-    borderRadius: radius.input,
-    borderWidth: 1,
-    color: colors.text.primary,
-    fontSize: 16,
-    minHeight: spacing.inputHeight,
-    paddingHorizontal: 14,
-  },
-  inputError: {
-    borderColor: colors.status.error,
-  },
-  inputFocused: {
-    borderColor: colors.primary.main,
-  },
-  error: {
-    color: colors.status.error,
-    fontSize: 12,
-    fontWeight: "500",
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    container: {
+      gap: spacing.xs,
+    },
+    label: {
+      color: c.text.primary,
+      fontSize: 14,
+      fontWeight: "600",
+    },
+    input: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.input,
+      borderWidth: 1,
+      color: c.text.primary,
+      fontSize: 16,
+      minHeight: spacing.inputHeight,
+      paddingHorizontal: 14,
+    },
+    inputError: {
+      borderColor: c.status.error,
+    },
+    inputFocused: {
+      borderColor: c.primary.main,
+    },
+    error: {
+      color: c.status.error,
+      fontSize: 12,
+      fontWeight: "500",
+    },
+  });

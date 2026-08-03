@@ -8,13 +8,15 @@ import { InvoiceForm } from "@/components/InvoiceForm";
 import { FormSkeleton } from "@/components/LoadingSkeleton";
 import type { CreateInvoiceInput, Invoice } from "../../../src/domain/Invoice";
 import { useInvoiceService } from "../../../src/infrastructure/di/ServiceContext";
-import { colors, spacing } from "../../../src/theme";
+import { spacing, useThemeColors, type Colors } from "../../../src/theme";
 
 export default function EditInvoiceScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const invoiceId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const service = useInvoiceService();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -121,12 +123,13 @@ export default function EditInvoiceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: "center",
-    backgroundColor: colors.background.primary,
-    flex: 1,
-    justifyContent: "center",
-    padding: spacing.xxl,
-  },
-});
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: "center",
+      backgroundColor: c.background.primary,
+      flex: 1,
+      justifyContent: "center",
+      padding: spacing.xxl,
+    },
+  });
