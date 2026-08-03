@@ -24,6 +24,10 @@ interface InvoiceFormProps {
   isSubmitting?: boolean;
   submitError?: string | null;
   onSubmit: (input: CreateInvoiceInput) => Promise<void>;
+  title?: string;
+  subtitle?: string;
+  cancelLabel?: string;
+  onCancel?: () => void;
 }
 
 function buildDefaultValues(
@@ -44,6 +48,10 @@ export function InvoiceForm({
   isSubmitting = false,
   submitError,
   onSubmit,
+  title,
+  subtitle,
+  cancelLabel,
+  onCancel,
 }: InvoiceFormProps) {
   const defaultValues = useMemo(
     () => buildDefaultValues(initialValues),
@@ -80,6 +88,10 @@ export function InvoiceForm({
       onSubmit={submit}
       submitError={submitError}
       submitLabel={submitLabel}
+      title={title}
+      subtitle={subtitle}
+      cancelLabel={cancelLabel}
+      onCancel={onCancel}
     >
       <FormSection icon="i" title="Informacion de la factura">
         <TextField control={control} name="invoiceNumber" label="Numero de factura" />

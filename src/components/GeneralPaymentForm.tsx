@@ -27,6 +27,10 @@ interface GeneralPaymentFormProps {
   isSubmitting?: boolean;
   submitError?: string | null;
   onSubmit: (input: CreateGeneralPaymentInput) => Promise<void>;
+  title?: string;
+  subtitle?: string;
+  cancelLabel?: string;
+  onCancel?: () => void;
 }
 
 function buildDefaultValues(
@@ -47,6 +51,10 @@ export function GeneralPaymentForm({
   isSubmitting = false,
   submitError,
   onSubmit,
+  title,
+  subtitle,
+  cancelLabel,
+  onCancel,
 }: GeneralPaymentFormProps) {
   const defaultValues = useMemo(
     () => buildDefaultValues(initialValues),
@@ -78,6 +86,10 @@ export function GeneralPaymentForm({
       onSubmit={submit}
       submitError={submitError}
       submitLabel={submitLabel}
+      title={title}
+      subtitle={subtitle}
+      cancelLabel={cancelLabel}
+      onCancel={onCancel}
     >
       <Text style={styles.sectionTitle}>Categoria</Text>
       <Controller

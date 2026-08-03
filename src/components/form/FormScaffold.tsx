@@ -18,6 +18,10 @@ interface FormScaffoldProps {
   submitError?: string | null;
   onSubmit: () => void;
   gap?: number;
+  title?: string;
+  subtitle?: string;
+  cancelLabel?: string;
+  onCancel?: () => void;
 }
 
 export function FormScaffold({
@@ -27,12 +31,39 @@ export function FormScaffold({
   submitError,
   onSubmit,
   gap = spacing.lg,
+  title,
+  subtitle,
+  cancelLabel = "Cancelar",
+  onCancel,
 }: FormScaffoldProps) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.select({ ios: "padding", default: undefined })}
       style={styles.keyboardView}
     >
+      {title ? (
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text accessibilityRole="header" style={styles.headerTitle}>
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text style={styles.headerSubtitle}>{subtitle}</Text>
+            ) : null}
+          </View>
+          {onCancel ? (
+            <AnimatedPressable
+              accessibilityLabel={cancelLabel}
+              accessibilityRole="button"
+              onPress={onCancel}
+              style={styles.cancelButton}
+            >
+              <Text style={styles.cancelText}>{cancelLabel}</Text>
+            </AnimatedPressable>
+          ) : null}
+        </View>
+      ) : null}
+
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { gap }]}
         keyboardShouldPersistTaps="handled"
@@ -69,6 +100,40 @@ export function FormScaffold({
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
+  },
+  header: {
+    alignItems: "center",
+    borderBottomColor: colors.border.light,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  headerText: {
+    flex: 1,
+    gap: spacing.xxs,
+    minWidth: 0,
+  },
+  headerTitle: {
+    ...typography.screenTitle,
+    color: colors.text.primary,
+  },
+  headerSubtitle: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  cancelButton: {
+    borderColor: colors.border.light,
+    borderRadius: radius.button,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  cancelText: {
+    ...typography.bodyMedium,
+    color: colors.text.secondary,
   },
   scrollContent: {
     padding: spacing.lg,
