@@ -26,7 +26,7 @@ export function DateInput({
       <Text style={styles.label}>{label}</Text>
       <TextInput
         accessibilityLabel={`${label}, formato AAAA-MM-DD`}
-        accessibilityState={error ? { invalid: true } : undefined}
+        accessibilityState={error ? { busy: true } : undefined}
         keyboardType="numbers-and-punctuation"
         onBlur={() => {
           setFocused(false);

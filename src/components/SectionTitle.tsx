@@ -18,7 +18,6 @@ export function SectionTitle({
     <View style={styles.container}>
       <Text
         accessibilityRole="header"
-        accessibilityLevel={level}
         style={[styles.title, typography.sectionTitle]}
       >
         {title}

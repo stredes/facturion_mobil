@@ -76,7 +76,6 @@ export function RetentionForm({
     >
       <Text
         accessibilityRole="header"
-        accessibilityLevel={2}
         style={styles.sectionTitle}
       >
         Categoria

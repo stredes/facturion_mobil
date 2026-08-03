@@ -44,7 +44,7 @@ export function FormSection({ icon, title, children, delay = 0 }: FormSectionPro
         >
           <Text style={styles.blockIconText}>{icon}</Text>
         </View>
-        <Text accessibilityRole="header" accessibilityLevel={2} style={styles.blockTitle}>
+        <Text accessibilityRole="header" style={styles.blockTitle}>
           {title}
         </Text>
       </View>

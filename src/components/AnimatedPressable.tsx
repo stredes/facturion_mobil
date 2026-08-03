@@ -18,8 +18,12 @@ interface AnimatedPressableProps {
   disabled?: boolean;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   accessibilityState?: AccessibilityState;
   accessibilitySelected?: boolean;
+  onAccessibilityAction?: (
+    event: { nativeEvent: { actionName: string } },
+  ) => void;
   scaleIn?: number;
   hapticOnPress?: boolean;
   style?: StyleProp<ViewStyle>;
