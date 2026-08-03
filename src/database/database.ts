@@ -13,7 +13,10 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
         await runMigrations(db);
         return db;
       },
-    );
+    ).catch((error) => {
+      databasePromise = null;
+      throw error;
+    });
   }
 
   return databasePromise;
