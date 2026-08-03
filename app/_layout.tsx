@@ -113,6 +113,10 @@ export default function RootLayout() {
             options={{ title: "Retenciones" }}
           />
           <Stack.Screen
+            name="retenciones/nueva"
+            options={{ title: "Nueva retencion" }}
+          />
+          <Stack.Screen
             name="retenciones/[id]"
             options={{ title: "Detalle de retencion" }}
           />

@@ -97,16 +97,28 @@ export default function FacturasScreen() {
         {!isLoading && invoices.length === 0 ? (
           <View style={styles.centeredBody}>
             <AppHeader title="Facturas" subtitle="Todas tus facturas registradas" />
-            <EmptyState
-              title="Sin facturas"
-              message={
-                search
-                  ? "No hay facturas que coincidan con tu busqueda"
-                  : "No hay facturas registradas aun"
-              }
-              actionLabel="Crear factura"
-              onAction={() => router.push("/facturas/nueva")}
-            />
+            {search ? (
+              <>
+                <SearchInput
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Buscar por numero, cliente o descripcion"
+                />
+                <EmptyState
+                  title="Sin resultados"
+                  message="No hay facturas que coincidan con tu busqueda"
+                  actionLabel="Limpiar busqueda"
+                  onAction={() => setSearch("")}
+                />
+              </>
+            ) : (
+              <EmptyState
+                title="Sin facturas"
+                message="No hay facturas registradas aun"
+                actionLabel="Crear factura"
+                onAction={() => router.push("/facturas/nueva")}
+              />
+            )}
           </View>
         ) : (
           <FlatList

@@ -14,6 +14,7 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { MonthlySummaryCard } from "@/components/summary/MonthlySummaryCard";
 import { MonthlySummarySkeleton } from "@/components/summary/MonthlySummarySkeleton";
 import { useMonthlySummary } from "@/hooks/useMonthlySummary";
+import type { CombinedMonth } from "@/utils/monthlySummary";
 import { colors, spacing } from "@/theme";
 
 export default function SummaryScreen() {
@@ -45,6 +46,25 @@ export default function SummaryScreen() {
       return next;
     });
   }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: CombinedMonth }) => (
+      <MonthlySummaryCard
+        summary={item}
+        isExpanded={expandedPeriods.has(item.period)}
+        isSmallScreen={isSmallScreen}
+        onToggle={() => toggleExpand(item.period)}
+      />
+    ),
+    [expandedPeriods, isSmallScreen, toggleExpand],
+  );
+
+  const keyExtractor = useCallback((item: CombinedMonth) => item.period, []);
+
+  const ItemSeparatorComponent = useCallback(
+    () => <View style={styles.separator} />,
+    [],
+  );
 
   if (error) {
     return (
@@ -81,18 +101,11 @@ export default function SummaryScreen() {
       <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
       <FlatList
         data={combined}
-        keyExtractor={(item) => item.period}
-        renderItem={({ item }) => (
-          <MonthlySummaryCard
-            summary={item}
-            isExpanded={expandedPeriods.has(item.period)}
-            isSmallScreen={isSmallScreen}
-            onToggle={() => toggleExpand(item.period)}
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={ItemSeparatorComponent}
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}

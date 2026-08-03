@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -69,6 +69,20 @@ export default function EditRetentionScreen() {
     }
   }
 
+  const formInitialValues = useMemo(
+    () =>
+      retention
+        ? {
+            category: retention.category,
+            retentionDate: retention.retentionDate,
+            amount: retention.amount,
+            description: retention.description ?? "",
+            reference: retention.reference ?? "",
+          }
+        : undefined,
+    [retention],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -98,13 +112,7 @@ export default function EditRetentionScreen() {
 
   return (
     <RetentionForm
-      initialValues={{
-        category: retention.category,
-        retentionDate: retention.retentionDate,
-        amount: retention.amount,
-        description: retention.description ?? "",
-        reference: retention.reference ?? "",
-      }}
+      initialValues={formInitialValues}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       submitError={submitError}

@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -68,6 +68,20 @@ export default function EditTaxPaymentScreen() {
     }
   }
 
+  const formInitialValues = useMemo(
+    () =>
+      payment
+        ? {
+            taxPeriod: payment.taxPeriod,
+            paymentDate: payment.paymentDate,
+            amount: payment.amount,
+            description: payment.description ?? "",
+            reference: payment.reference ?? "",
+          }
+        : undefined,
+    [payment],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -97,13 +111,7 @@ export default function EditTaxPaymentScreen() {
 
   return (
     <TaxPaymentForm
-      initialValues={{
-        taxPeriod: payment.taxPeriod,
-        paymentDate: payment.paymentDate,
-        amount: payment.amount,
-        description: payment.description ?? "",
-        reference: payment.reference ?? "",
-      }}
+      initialValues={formInitialValues}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       submitError={submitError}
