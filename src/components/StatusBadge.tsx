@@ -15,20 +15,20 @@ const badgeConfig: Record<
 > = {
   paid: {
     label: "Pagada",
-    bg: colors.status.success + "20",
-    text: colors.status.success,
+    bg: colors.statusLight.success,
+    text: colors.text.primary,
     dot: colors.status.success,
   },
   pending: {
     label: "Pendiente",
-    bg: colors.status.warning + "20",
-    text: colors.status.warning,
+    bg: colors.statusLight.warning,
+    text: colors.text.primary,
     dot: colors.status.warning,
   },
   registered: {
     label: "Pago registrado",
-    bg: colors.status.info + "20",
-    text: colors.status.info,
+    bg: colors.statusLight.info,
+    text: colors.text.primary,
     dot: colors.status.info,
   },
   none: {
