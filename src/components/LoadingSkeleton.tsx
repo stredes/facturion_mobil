@@ -37,9 +37,6 @@ export function Skeleton({
 
   return (
     <Animated.View
-      accessibilityLabel="Cargando contenido"
-      accessibilityRole="progressbar"
-      accessibilityState={{ busy: true }}
       style={[
         styles.skeleton,
         { width, height, borderRadius, opacity },
@@ -50,7 +47,12 @@ export function Skeleton({
 
 export function InvoiceCardSkeleton() {
   return (
-    <View style={styles.card}>
+    <View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.card}
+    >
       <View style={styles.row}>
         <Skeleton width="60%" height={16} />
         <Skeleton width={70} height={14} borderRadius={radius.badge} />
@@ -64,7 +66,12 @@ export function InvoiceCardSkeleton() {
 
 export function PaymentCardSkeleton() {
   return (
-    <View style={styles.card}>
+    <View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.card}
+    >
       <View style={styles.row}>
         <Skeleton width="40%" height={16} />
         <Skeleton width={80} height={20} borderRadius={radius.badge} />
@@ -77,7 +84,12 @@ export function PaymentCardSkeleton() {
 
 export function RetentionCardSkeleton() {
   return (
-    <View style={styles.card}>
+    <View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.card}
+    >
       <View style={styles.row}>
         <Skeleton width="40%" height={16} />
         <Skeleton width={80} height={20} borderRadius={radius.badge} />
@@ -90,7 +102,12 @@ export function RetentionCardSkeleton() {
 
 export function DetailSkeleton() {
   return (
-    <View style={styles.detailScreen}>
+    <View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.detailScreen}
+    >
       <Skeleton width="55%" height={24} />
       <Skeleton width="75%" height={14} />
 
@@ -118,7 +135,12 @@ export function DetailSkeleton() {
 
 export function FormSkeleton() {
   return (
-    <View style={styles.formScreen}>
+    <View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.formScreen}
+    >
       <View style={styles.formHeader}>
         <Skeleton width="40%" height={24} />
       </View>

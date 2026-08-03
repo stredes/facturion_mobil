@@ -2,7 +2,6 @@ import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
-import { hapticLight } from "../utils/haptics";
 import {
   formatMoneyInput,
   parseMoneyInput,
@@ -43,7 +42,6 @@ export function MoneyInput({
           }}
           onFocus={() => {
             setFocused(true);
-            hapticLight();
           }}
           onBlur={() => setFocused(false)}
           placeholder="0"
@@ -53,7 +51,11 @@ export function MoneyInput({
           value={formattedValue}
         />
       </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="assertive" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }

@@ -22,7 +22,7 @@ export function MonthlySummaryCard({
   return (
     <View style={styles.monthBlock}>
       <Pressable
-        accessibilityLabel={isExpanded ? "Contraer resumen" : "Expandir resumen"}
+        accessibilityLabel={`${isExpanded ? "Contraer" : "Expandir"} resumen de ${formatMonthPeriod(summary.period)}`}
         accessibilityRole="button"
         accessibilityState={{ expanded: isExpanded }}
         onPress={onToggle}

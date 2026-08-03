@@ -2,7 +2,6 @@ import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing } from "../theme";
-import { hapticLight } from "../utils/haptics";
 
 interface DateInputProps {
   label: string;
@@ -26,7 +25,7 @@ export function DateInput({
       <Text style={styles.label}>{label}</Text>
       <TextInput
         accessibilityLabel={`${label}, formato AAAA-MM-DD`}
-        accessibilityState={error ? { busy: true } : undefined}
+        accessibilityHint={error ? "Campo con error" : undefined}
         keyboardType="numbers-and-punctuation"
         onBlur={() => {
           setFocused(false);
@@ -35,7 +34,6 @@ export function DateInput({
         onChangeText={onChangeText}
         onFocus={() => {
           setFocused(true);
-          hapticLight();
         }}
         placeholder="AAAA-MM-DD"
         placeholderTextColor={colors.text.tertiary}

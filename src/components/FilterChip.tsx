@@ -21,6 +21,7 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
       accessibilityLabel={label}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selected }}
+      hitSlop={10}
       onAccessibilityAction={(event) => {
         if (event.nativeEvent.actionName === "activate") {
           hapticSelect();
