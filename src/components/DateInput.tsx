@@ -25,7 +25,8 @@ export function DateInput({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        accessibilityLabel={label}
+        accessibilityLabel={`${label}, formato AAAA-MM-DD`}
+        accessibilityState={error ? { invalid: true } : undefined}
         keyboardType="numbers-and-punctuation"
         onBlur={() => {
           setFocused(false);
@@ -46,7 +47,11 @@ export function DateInput({
         ]}
         value={value}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="assertive" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }

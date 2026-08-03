@@ -37,10 +37,16 @@ export function FormSection({ icon, title, children, delay = 0 }: FormSectionPro
       style={[{ opacity, transform: [{ translateY }] }, styles.block]}
     >
       <View style={styles.blockHeader}>
-        <View style={styles.blockIcon}>
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={styles.blockIcon}
+        >
           <Text style={styles.blockIconText}>{icon}</Text>
         </View>
-        <Text style={styles.blockTitle}>{title}</Text>
+        <Text accessibilityRole="header" accessibilityLevel={2} style={styles.blockTitle}>
+          {title}
+        </Text>
       </View>
       {children}
     </Animated.View>

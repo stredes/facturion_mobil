@@ -11,7 +11,11 @@ export function useFormWithReset<TFieldValues extends FieldValues>(
   defaultValues: DefaultValues<TFieldValues>,
   options: Omit<UseFormProps<TFieldValues>, "defaultValues">,
 ): UseFormReturn<TFieldValues> {
-  const form = useForm<TFieldValues>({ ...options, defaultValues });
+  const form = useForm<TFieldValues>({
+    ...options,
+    defaultValues,
+    mode: options.mode ?? "onChange",
+  });
   const { reset } = form;
 
   useEffect(() => {

@@ -1,4 +1,11 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { colors, radius, spacing } from "../theme";
 import { hapticLight } from "../utils/haptics";
@@ -7,13 +14,45 @@ interface SearchInputProps {
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
+  /** Tiempo de espera (ms) antes de propagar cambios. Por defecto 250. */
+  debounceMs?: number;
 }
 
 export function SearchInput({
   value,
   onChangeText,
   placeholder = "Buscar",
+  debounceMs = 250,
 }: SearchInputProps) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setDisplayValue(value);
+  }, [value]);
+
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
+
+  function handleChange(next: string) {
+    setDisplayValue(next);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => onChangeText(next), debounceMs);
+  }
+
+  function handleClear() {
+    hapticLight();
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setDisplayValue("");
+    onChangeText("");
+  }
+
+  const shownValue = displayValue;
+
   return (
     <View style={styles.container}>
       <Text
@@ -25,22 +64,20 @@ export function SearchInput({
       </Text>
       <TextInput
         accessibilityLabel="Buscar"
+        accessibilityRole="search"
         returnKeyType="search"
-        onChangeText={onChangeText}
+        onChangeText={handleChange}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
         style={styles.input}
-        value={value}
+        value={displayValue}
       />
-      {value.length > 0 ? (
+      {shownValue.length > 0 ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Limpiar busqueda"
           hitSlop={8}
-          onPress={() => {
-            hapticLight();
-            onChangeText("");
-          }}
+          onPress={handleClear}
           style={styles.clearButton}
         >
           <Text style={styles.clearIcon}>{"\u2715"}</Text>

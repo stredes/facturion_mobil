@@ -27,3 +27,20 @@ export function hapticSuccess() {
 export function hapticError() {
   vibrate(30);
 }
+
+/** Feedback para seleccion de opciones (chips, segmentos, filtros). */
+export function hapticSelect() {
+  vibrate(10);
+}
+
+/**
+ * Helper compartido: invoca el haptico correspondiente segun el exito de una
+ * accion. Se usa en componentes que confirman/cancelan operaciones.
+ */
+export function hapticForResult(success: boolean) {
+  if (success) {
+    hapticSuccess();
+  } else {
+    hapticError();
+  }
+}

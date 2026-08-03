@@ -79,7 +79,13 @@ export function GeneralPaymentForm({
       submitError={submitError}
       submitLabel={submitLabel}
     >
-      <Text style={styles.sectionTitle}>Categoria</Text>
+      <Text
+        accessibilityRole="header"
+        accessibilityLevel={2}
+        style={styles.sectionTitle}
+      >
+        Categoria
+      </Text>
       <Controller
         control={control}
         name="category"

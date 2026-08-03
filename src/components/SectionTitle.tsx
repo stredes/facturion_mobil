@@ -5,13 +5,22 @@ import { colors, spacing, typography } from "../theme";
 interface SectionTitleProps {
   title: string;
   subtitle?: string;
+  /** Nivel de encabezado para lectura por voz (1-6). Por defecto 3. */
   level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-export function SectionTitle({ title, subtitle, level = 2 }: SectionTitleProps) {
+export function SectionTitle({
+  title,
+  subtitle,
+  level = 3,
+}: SectionTitleProps) {
   return (
     <View style={styles.container}>
-      <Text accessibilityRole="header" style={[styles.title, typography.sectionTitle]}>
+      <Text
+        accessibilityRole="header"
+        accessibilityLevel={level}
+        style={[styles.title, typography.sectionTitle]}
+      >
         {title}
       </Text>
       {subtitle && (

@@ -1,7 +1,7 @@
 import { StyleSheet, Text } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
-import { hapticLight } from "../utils/haptics";
+import { hapticSelect } from "../utils/haptics";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface FilterChipProps {
@@ -13,18 +13,28 @@ interface FilterChipProps {
 export function FilterChip({ label, selected, onPress }: FilterChipProps) {
   return (
     <AnimatedPressable
-      accessibilityRole="button"
+      accessibilityHint={
+        selected
+          ? "Seleccionado. Toca para deseleccionar"
+          : "Toca para seleccionar"
+      }
       accessibilityLabel={label}
-      accessibilityState={{ selected }}
-      accessibilitySelected={selected}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: selected }}
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === "activate") {
+          hapticSelect();
+          onPress();
+        }
+      }}
       onPress={() => {
-        hapticLight();
+        hapticSelect();
         onPress();
       }}
       scaleIn={0.95}
       style={[styles.chip, selected && styles.selected]}
     >
-      <Text style={[styles.text, selected && styles.textSelected]} accessibilityRole="text">
+      <Text style={[styles.text, selected && styles.textSelected]}>
         {label}
       </Text>
     </AnimatedPressable>

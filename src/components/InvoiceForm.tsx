@@ -126,7 +126,12 @@ function ReadonlyBox({
   hint?: string;
 }) {
   return (
-    <View style={styles.readonlyBox}>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+      accessibilityRole="summary"
+      style={styles.readonlyBox}
+    >
       <View style={styles.readonlyHeader}>
         <Text style={styles.readonlyLabel}>{label}</Text>
         {hint ? <Text style={styles.readonlyHint}>{hint}</Text> : null}

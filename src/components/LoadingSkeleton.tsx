@@ -37,6 +37,9 @@ export function Skeleton({
 
   return (
     <Animated.View
+      accessibilityLabel="Cargando contenido"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
       style={[
         styles.skeleton,
         { width, height, borderRadius, opacity },
