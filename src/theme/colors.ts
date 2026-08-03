@@ -42,6 +42,10 @@ export const colors = {
     medium: "#CBD5E1",
     dark: "#8A949E",
   },
+  series: {
+    accountant: "#8B5CF6",
+    savings: "#10B981",
+  },
   overlay: "rgba(18, 59, 93, 0.4)",
   shadow: "rgba(18, 59, 93, 0.08)",
 } as const;
@@ -89,6 +93,10 @@ export const darkColors = {
     light: "#1B2433",
     medium: "#26324A",
     dark: "#3B4757",
+  },
+  series: {
+    accountant: "#A78BFA",
+    savings: "#34D399",
   },
   overlay: "rgba(3, 8, 18, 0.6)",
   shadow: "rgba(0, 0, 0, 0.5)",

@@ -20,26 +20,76 @@ import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
+import { formatCurrency } from "@/utils/currency";
+
+const ICON_GLYPHS = {
+  docs: "\u2A9A",
+  check: "\u2714",
+  cash: "\u29E9",
+  tag: "\u29B6",
+  chart: "\u29E8",
+  savings: "\u2764",
+  retention: "\u2A9B",
+} as const;
+
+const rgba = (hex: string, opacity: number) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { invoices, isLoading: invoicesLoading, error: invoicesError, refresh: refreshInvoices } = useInvoices();
-  const { payments: generalPayments, isLoading: gpLoading } = useGeneralPayments();
-  const { retentions, isLoading: rLoading } = useRetentions();
-  const { payments: taxPayments, isLoading: tpLoading } = useTaxPayments();
+  const {
+    invoices,
+    isLoading: invoicesLoading,
+    error: invoicesError,
+    refresh: refreshInvoices,
+  } = useInvoices();
+  const {
+    payments: generalPayments,
+    summary: generalSummary,
+    isLoading: gpLoading,
+    error: gpError,
+    refresh: refreshGeneralPayments,
+  } = useGeneralPayments();
+  const {
+    retentions,
+    summary: retentionSummary,
+    isLoading: rLoading,
+    error: rError,
+    refresh: refreshRetentions,
+  } = useRetentions();
+  const {
+    payments: taxPayments,
+    isLoading: tpLoading,
+    error: tpError,
+    refresh: refreshTaxPayments,
+  } = useTaxPayments();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isLoading = invoicesLoading || gpLoading || rLoading || tpLoading;
-  const error = invoicesError;
+  const error = invoicesError || gpError || rError || tpError;
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([refreshInvoices()]);
+      await Promise.all([
+        refreshInvoices(),
+        refreshGeneralPayments(),
+        refreshRetentions(),
+        refreshTaxPayments(),
+      ]);
     } finally {
       setIsRefreshing(false);
     }
-  }, [refreshInvoices]);
+  }, [
+    refreshInvoices,
+    refreshGeneralPayments,
+    refreshRetentions,
+    refreshTaxPayments,
+  ]);
 
   if (isLoading) {
     return (
@@ -68,17 +118,10 @@ export default function HomeScreen() {
     .filter((inv) => inv.paymentDate)
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
   const totalTax = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
-  const totalRemaining = invoices.reduce((sum, inv) => {
-    const remaining = inv.totalAmount - inv.taxPayment - inv.tagAmount - inv.accountantAmount - inv.savingsAmount;
-    return sum + remaining;
-  }, 0);
   const totalTag = invoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
   const totalAccountant = invoices.reduce((sum, inv) => sum + inv.accountantAmount, 0);
   const totalSavings = invoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
   const totalTaxPayment = invoices.reduce((sum, inv) => sum + inv.taxPayment, 0);
-
-  const { summary: generalSummary } = useGeneralPayments();
-  const { summary: retentionSummary } = useRetentions();
 
   // Acumulaciones globales
   const sobranteIva =
@@ -163,8 +206,8 @@ export default function HomeScreen() {
       { data: last6(series.ivaPagado).map(inM), color: (o = 1) => rgba(colors.status.success, o), strokeWidth: 2 },
       { data: last6(series.sobrante).map(inM), color: (o = 1) => rgba(colors.status.warning, o), strokeWidth: 2 },
       { data: last6(series.tag).map(inM), color: (o = 1) => rgba(colors.status.info, o), strokeWidth: 2 },
-      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba("#8B5CF6", o), strokeWidth: 2 },
-      { data: last6(series.savings).map(inM), color: (o = 1) => rgba("#10B981", o), strokeWidth: 2 },
+      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba(colors.series.accountant, o), strokeWidth: 2 },
+      { data: last6(series.savings).map(inM), color: (o = 1) => rgba(colors.series.savings, o), strokeWidth: 2 },
     ],
     legend: ["IVA gen.", "IVA pag.", "Sobrante", "TAG", "Contador", "Ahorro"],
   };
@@ -177,14 +220,6 @@ export default function HomeScreen() {
     { name: "Saldo Ahorro", value: savingsBalance, color: colors.status.warning },
     { name: "Restante", value: invoices.reduce((s, i) => s + (i.totalAmount - i.taxPayment - i.tagAmount - i.accountantAmount - i.savingsAmount), 0), color: colors.status.error },
   ].filter((d) => d.value > 0);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const retentionValues: Record<string, number> = {
     tax: retentionSummary.totalTax,
@@ -251,12 +286,12 @@ export default function HomeScreen() {
               height={260}
               yAxisSuffix="M"
               chartConfig={{
-                backgroundColor: "#FFFFFF",
-                backgroundGradientFrom: "#FFFFFF",
-                backgroundGradientTo: "#FFFFFF",
+                backgroundColor: colors.surface.primary,
+                backgroundGradientFrom: colors.surface.primary,
+                backgroundGradientTo: colors.surface.primary,
                 decimalPlaces: 0,
                 color: (opacity = 1) => rgba(colors.text.tertiary, opacity),
-                labelColor: (opacity = 1) => rgba("#334155", opacity),
+                labelColor: (opacity = 1) => rgba(colors.text.primary, opacity),
                 propsForDots: { r: "4" },
               }}
               style={styles.chart}
@@ -271,18 +306,18 @@ export default function HomeScreen() {
           <SummaryCard
             label="IVA Total"
             value={formatCurrency(totalTax)}
-            icon="📋"
+            icon={ICON_GLYPHS.docs}
           />
           <SummaryCard
             label="IVA Pagado"
             value={formatCurrency(totalTaxPayment)}
-            icon="✅"
+            icon={ICON_GLYPHS.check}
             tone="warning"
           />
           <SummaryCard
             label="IVA Sobrante"
             value={formatCurrency(sobranteIva)}
-            icon="💰"
+            icon={ICON_GLYPHS.cash}
             tone="strong"
           />
         </View>
@@ -293,12 +328,12 @@ export default function HomeScreen() {
           <SummaryCard
             label="Saldo TAG"
             value={formatCurrency(tagBalance)}
-            icon="🏷️"
+            icon={ICON_GLYPHS.tag}
           />
           <SummaryCard
             label="Saldo Contador"
             value={formatCurrency(accountantBalance)}
-            icon="📊"
+            icon={ICON_GLYPHS.chart}
           />
         </View>
 
@@ -308,7 +343,7 @@ export default function HomeScreen() {
           <SummaryCard
             label="Saldo Ahorro"
             value={formatCurrency(savingsBalance)}
-            icon="💚"
+            icon={ICON_GLYPHS.savings}
           />
         </View>
 
@@ -320,7 +355,7 @@ export default function HomeScreen() {
               key={category.value}
               label={category.label}
               value={formatCurrency(retentionValues[category.value])}
-              icon="🔖"
+              icon={ICON_GLYPHS.retention}
             />
           ))}
         </View>
@@ -380,19 +415,19 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   mainCard: {
-    backgroundColor: "#0A4C6B",
+    backgroundColor: colors.primary.dark,
     borderRadius: 16,
     marginBottom: 20,
     padding: 20,
   },
   mainLabel: {
-    color: "#FFFFFF",
+    color: colors.text.inverse,
     fontSize: 16,
     fontWeight: "600",
     opacity: 0.9,
   },
   mainAmount: {
-    color: "#FFFFFF",
+    color: colors.text.inverse,
     fontSize: 36,
     fontWeight: "700",
     marginTop: 4,
@@ -403,30 +438,32 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.2)",
+    borderTopColor: colors.text.inverse,
   },
   statItem: {
     alignItems: "center",
     flex: 1,
   },
   statValue: {
-    color: "#FFFFFF",
+    color: colors.text.inverse,
     fontSize: 18,
     fontWeight: "700",
   },
   statLabel: {
-    color: "rgba(255,255,255,0.7)",
+    color: colors.text.inverse,
     fontSize: 12,
     marginTop: 2,
+    opacity: 0.7,
   },
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: colors.text.inverse,
+    opacity: 0.2,
   },
   chartCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: 16,
     borderWidth: 1,
     marginBottom: 20,
@@ -449,8 +486,8 @@ const styles = StyleSheet.create({
   },
   retentionLink: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E2E8F0",
+    backgroundColor: colors.surface.primary,
+    borderColor: colors.border.light,
     borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
@@ -467,12 +504,6 @@ const styles = StyleSheet.create({
   retentionLinkArrow: {
     color: colors.text.tertiary,
     fontSize: 20,
-  },
-  distributionSection: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginBottom: 16,
   },
   list: {
     gap: 12,
