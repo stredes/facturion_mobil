@@ -2,10 +2,10 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { EmptyState } from "../../../src/components/EmptyState";
-import { ErrorState } from "../../../src/components/ErrorState";
-import { InvoiceForm } from "../../../src/components/InvoiceForm";
-import { LoadingState } from "../../../src/components/LoadingState";
+import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
+import { InvoiceForm } from "@/components/InvoiceForm";
+import { FormSkeleton } from "@/components/LoadingSkeleton";
 import type { CreateInvoiceInput, Invoice } from "../../../src/domain/Invoice";
 import { useInvoiceService } from "../../../src/infrastructure/di/ServiceContext";
 import { colors, spacing } from "../../../src/theme";
@@ -88,11 +88,7 @@ export default function EditInvoiceScreen() {
   );
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <LoadingState message="Cargando factura..." />
-      </View>
-    );
+    return <FormSkeleton />;
   }
 
   if (loadError) {
