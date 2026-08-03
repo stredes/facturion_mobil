@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { Invoice, InvoiceFilters } from "../domain/Invoice";
 import { useInvoiceService } from "../infrastructure/di/ServiceContext";
 import { filtersToKey } from "../utils/filters";
+import { hapticLight } from "../utils/haptics";
 
 export function useInvoices(filters: InvoiceFilters = {}) {
   const service = useInvoiceService();
@@ -36,6 +37,7 @@ export function useInvoices(filters: InvoiceFilters = {}) {
     } finally {
       if (requestId === requestIdRef.current) {
         setIsLoading(false);
+        hapticLight();
       }
     }
   }, [service, filtersKey]);

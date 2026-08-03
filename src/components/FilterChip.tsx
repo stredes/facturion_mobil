@@ -15,6 +15,8 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
     <AnimatedPressable
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ selected }}
+      accessibilitySelected={selected}
       onPress={() => {
         hapticLight();
         onPress();
@@ -22,7 +24,7 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
       scaleIn={0.95}
       style={[styles.chip, selected && styles.selected]}
     >
-      <Text style={[styles.text, selected && styles.textSelected]}>
+      <Text style={[styles.text, selected && styles.textSelected]} accessibilityRole="text">
         {label}
       </Text>
     </AnimatedPressable>

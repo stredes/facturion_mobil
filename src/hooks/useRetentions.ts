@@ -8,6 +8,7 @@ import type {
 } from "../domain/Retention";
 import { useRetentionService } from "../infrastructure/di/ServiceContext";
 import { filtersToKey } from "../utils/filters";
+import { hapticLight } from "../utils/haptics";
 
 export function useRetentions(filters?: RetentionFilters) {
   const service = useRetentionService();
@@ -51,6 +52,7 @@ export function useRetentions(filters?: RetentionFilters) {
     } finally {
       if (requestId === requestIdRef.current) {
         setIsLoading(false);
+        hapticLight();
       }
     }
   }, [service, filtersKey]);

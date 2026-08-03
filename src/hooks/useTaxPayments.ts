@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { TaxPayment, TaxPaymentFilters } from "../domain/TaxPayment";
 import { useTaxPaymentService } from "../infrastructure/di/ServiceContext";
 import { filtersToKey } from "../utils/filters";
+import { hapticLight } from "../utils/haptics";
 
 export function useTaxPayments(filters?: TaxPaymentFilters) {
   const service = useTaxPaymentService();
@@ -41,6 +42,7 @@ export function useTaxPayments(filters?: TaxPaymentFilters) {
     } finally {
       if (requestId === requestIdRef.current) {
         setIsLoading(false);
+        hapticLight();
       }
     }
   }, [service, filtersKey]);
