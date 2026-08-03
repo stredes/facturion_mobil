@@ -8,15 +8,8 @@ interface AmountRowProps {
   tone?: "default" | "success" | "warning" | "error";
 }
 
-export function AmountRow({ label, value, tone = "default" }: AmountRowProps) {
-  const valueColor =
-    tone === "success"
-      ? colors.status.success
-      : tone === "warning"
-        ? colors.status.warning
-      : tone === "error"
-        ? colors.status.error
-        : colors.text.primary;
+export function AmountRow({ label, value }: AmountRowProps) {
+  const valueColor = colors.text.primary;
 
   return (
     <View style={styles.row} accessibilityRole="summary" accessibilityLabel={`${label}: ${value}`}>
