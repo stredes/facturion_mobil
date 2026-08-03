@@ -17,6 +17,10 @@ interface TaxPaymentFormProps {
   isSubmitting?: boolean;
   submitError?: string | null;
   onSubmit: (input: CreateTaxPaymentInput) => Promise<void>;
+  title?: string;
+  subtitle?: string;
+  cancelLabel?: string;
+  onCancel?: () => void;
 }
 
 function buildDefaultValues(
