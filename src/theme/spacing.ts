@@ -9,17 +9,9 @@ export const spacing = {
   screenPadding: 16,
   cardPadding: 16,
   gridGap: 12,
-  sectionGap: 22,
-  elementGap: 12,
   inputHeight: 50,
-  inputRadius: 12,
   buttonHeight: 50,
-  buttonRadius: 13,
-  chipRadius: 18,
-  headerHeight: 56,
   tabBarHeight: 64,
-  cardRadius: 14,
-  mainCardRadius: 18,
 } as const;
 
 export type Spacing = typeof spacing;

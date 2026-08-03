@@ -188,13 +188,6 @@ export default function HomeScreen() {
     series.savings.push(rSav);
   }
 
-  const rgba = (hex: string, opacity: number) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
-
   const last6 = <T,>(arr: T[]) => arr.slice(-6);
   const inM = (v: number) => v / 1000000;
 
@@ -240,18 +233,19 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenContainer>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            colors={[colors.primary.main]}
-            onRefresh={onRefresh}
-            refreshing={isRefreshing}
-            tintColor={colors.primary.main}
-          />
-        }
-        contentContainerStyle={styles.scrollContent}
-      >
+    <View style={styles.screen}>
+      <ScreenContainer>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              colors={[colors.primary.main]}
+              onRefresh={onRefresh}
+              refreshing={isRefreshing}
+              tintColor={colors.primary.main}
+            />
+          }
+          contentContainerStyle={styles.scrollContent}
+        >
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
 
         {/* Tarjeta principal - Total facturado */}
@@ -399,17 +393,20 @@ export default function HomeScreen() {
             ))}
           </View>
         )}
-
-        <FloatingActionButton
-          onPress={() => router.push("/facturas/nueva")}
-          accessibilityLabel="Crear factura"
-        />
       </ScrollView>
+      <FloatingActionButton
+        onPress={() => router.push("/facturas/nueva")}
+        accessibilityLabel="Crear factura"
+      />
     </ScreenContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,

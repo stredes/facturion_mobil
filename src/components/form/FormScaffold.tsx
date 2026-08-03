@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   submitErrorBox: {
     backgroundColor: colors.statusLight.error,
-    borderColor: colors.status.error + "40",
+    borderColor: colors.statusLight.error,
     borderRadius: radius.input,
     borderWidth: 1,
     padding: spacing.lg,

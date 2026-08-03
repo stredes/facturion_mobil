@@ -82,14 +82,14 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     backgroundColor: colors.statusLight.error,
-    borderColor: colors.status.error + "40",
+    borderColor: colors.statusLight.error,
     borderRadius: radius.card,
     borderWidth: 1,
     gap: spacing.md,
     padding: spacing.xxl,
   },
   iconCircle: {
-    backgroundColor: colors.status.error + "20",
+    backgroundColor: colors.statusLight.error,
     borderRadius: 24,
     width: 48,
     height: 48,

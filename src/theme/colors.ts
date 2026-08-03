@@ -4,19 +4,13 @@ export const colors = {
     light: "#E8F1F7",
     dark: "#0D2A42",
   },
-  accent: {
-    main: "#2B8C9E",
-    light: "#65C7C9",
-  },
   background: {
     primary: "#F6F8FA",
-    secondary: "#FFFFFF",
     tertiary: "#EEF2F5",
   },
   surface: {
     primary: "#FFFFFF",
     secondary: "#F8FAFC",
-    elevated: "#FFFFFF",
   },
   text: {
     primary: "#17212B",
@@ -35,12 +29,10 @@ export const colors = {
     success: "#E7F5EC",
     warning: "#FFF4D8",
     error: "#FDECEC",
-    info: "#E8F2F9",
   },
   border: {
     light: "#DDE3E8",
     medium: "#CBD5E1",
-    dark: "#8A949E",
   },
   series: {
     accountant: "#8B5CF6",
@@ -56,19 +48,13 @@ export const darkColors = {
     light: "#14384F",
     dark: "#3B87B0",
   },
-  accent: {
-    main: "#65C7C9",
-    light: "#2E8A8C",
-  },
   background: {
     primary: "#0B1220",
-    secondary: "#121A29",
     tertiary: "#16202F",
   },
   surface: {
     primary: "#121A29",
     secondary: "#161F30",
-    elevated: "#1E293B",
   },
   text: {
     primary: "#E8EDF3",
@@ -87,12 +73,10 @@ export const darkColors = {
     success: "rgba(63, 174, 116, 0.18)",
     warning: "rgba(226, 165, 58, 0.18)",
     error: "rgba(226, 96, 96, 0.18)",
-    info: "rgba(76, 143, 192, 0.18)",
   },
   border: {
     light: "#1B2433",
     medium: "#26324A",
-    dark: "#3B4757",
   },
   series: {
     accountant: "#A78BFA",

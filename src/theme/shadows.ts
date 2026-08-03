@@ -8,12 +8,6 @@ export const shadows = Platform.select({
       shadowOpacity: 0.05,
       shadowRadius: 6,
     },
-    elevated: {
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.08,
-      shadowRadius: 10,
-    },
     fab: {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
@@ -30,9 +24,6 @@ export const shadows = Platform.select({
   default: {
     card: {
       elevation: 1,
-    },
-    elevated: {
-      elevation: 3,
     },
     fab: {
       elevation: 5,
