@@ -4,6 +4,7 @@ import {
   Pressable,
   type AccessibilityRole,
   type AccessibilityState,
+  type Insets,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
@@ -21,6 +22,7 @@ interface AnimatedPressableProps {
   accessibilityHint?: string;
   accessibilityState?: AccessibilityState;
   accessibilitySelected?: boolean;
+  hitSlop?: number | Insets;
   onAccessibilityAction?: (
     event: { nativeEvent: { actionName: string } },
   ) => void;
@@ -60,7 +62,7 @@ export function AnimatedPressable({
   }
 
   return (
-    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={handlePress} {...props}>
+    <Pressable {...props} onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={handlePress}>
       <Animated.View style={[{ transform: [{ scale }] }, style]}>
         {children}
       </Animated.View>

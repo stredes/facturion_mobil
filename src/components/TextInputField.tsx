@@ -2,7 +2,6 @@ import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
-import { hapticLight } from "../utils/haptics";
 
 interface TextInputFieldProps {
   label: string;
@@ -41,7 +40,6 @@ export function TextInputField({
         onChangeText={onChangeText}
         onFocus={() => {
           setFocused(true);
-          hapticLight();
         }}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
@@ -54,7 +52,11 @@ export function TextInputField({
         ]}
         value={value}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="assertive" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }

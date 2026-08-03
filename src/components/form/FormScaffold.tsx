@@ -78,7 +78,7 @@ export function FormScaffold({
       >
         {children}
         {submitError ? (
-          <View style={styles.submitErrorBox}>
+          <View accessibilityRole="alert" style={styles.submitErrorBox}>
             <Text style={styles.submitErrorText}>{submitError}</Text>
           </View>
         ) : null}
@@ -96,7 +96,7 @@ export function FormScaffold({
           ]}
           hapticOnPress={!isSubmitting}
         >
-          <Text style={styles.submitText}>
+          <Text style={[styles.submitText, isSubmitting && styles.submitTextDisabled]}>
             {isSubmitting ? "Guardando..." : submitLabel}
           </Text>
         </AnimatedPressable>
@@ -136,6 +136,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border.light,
     borderRadius: radius.button,
     borderWidth: 1,
+    minHeight: 48,
+    justifyContent: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
@@ -182,5 +184,8 @@ const styles = StyleSheet.create({
   submitText: {
     ...typography.bodyMedium,
     color: colors.text.inverse,
+  },
+  submitTextDisabled: {
+    color: colors.text.secondary,
   },
 });

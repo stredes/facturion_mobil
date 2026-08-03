@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ComponentRef } from "react";
 import {
   Animated,
   BackHandler,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 import { colors, radius, shadows, spacing, typography } from "../theme";
-import { hapticError, hapticSuccess } from "../utils/haptics";
+import { hapticLight, hapticSuccess } from "../utils/haptics";
 
 interface ConfirmModalProps {
   visible: boolean;
@@ -34,6 +34,7 @@ export function ConfirmModal({
   destructive = false,
 }: ConfirmModalProps) {
   const scale = useRef(new Animated.Value(0.96)).current;
+  const confirmRef = useRef<ComponentRef<typeof Pressable>>(null);
 
   useEffect(() => {
     if (visible) {
@@ -47,7 +48,7 @@ export function ConfirmModal({
   }, [visible, scale]);
 
   const handleBack = () => {
-    hapticError();
+    hapticLight();
     onCancel();
     return true;
   };
@@ -62,6 +63,8 @@ export function ConfirmModal({
     <Modal
       accessibilityViewIsModal
       animationType="fade"
+      onRequestClose={handleBack}
+      onShow={() => confirmRef.current?.focus()}
       transparent
       visible={visible}
     >
@@ -79,7 +82,7 @@ export function ConfirmModal({
               accessibilityLabel={cancelLabel}
               hitSlop={8}
               onPress={() => {
-                hapticError();
+                hapticLight();
                 onCancel();
               }}
               style={({ pressed }) => [
@@ -90,6 +93,7 @@ export function ConfirmModal({
               <Text style={styles.cancelText}>{cancelLabel}</Text>
             </Pressable>
             <Pressable
+              ref={confirmRef}
               accessibilityRole="button"
               accessibilityLabel={confirmLabel}
               hitSlop={8}

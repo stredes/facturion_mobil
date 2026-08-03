@@ -37,7 +37,7 @@ export function PrimaryButton({
         style={[
           styles.text,
           { color: colors.text.inverse },
-          isDisabled && { color: colors.text.tertiary },
+          isDisabled && { color: colors.text.secondary },
         ]}
       >
         {loading ? "Guardando..." : label}

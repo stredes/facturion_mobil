@@ -76,7 +76,7 @@ export function SearchInput({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Limpiar busqueda"
-          hitSlop={8}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           onPress={handleClear}
           style={styles.clearButton}
         >
