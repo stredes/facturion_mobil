@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { EmptyState } from "../../../src/components/EmptyState";
@@ -73,6 +73,20 @@ export default function EditInvoiceScreen() {
     }
   }
 
+  const formInitialValues = useMemo(
+    () =>
+      invoice
+        ? {
+            invoiceNumber: invoice.invoiceNumber,
+            invoiceDate: invoice.invoiceDate,
+            clientName: invoice.clientName,
+            description: invoice.description ?? "",
+            netAmount: invoice.netAmount,
+          }
+        : undefined,
+    [invoice],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -102,13 +116,7 @@ export default function EditInvoiceScreen() {
 
   return (
     <InvoiceForm
-      initialValues={{
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: invoice.invoiceDate,
-        clientName: invoice.clientName,
-        description: invoice.description ?? "",
-        netAmount: invoice.netAmount,
-      }}
+      initialValues={formInitialValues}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       submitError={submitError}

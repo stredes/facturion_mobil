@@ -16,7 +16,7 @@ import { FilterChip } from "@/components/FilterChip";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { Skeleton } from "@/components/LoadingSkeleton";
-import type { RetentionCategory } from "@/domain/Retention";
+import type { Retention, RetentionCategory } from "@/domain/Retention";
 import { useRetentions } from "@/hooks/useRetentions";
 import { colors, radius, spacing, typography } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
@@ -61,6 +61,48 @@ export default function RetencionScreen() {
   }, [refresh]);
 
   const isInitialLoading = isLoading && retentions.length === 0;
+
+  const renderItem = useCallback(
+    ({ item }: { item: Retention }) => (
+      <AnimatedPressable
+        accessibilityLabel={`Retencion de ${formatRetentionCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
+        accessibilityRole="button"
+        onPress={() =>
+          router.push({
+            pathname: "/retenciones/[id]",
+            params: { id: item.id },
+          })
+        }
+      >
+        <View style={styles.card}>
+          <View style={styles.cardTop}>
+            <Text style={styles.cardCategory}>
+              {formatRetentionCategoryLabel(item.category)}
+            </Text>
+            <Text style={styles.cardAmount}>
+              {formatCurrency(item.amount)}
+            </Text>
+          </View>
+          <Text style={styles.cardDate}>
+            {formatDisplayDate(item.retentionDate)}
+          </Text>
+          {item.description ? (
+            <Text numberOfLines={1} style={styles.cardDesc}>
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
+      </AnimatedPressable>
+    ),
+    [router],
+  );
+
+  const keyExtractor = useCallback((item: Retention) => item.id, []);
+
+  const ItemSeparatorComponent = useCallback(
+    () => <View style={styles.separator} />,
+    [],
+  );
 
   if (isInitialLoading) {
     return (
@@ -144,8 +186,8 @@ export default function RetencionScreen() {
       <FlatList
         contentContainerStyle={styles.listContent}
         data={retentions}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={ItemSeparatorComponent}
+        keyExtractor={keyExtractor}
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}
@@ -154,37 +196,7 @@ export default function RetencionScreen() {
             tintColor={colors.primary.main}
           />
         }
-        renderItem={({ item }) => (
-          <AnimatedPressable
-            accessibilityLabel={`Retencion de ${formatRetentionCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/retenciones/[id]",
-                params: { id: item.id },
-              })
-            }
-          >
-            <View style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.cardCategory}>
-                  {formatRetentionCategoryLabel(item.category)}
-                </Text>
-                <Text style={styles.cardAmount}>
-                  {formatCurrency(item.amount)}
-                </Text>
-              </View>
-              <Text style={styles.cardDate}>
-                {formatDisplayDate(item.retentionDate)}
-              </Text>
-              {item.description ? (
-                <Text numberOfLines={1} style={styles.cardDesc}>
-                  {item.description}
-                </Text>
-              ) : null}
-            </View>
-          </AnimatedPressable>
-        )}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
 

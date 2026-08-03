@@ -137,6 +137,48 @@ function GeneralPaymentsView({
     }
   }, [onRetry]);
 
+  const renderItem = useCallback(
+    ({ item }: { item: GeneralPayment }) => (
+      <AnimatedPressable
+        accessibilityLabel={`Pago de ${formatCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
+        accessibilityRole="button"
+        onPress={() =>
+          router.push({
+            pathname: "/pagos/general/[id]",
+            params: { id: item.id },
+          })
+        }
+      >
+        <View style={styles.card}>
+          <View style={styles.cardTop}>
+            <Text style={styles.cardCategory}>
+              {formatCategoryLabel(item.category)}
+            </Text>
+            <Text style={styles.cardAmount}>
+              {formatCurrency(item.amount)}
+            </Text>
+          </View>
+          <Text style={styles.cardDate}>
+            {formatDisplayDate(item.paymentDate)}
+          </Text>
+          {item.description ? (
+            <Text numberOfLines={1} style={styles.cardDesc}>
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
+      </AnimatedPressable>
+    ),
+    [router],
+  );
+
+  const keyExtractor = useCallback((item: GeneralPayment) => item.id, []);
+
+  const ItemSeparatorComponent = useCallback(
+    () => <View style={styles.separator} />,
+    [],
+  );
+
   const isInitialLoading = isLoading && payments.length === 0;
 
   if (isInitialLoading) {
@@ -219,8 +261,8 @@ function GeneralPaymentsView({
       <FlatList<GeneralPayment>
         contentContainerStyle={styles.listContent}
         data={payments}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={ItemSeparatorComponent}
+        keyExtractor={keyExtractor}
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}
@@ -229,37 +271,7 @@ function GeneralPaymentsView({
             tintColor={colors.primary.main}
           />
         }
-        renderItem={({ item }) => (
-          <AnimatedPressable
-            accessibilityLabel={`Pago de ${formatCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/pagos/general/[id]",
-                params: { id: item.id },
-              })
-            }
-          >
-            <View style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.cardCategory}>
-                  {formatCategoryLabel(item.category)}
-                </Text>
-                <Text style={styles.cardAmount}>
-                  {formatCurrency(item.amount)}
-                </Text>
-              </View>
-              <Text style={styles.cardDate}>
-                {formatDisplayDate(item.paymentDate)}
-              </Text>
-              {item.description ? (
-                <Text numberOfLines={1} style={styles.cardDesc}>
-                  {item.description}
-                </Text>
-              ) : null}
-            </View>
-          </AnimatedPressable>
-        )}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
 
@@ -295,6 +307,46 @@ function TaxPaymentsView({
       setIsRefreshing(false);
     }
   }, [onRetry]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: TaxPayment }) => (
+      <AnimatedPressable
+        accessibilityLabel={`Pago de IVA periodo ${item.taxPeriod} por ${formatCurrency(item.amount)}`}
+        accessibilityRole="button"
+        onPress={() =>
+          router.push({
+            pathname: "/pagos/iva/[id]",
+            params: { id: item.id },
+          })
+        }
+      >
+        <View style={styles.card}>
+          <View style={styles.cardTop}>
+            <Text style={styles.cardCategory}>Periodo {item.taxPeriod}</Text>
+            <Text style={styles.cardAmount}>
+              {formatCurrency(item.amount)}
+            </Text>
+          </View>
+          <Text style={styles.cardDate}>
+            {formatDisplayDate(item.paymentDate)}
+          </Text>
+          {item.description ? (
+            <Text numberOfLines={1} style={styles.cardDesc}>
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
+      </AnimatedPressable>
+    ),
+    [router],
+  );
+
+  const keyExtractor = useCallback((item: TaxPayment) => item.id, []);
+
+  const ItemSeparatorComponent = useCallback(
+    () => <View style={styles.separator} />,
+    [],
+  );
 
   const isInitialLoading = isLoading && payments.length === 0;
 
@@ -338,8 +390,8 @@ function TaxPaymentsView({
       <FlatList<TaxPayment>
         contentContainerStyle={styles.listContent}
         data={payments}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-        keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={ItemSeparatorComponent}
+        keyExtractor={keyExtractor}
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}
@@ -348,35 +400,7 @@ function TaxPaymentsView({
             tintColor={colors.primary.main}
           />
         }
-        renderItem={({ item }) => (
-          <AnimatedPressable
-            accessibilityLabel={`Pago de IVA periodo ${item.taxPeriod} por ${formatCurrency(item.amount)}`}
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: "/pagos/iva/[id]",
-                params: { id: item.id },
-              })
-            }
-          >
-            <View style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.cardCategory}>Periodo {item.taxPeriod}</Text>
-                <Text style={styles.cardAmount}>
-                  {formatCurrency(item.amount)}
-                </Text>
-              </View>
-              <Text style={styles.cardDate}>
-                {formatDisplayDate(item.paymentDate)}
-              </Text>
-              {item.description ? (
-                <Text numberOfLines={1} style={styles.cardDesc}>
-                  {item.description}
-                </Text>
-              ) : null}
-            </View>
-          </AnimatedPressable>
-        )}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
 

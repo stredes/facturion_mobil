@@ -18,9 +18,11 @@ export function useFormWithReset<TFieldValues extends FieldValues>(
   });
   const { reset } = form;
 
+  const defaultValuesKey = JSON.stringify(defaultValues);
+
   useEffect(() => {
     reset(defaultValues);
-  }, [defaultValues, reset]);
+  }, [defaultValuesKey, reset]);
 
   return form;
 }
