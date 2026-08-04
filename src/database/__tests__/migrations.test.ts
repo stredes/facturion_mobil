@@ -70,7 +70,8 @@ describe("database migrations", () => {
     await runMigrations(db as never);
 
     expect(tableExists(raw, "retentions")).toBe(true);
-    expect(userVersion(raw)).toBe(4);
+    expect(tableExists(raw, "record_history")).toBe(true);
+    expect(userVersion(raw)).toBe(5);
   });
 
   it("creates retentions when upgrading an existing v3 database (the reported bug)", async () => {
@@ -103,7 +104,8 @@ describe("database migrations", () => {
     await runMigrations(db as never);
 
     expect(tableExists(raw, "retentions")).toBe(true);
-    expect(userVersion(raw)).toBe(4);
+    expect(tableExists(raw, "record_history")).toBe(true);
+    expect(userVersion(raw)).toBe(5);
   });
 
   it("is idempotent: running migrations twice does not fail", async () => {
@@ -114,6 +116,61 @@ describe("database migrations", () => {
     await runMigrations(db as never);
 
     expect(tableExists(raw, "retentions")).toBe(true);
-    expect(userVersion(raw)).toBe(4);
+    expect(tableExists(raw, "record_history")).toBe(true);
+    expect(userVersion(raw)).toBe(5);
+  });
+
+  it("backfills current records into record history once", async () => {
+    const { db, raw } = createDb();
+
+    raw.exec(`
+      PRAGMA user_version = 4;
+
+      CREATE TABLE invoices (
+        id TEXT PRIMARY KEY NOT NULL,
+        invoice_number TEXT NOT NULL,
+        invoice_date TEXT NOT NULL,
+        client_name TEXT NOT NULL,
+        description TEXT,
+        net_amount INTEGER NOT NULL DEFAULT 0,
+        tax_amount INTEGER NOT NULL DEFAULT 0,
+        total_amount INTEGER NOT NULL DEFAULT 0,
+        payment_date TEXT,
+        tax_payment INTEGER NOT NULL DEFAULT 0,
+        tag_amount INTEGER NOT NULL DEFAULT 0,
+        accountant_amount INTEGER NOT NULL DEFAULT 0,
+        savings_amount INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      INSERT INTO invoices (
+        id, invoice_number, invoice_date, client_name, description,
+        net_amount, tax_amount, total_amount, payment_date,
+        tax_payment, tag_amount, accountant_amount, savings_amount,
+        created_at, updated_at
+      ) VALUES (
+        'invoice-1', '1', '2026-08-01', 'Cliente', NULL,
+        1000, 190, 1190, NULL, 0, 0, 0, 0,
+        '2026-08-01T00:00:00.000Z', '2026-08-01T00:00:00.000Z'
+      );
+    `);
+
+    const { runMigrations } = await import("../migrations");
+    await runMigrations(db as never);
+    await runMigrations(db as never);
+
+    const row = raw
+      .prepare(
+        `SELECT COUNT(*) AS count
+         FROM record_history
+         WHERE entity_type = 'invoice'
+           AND entity_id = 'invoice-1'
+           AND action = 'imported'`,
+      )
+      .get() as { count: number };
+
+    expect(row.count).toBe(1);
+    expect(userVersion(raw)).toBe(5);
   });
 });

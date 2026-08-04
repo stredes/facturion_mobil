@@ -108,6 +108,10 @@ export function MonthlySummaryCard({
             value={Math.abs(summary.vatReserve)}
             tone={summary.vatReserveOverpaid ? "error" : "strong"}
           />
+          <SummaryCard
+            label="Retenciones"
+            value={summary.totalRetentions}
+          />
         </View>
       ) : null}
     </View>

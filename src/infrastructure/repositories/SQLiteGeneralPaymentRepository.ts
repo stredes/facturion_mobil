@@ -1,4 +1,5 @@
 import { getDatabase } from "../../database/database";
+import { insertRecordHistory } from "../../database/recordHistory";
 import type {
   CreateGeneralPaymentInput,
   GeneralPayment,
@@ -40,6 +41,16 @@ function mapRow(row: GeneralPaymentRow): GeneralPayment {
   };
 }
 
+async function findGeneralPaymentRowById(
+  db: Awaited<ReturnType<typeof getDatabase>>,
+  id: string,
+): Promise<GeneralPaymentRow | null> {
+  return db.getFirstAsync<GeneralPaymentRow>(
+    "SELECT * FROM general_payments WHERE id = ? LIMIT 1",
+    [id],
+  );
+}
+
 function validatePayment(input: {
   category: GeneralPaymentCategory;
   paymentDate: string;
@@ -68,28 +79,42 @@ export class SQLiteGeneralPaymentRepository
 
     const id = createId("gp");
     const now = new Date().toISOString();
+    let createdPayment: GeneralPayment | null = null;
 
-    await db.runAsync(
-      `INSERT INTO general_payments (
-        id, category, payment_date, amount, description, reference,
-        source_invoice_id, source_type, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?)`,
-      [
-        id,
-        input.category,
-        input.paymentDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        null,
-        now,
-        now,
-      ],
-    );
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `INSERT INTO general_payments (
+          id, category, payment_date, amount, description, reference,
+          source_invoice_id, source_type, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?)`,
+        [
+          id,
+          input.category,
+          input.paymentDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          null,
+          now,
+          now,
+        ],
+      );
 
-    const payment = await this.findById(id);
-    if (!payment) throw new Error("No se pudo crear el pago");
-    return payment;
+      const row = await findGeneralPaymentRowById(db, id);
+      if (!row) throw new Error("No se pudo crear el pago");
+
+      await insertRecordHistory(db, {
+        entityType: "general_payment",
+        entityId: id,
+        action: "created",
+        snapshot: row,
+        occurredAt: now,
+      });
+      createdPayment = mapRow(row);
+    });
+
+    if (!createdPayment) throw new Error("No se pudo crear el pago");
+    return createdPayment;
   }
 
   async update(
@@ -100,37 +125,53 @@ export class SQLiteGeneralPaymentRepository
     validatePayment(input);
 
     const now = new Date().toISOString();
-    const result = await db.runAsync(
-      `UPDATE general_payments
-       SET category = ?, payment_date = ?, amount = ?,
-           description = ?, reference = ?, updated_at = ?
-       WHERE id = ?`,
-      [
-        input.category,
-        input.paymentDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        now,
-        id,
-      ],
-    );
+    let updatedPayment: GeneralPayment | null = null;
 
-    if (result.changes === 0) {
-      throw new Error("El pago no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findGeneralPaymentRowById(db, id);
+      if (!previousRow) throw new Error("El pago no existe");
 
-    const payment = await this.findById(id);
-    if (!payment) throw new Error("No se pudo actualizar el pago");
-    return payment;
+      const result = await db.runAsync(
+        `UPDATE general_payments
+         SET category = ?, payment_date = ?, amount = ?,
+             description = ?, reference = ?, updated_at = ?
+         WHERE id = ?`,
+        [
+          input.category,
+          input.paymentDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          now,
+          id,
+        ],
+      );
+
+      if (result.changes === 0) {
+        throw new Error("El pago no existe");
+      }
+
+      const nextRow = await findGeneralPaymentRowById(db, id);
+      if (!nextRow) throw new Error("No se pudo actualizar el pago");
+
+      await insertRecordHistory(db, {
+        entityType: "general_payment",
+        entityId: id,
+        action: "updated",
+        snapshot: nextRow,
+        previousSnapshot: previousRow,
+        occurredAt: now,
+      });
+      updatedPayment = mapRow(nextRow);
+    });
+
+    if (!updatedPayment) throw new Error("No se pudo actualizar el pago");
+    return updatedPayment;
   }
 
   async findById(id: string): Promise<GeneralPayment | null> {
     const db = await getDatabase();
-    const row = await db.getFirstAsync<GeneralPaymentRow>(
-      "SELECT * FROM general_payments WHERE id = ? LIMIT 1",
-      [id],
-    );
+    const row = await findGeneralPaymentRowById(db, id);
     return row ? mapRow(row) : null;
   }
 
@@ -177,13 +218,25 @@ export class SQLiteGeneralPaymentRepository
 
   async delete(id: string): Promise<void> {
     const db = await getDatabase();
-    const result = await db.runAsync(
-      "DELETE FROM general_payments WHERE id = ?",
-      [id],
-    );
-    if (result.changes === 0) {
-      throw new Error("El pago no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findGeneralPaymentRowById(db, id);
+      if (!previousRow) throw new Error("El pago no existe");
+
+      const result = await db.runAsync(
+        "DELETE FROM general_payments WHERE id = ?",
+        [id],
+      );
+      if (result.changes === 0) {
+        throw new Error("El pago no existe");
+      }
+
+      await insertRecordHistory(db, {
+        entityType: "general_payment",
+        entityId: id,
+        action: "deleted",
+        snapshot: previousRow,
+      });
+    });
   }
 
   async getSummary(): Promise<GeneralPaymentSummary> {

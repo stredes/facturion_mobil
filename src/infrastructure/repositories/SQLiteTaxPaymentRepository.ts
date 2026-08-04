@@ -1,4 +1,5 @@
 import { getDatabase } from "../../database/database";
+import { insertRecordHistory } from "../../database/recordHistory";
 import type {
   CreateTaxPaymentInput,
   TaxPayment,
@@ -40,6 +41,16 @@ function mapRow(row: TaxPaymentRow): TaxPayment {
   };
 }
 
+async function findTaxPaymentRowById(
+  db: Awaited<ReturnType<typeof getDatabase>>,
+  id: string,
+): Promise<TaxPaymentRow | null> {
+  return db.getFirstAsync<TaxPaymentRow>(
+    "SELECT * FROM tax_payments WHERE id = ? LIMIT 1",
+    [id],
+  );
+}
+
 function validatePayment(input: {
   taxPeriod: string;
   paymentDate: string;
@@ -63,28 +74,42 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
 
     const id = createId("tp");
     const now = new Date().toISOString();
+    let createdPayment: TaxPayment | null = null;
 
-    await db.runAsync(
-      `INSERT INTO tax_payments (
-        id, tax_period, payment_date, amount, description, reference,
-        source_invoice_id, source_type, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?)`,
-      [
-        id,
-        input.taxPeriod,
-        input.paymentDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        null,
-        now,
-        now,
-      ],
-    );
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `INSERT INTO tax_payments (
+          id, tax_period, payment_date, amount, description, reference,
+          source_invoice_id, source_type, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', ?, ?)`,
+        [
+          id,
+          input.taxPeriod,
+          input.paymentDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          null,
+          now,
+          now,
+        ],
+      );
 
-    const payment = await this.findById(id);
-    if (!payment) throw new Error("No se pudo crear el pago");
-    return payment;
+      const row = await findTaxPaymentRowById(db, id);
+      if (!row) throw new Error("No se pudo crear el pago");
+
+      await insertRecordHistory(db, {
+        entityType: "tax_payment",
+        entityId: id,
+        action: "created",
+        snapshot: row,
+        occurredAt: now,
+      });
+      createdPayment = mapRow(row);
+    });
+
+    if (!createdPayment) throw new Error("No se pudo crear el pago");
+    return createdPayment;
   }
 
   async update(
@@ -95,37 +120,53 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
     validatePayment(input);
 
     const now = new Date().toISOString();
-    const result = await db.runAsync(
-      `UPDATE tax_payments
-       SET tax_period = ?, payment_date = ?, amount = ?,
-           description = ?, reference = ?, updated_at = ?
-       WHERE id = ?`,
-      [
-        input.taxPeriod,
-        input.paymentDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        now,
-        id,
-      ],
-    );
+    let updatedPayment: TaxPayment | null = null;
 
-    if (result.changes === 0) {
-      throw new Error("El pago no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findTaxPaymentRowById(db, id);
+      if (!previousRow) throw new Error("El pago no existe");
 
-    const payment = await this.findById(id);
-    if (!payment) throw new Error("No se pudo actualizar el pago");
-    return payment;
+      const result = await db.runAsync(
+        `UPDATE tax_payments
+         SET tax_period = ?, payment_date = ?, amount = ?,
+             description = ?, reference = ?, updated_at = ?
+         WHERE id = ?`,
+        [
+          input.taxPeriod,
+          input.paymentDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          now,
+          id,
+        ],
+      );
+
+      if (result.changes === 0) {
+        throw new Error("El pago no existe");
+      }
+
+      const nextRow = await findTaxPaymentRowById(db, id);
+      if (!nextRow) throw new Error("No se pudo actualizar el pago");
+
+      await insertRecordHistory(db, {
+        entityType: "tax_payment",
+        entityId: id,
+        action: "updated",
+        snapshot: nextRow,
+        previousSnapshot: previousRow,
+        occurredAt: now,
+      });
+      updatedPayment = mapRow(nextRow);
+    });
+
+    if (!updatedPayment) throw new Error("No se pudo actualizar el pago");
+    return updatedPayment;
   }
 
   async findById(id: string): Promise<TaxPayment | null> {
     const db = await getDatabase();
-    const row = await db.getFirstAsync<TaxPaymentRow>(
-      "SELECT * FROM tax_payments WHERE id = ? LIMIT 1",
-      [id],
-    );
+    const row = await findTaxPaymentRowById(db, id);
     return row ? mapRow(row) : null;
   }
 
@@ -157,13 +198,25 @@ export class SQLiteTaxPaymentRepository implements TaxPaymentRepository {
 
   async delete(id: string): Promise<void> {
     const db = await getDatabase();
-    const result = await db.runAsync(
-      "DELETE FROM tax_payments WHERE id = ?",
-      [id],
-    );
-    if (result.changes === 0) {
-      throw new Error("El pago no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findTaxPaymentRowById(db, id);
+      if (!previousRow) throw new Error("El pago no existe");
+
+      const result = await db.runAsync(
+        "DELETE FROM tax_payments WHERE id = ?",
+        [id],
+      );
+      if (result.changes === 0) {
+        throw new Error("El pago no existe");
+      }
+
+      await insertRecordHistory(db, {
+        entityType: "tax_payment",
+        entityId: id,
+        action: "deleted",
+        snapshot: previousRow,
+      });
+    });
   }
 
   async getTotalPaidTax(): Promise<number> {

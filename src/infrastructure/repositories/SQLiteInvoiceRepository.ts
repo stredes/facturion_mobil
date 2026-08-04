@@ -1,4 +1,5 @@
 import { getDatabase } from "../../database/database";
+import { insertRecordHistory } from "../../database/recordHistory";
 import {
   calculateInvoiceTotal,
   calculateTax,
@@ -77,6 +78,16 @@ function mapInvoiceRow(row: InvoiceRow): Invoice {
   };
 }
 
+async function findInvoiceRowById(
+  db: Awaited<ReturnType<typeof getDatabase>>,
+  id: string,
+): Promise<InvoiceRow | null> {
+  return db.getFirstAsync<InvoiceRow>(
+    "SELECT * FROM invoices WHERE id = ? LIMIT 1",
+    [id],
+  );
+}
+
 function isUniqueConstraintError(error: unknown): boolean {
   return (
     error instanceof Error &&
@@ -137,28 +148,43 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
     const normalized = normalizeInvoiceInput(input);
     const id = createId("invoice");
     const now = new Date().toISOString();
+    let createdInvoice: Invoice | null = null;
 
     try {
-      await db.runAsync(
-        `INSERT INTO invoices (
-          id, invoice_number, invoice_date, client_name, description,
-          net_amount, tax_amount, total_amount,
-          payment_date, tax_payment, tag_amount, accountant_amount, savings_amount,
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 0, 0, 0, 0, ?, ?)`,
-        [
-          id,
-          normalized.invoiceNumber,
-          normalized.invoiceDate,
-          normalized.clientName,
-          normalized.description,
-          normalized.netAmount,
-          normalized.taxAmount,
-          normalized.totalAmount,
-          now,
-          now,
-        ],
-      );
+      await db.withTransactionAsync(async () => {
+        await db.runAsync(
+          `INSERT INTO invoices (
+            id, invoice_number, invoice_date, client_name, description,
+            net_amount, tax_amount, total_amount,
+            payment_date, tax_payment, tag_amount, accountant_amount, savings_amount,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 0, 0, 0, 0, ?, ?)`,
+          [
+            id,
+            normalized.invoiceNumber,
+            normalized.invoiceDate,
+            normalized.clientName,
+            normalized.description,
+            normalized.netAmount,
+            normalized.taxAmount,
+            normalized.totalAmount,
+            now,
+            now,
+          ],
+        );
+
+        const row = await findInvoiceRowById(db, id);
+        if (!row) throw new Error("No se pudo crear la factura");
+
+        await insertRecordHistory(db, {
+          entityType: "invoice",
+          entityId: id,
+          action: "created",
+          snapshot: row,
+          occurredAt: now,
+        });
+        createdInvoice = mapInvoiceRow(row);
+      });
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new Error("Ya existe una factura con ese numero");
@@ -166,9 +192,8 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
       throw error;
     }
 
-    const invoice = await this.findById(id);
-    if (!invoice) throw new Error("No se pudo crear la factura");
-    return invoice;
+    if (!createdInvoice) throw new Error("No se pudo crear la factura");
+    return createdInvoice;
   }
 
   async update(id: string, input: CreateInvoiceInput): Promise<Invoice> {
@@ -181,30 +206,49 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
 
     const normalized = normalizeInvoiceInput(input);
     const now = new Date().toISOString();
+    let updatedInvoice: Invoice | null = null;
 
     try {
-      const result = await db.runAsync(
-        `UPDATE invoices
-         SET invoice_number = ?, invoice_date = ?, client_name = ?,
-             description = ?, net_amount = ?, tax_amount = ?,
-             total_amount = ?, updated_at = ?
-         WHERE id = ?`,
-        [
-          normalized.invoiceNumber,
-          normalized.invoiceDate,
-          normalized.clientName,
-          normalized.description,
-          normalized.netAmount,
-          normalized.taxAmount,
-          normalized.totalAmount,
-          now,
-          id,
-        ],
-      );
+      await db.withTransactionAsync(async () => {
+        const previousRow = await findInvoiceRowById(db, id);
+        if (!previousRow) throw new Error("La factura no existe");
 
-      if (result.changes === 0) {
-        throw new Error("La factura no existe");
-      }
+        const result = await db.runAsync(
+          `UPDATE invoices
+           SET invoice_number = ?, invoice_date = ?, client_name = ?,
+               description = ?, net_amount = ?, tax_amount = ?,
+               total_amount = ?, updated_at = ?
+           WHERE id = ?`,
+          [
+            normalized.invoiceNumber,
+            normalized.invoiceDate,
+            normalized.clientName,
+            normalized.description,
+            normalized.netAmount,
+            normalized.taxAmount,
+            normalized.totalAmount,
+            now,
+            id,
+          ],
+        );
+
+        if (result.changes === 0) {
+          throw new Error("La factura no existe");
+        }
+
+        const nextRow = await findInvoiceRowById(db, id);
+        if (!nextRow) throw new Error("No se pudo actualizar la factura");
+
+        await insertRecordHistory(db, {
+          entityType: "invoice",
+          entityId: id,
+          action: "updated",
+          snapshot: nextRow,
+          previousSnapshot: previousRow,
+          occurredAt: now,
+        });
+        updatedInvoice = mapInvoiceRow(nextRow);
+      });
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new Error("Ya existe una factura con ese numero");
@@ -212,17 +256,13 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
       throw error;
     }
 
-    const invoice = await this.findById(id);
-    if (!invoice) throw new Error("No se pudo actualizar la factura");
-    return invoice;
+    if (!updatedInvoice) throw new Error("No se pudo actualizar la factura");
+    return updatedInvoice;
   }
 
   async findById(id: string): Promise<Invoice | null> {
     const db = await getDatabase();
-    const row = await db.getFirstAsync<InvoiceRow>(
-      "SELECT * FROM invoices WHERE id = ? LIMIT 1",
-      [id],
-    );
+    const row = await findInvoiceRowById(db, id);
     return row ? mapInvoiceRow(row) : null;
   }
 
@@ -254,10 +294,24 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
 
   async delete(id: string): Promise<void> {
     const db = await getDatabase();
-    const result = await db.runAsync("DELETE FROM invoices WHERE id = ?", [id]);
-    if (result.changes === 0) {
-      throw new Error("La factura no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findInvoiceRowById(db, id);
+      if (!previousRow) throw new Error("La factura no existe");
+
+      const result = await db.runAsync("DELETE FROM invoices WHERE id = ?", [
+        id,
+      ]);
+      if (result.changes === 0) {
+        throw new Error("La factura no existe");
+      }
+
+      await insertRecordHistory(db, {
+        entityType: "invoice",
+        entityId: id,
+        action: "deleted",
+        snapshot: previousRow,
+      });
+    });
   }
 
   async existsByInvoiceNumber(

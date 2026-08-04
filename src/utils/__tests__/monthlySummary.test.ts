@@ -90,7 +90,11 @@ describe("combineMonthlySummaries", () => {
   });
 
   it("rellena con ceros los periodos sin datos en algun resumen", () => {
-    const result = combineMonthlySummaries([], [], [{ period: "2026-05", paidTax: 100 }]);
+    const result = combineMonthlySummaries(
+      [],
+      [],
+      [{ period: "2026-05", paidTax: 100 }],
+    );
 
     expect(result[0]).toMatchObject({
       period: "2026-05",
@@ -102,6 +106,33 @@ describe("combineMonthlySummaries", () => {
       accountantAmount: 0,
       savingsAmount: 0,
       paidTax: 100,
+    });
+  });
+
+  it("incluye periodos que solo tienen retenciones", () => {
+    const result = combineMonthlySummaries(
+      [],
+      [],
+      [],
+      [
+        {
+          period: "2026-04",
+          taxAmount: 1000,
+          tagAmount: 2000,
+          accountantAmount: 3000,
+          savingsAmount: 4000,
+          totalRetentions: 10000,
+        },
+      ],
+    );
+
+    expect(result[0]).toMatchObject({
+      period: "2026-04",
+      retentionTaxAmount: 1000,
+      retentionTagAmount: 2000,
+      retentionAccountantAmount: 3000,
+      retentionSavingsAmount: 4000,
+      totalRetentions: 10000,
     });
   });
 });

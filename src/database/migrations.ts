@@ -1,8 +1,12 @@
 import type * as SQLite from "expo-sqlite";
 
+import {
+  backfillInitialRecordHistory,
+  ensureRecordHistoryTable,
+} from "./recordHistory";
 import { seedInitialInvoices } from "./seedInvoices";
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 export async function runMigrations(
   db: SQLite.SQLiteDatabase,
@@ -37,6 +41,10 @@ export async function runMigrations(
     CREATE INDEX IF NOT EXISTS idx_retentions_date
     ON retentions(retention_date);
   `);
+
+  // Safety net: el historial debe existir incluso si una version previa dejo el
+  // marcador de esquema adelantado.
+  await ensureRecordHistoryTable(db);
 
   if (currentVersion >= DATABASE_VERSION) {
     return;
@@ -240,6 +248,10 @@ export async function runMigrations(
         }
       });
     }
+  }
+
+  if (currentVersion < 5) {
+    await backfillInitialRecordHistory(db);
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

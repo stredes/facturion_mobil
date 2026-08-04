@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import {
   useGeneralPaymentService,
   useInvoiceService,
+  useRetentionService,
   useTaxPaymentService,
 } from "../infrastructure/di/ServiceContext";
 import { toErrorMessage } from "../utils/errors";
@@ -16,6 +17,7 @@ export function useMonthlySummary() {
   const invoiceService = useInvoiceService();
   const generalPaymentService = useGeneralPaymentService();
   const taxPaymentService = useTaxPaymentService();
+  const retentionService = useRetentionService();
 
   const [combined, setCombined] = useState<CombinedMonth[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,21 +28,33 @@ export function useMonthlySummary() {
       setIsLoading(true);
       setError(null);
 
-      const [invoiceMonths, generalMonths, taxMonths] = await Promise.all([
-        invoiceService.getMonthlySummary(),
-        generalPaymentService.getMonthlySummary(),
-        taxPaymentService.getMonthlySummary(),
-      ]);
+      const [invoiceMonths, generalMonths, taxMonths, retentionMonths] =
+        await Promise.all([
+          invoiceService.getMonthlySummary(),
+          generalPaymentService.getMonthlySummary(),
+          taxPaymentService.getMonthlySummary(),
+          retentionService.getMonthlySummary(),
+        ]);
 
       setCombined(
-        combineMonthlySummaries(invoiceMonths, generalMonths, taxMonths),
+        combineMonthlySummaries(
+          invoiceMonths,
+          generalMonths,
+          taxMonths,
+          retentionMonths,
+        ),
       );
     } catch (currentError) {
       setError(toErrorMessage(currentError, "No se pudo cargar el resumen"));
     } finally {
       setIsLoading(false);
     }
-  }, [invoiceService, generalPaymentService, taxPaymentService]);
+  }, [
+    invoiceService,
+    generalPaymentService,
+    taxPaymentService,
+    retentionService,
+  ]);
 
   useFocusEffect(
     useCallback(() => {

@@ -1,4 +1,5 @@
 import { getDatabase } from "../../database/database";
+import { insertRecordHistory } from "../../database/recordHistory";
 import type {
   CreateRetentionInput,
   Retention,
@@ -36,6 +37,16 @@ function mapRow(row: RetentionRow): Retention {
   };
 }
 
+async function findRetentionRowById(
+  db: Awaited<ReturnType<typeof getDatabase>>,
+  id: string,
+): Promise<RetentionRow | null> {
+  return db.getFirstAsync<RetentionRow>(
+    "SELECT * FROM retentions WHERE id = ? LIMIT 1",
+    [id],
+  );
+}
+
 function validateRetention(input: {
   category: RetentionCategory;
   retentionDate: string;
@@ -66,27 +77,41 @@ export class SQLiteRetentionRepository implements RetentionRepository {
 
     const id = createId("ret");
     const now = new Date().toISOString();
+    let createdRetention: Retention | null = null;
 
-    await db.runAsync(
-      `INSERT INTO retentions (
-        id, category, retention_date, amount, description, reference,
-        created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        input.category,
-        input.retentionDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        now,
-        now,
-      ],
-    );
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `INSERT INTO retentions (
+          id, category, retention_date, amount, description, reference,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          input.category,
+          input.retentionDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          now,
+          now,
+        ],
+      );
 
-    const retention = await this.findById(id);
-    if (!retention) throw new Error("No se pudo crear la retencion");
-    return retention;
+      const row = await findRetentionRowById(db, id);
+      if (!row) throw new Error("No se pudo crear la retencion");
+
+      await insertRecordHistory(db, {
+        entityType: "retention",
+        entityId: id,
+        action: "created",
+        snapshot: row,
+        occurredAt: now,
+      });
+      createdRetention = mapRow(row);
+    });
+
+    if (!createdRetention) throw new Error("No se pudo crear la retencion");
+    return createdRetention;
   }
 
   async update(
@@ -97,37 +122,53 @@ export class SQLiteRetentionRepository implements RetentionRepository {
     validateRetention(input);
 
     const now = new Date().toISOString();
-    const result = await db.runAsync(
-      `UPDATE retentions
-       SET category = ?, retention_date = ?, amount = ?,
-           description = ?, reference = ?, updated_at = ?
-       WHERE id = ?`,
-      [
-        input.category,
-        input.retentionDate,
-        input.amount,
-        input.description?.trim() || null,
-        input.reference?.trim() || null,
-        now,
-        id,
-      ],
-    );
+    let updatedRetention: Retention | null = null;
 
-    if (result.changes === 0) {
-      throw new Error("La retencion no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findRetentionRowById(db, id);
+      if (!previousRow) throw new Error("La retencion no existe");
 
-    const retention = await this.findById(id);
-    if (!retention) throw new Error("No se pudo actualizar la retencion");
-    return retention;
+      const result = await db.runAsync(
+        `UPDATE retentions
+         SET category = ?, retention_date = ?, amount = ?,
+             description = ?, reference = ?, updated_at = ?
+         WHERE id = ?`,
+        [
+          input.category,
+          input.retentionDate,
+          input.amount,
+          input.description?.trim() || null,
+          input.reference?.trim() || null,
+          now,
+          id,
+        ],
+      );
+
+      if (result.changes === 0) {
+        throw new Error("La retencion no existe");
+      }
+
+      const nextRow = await findRetentionRowById(db, id);
+      if (!nextRow) throw new Error("No se pudo actualizar la retencion");
+
+      await insertRecordHistory(db, {
+        entityType: "retention",
+        entityId: id,
+        action: "updated",
+        snapshot: nextRow,
+        previousSnapshot: previousRow,
+        occurredAt: now,
+      });
+      updatedRetention = mapRow(nextRow);
+    });
+
+    if (!updatedRetention) throw new Error("No se pudo actualizar la retencion");
+    return updatedRetention;
   }
 
   async findById(id: string): Promise<Retention | null> {
     const db = await getDatabase();
-    const row = await db.getFirstAsync<RetentionRow>(
-      "SELECT * FROM retentions WHERE id = ? LIMIT 1",
-      [id],
-    );
+    const row = await findRetentionRowById(db, id);
     return row ? mapRow(row) : null;
   }
 
@@ -174,13 +215,25 @@ export class SQLiteRetentionRepository implements RetentionRepository {
 
   async delete(id: string): Promise<void> {
     const db = await getDatabase();
-    const result = await db.runAsync(
-      "DELETE FROM retentions WHERE id = ?",
-      [id],
-    );
-    if (result.changes === 0) {
-      throw new Error("La retencion no existe");
-    }
+    await db.withTransactionAsync(async () => {
+      const previousRow = await findRetentionRowById(db, id);
+      if (!previousRow) throw new Error("La retencion no existe");
+
+      const result = await db.runAsync(
+        "DELETE FROM retentions WHERE id = ?",
+        [id],
+      );
+      if (result.changes === 0) {
+        throw new Error("La retencion no existe");
+      }
+
+      await insertRecordHistory(db, {
+        entityType: "retention",
+        entityId: id,
+        action: "deleted",
+        snapshot: previousRow,
+      });
+    });
   }
 
   async getSummary(): Promise<RetentionSummary> {
