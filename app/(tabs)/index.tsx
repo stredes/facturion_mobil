@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
+import { QuickActions } from "@/components/QuickActions";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -261,6 +262,8 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
         >
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
+
+        <QuickActions onPress={(route) => router.push(route as never)} />
 
         {/* Tarjeta principal - Total facturado */}
         <View style={styles.mainCard}>

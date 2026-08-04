@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { spacing, useThemeColors } from "@/theme";
+import { useThemeColors } from "@/theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -22,6 +22,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
 
   return (
     <View style={tabStyles.iconContainer}>
+      {focused && <View style={[tabStyles.pill, { backgroundColor: colors.primary.light }]} />}
       <Ionicons
         name={focused ? icons.filled : icons.outline}
         size={22}
@@ -35,8 +36,14 @@ const tabStyles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: 28,
-    height: 28,
+    width: 40,
+    height: 40,
+  },
+  pill: {
+    ...StyleSheet.absoluteFillObject,
+    alignSelf: "center",
+    borderRadius: 18,
+    padding: 6,
   },
 });
 
@@ -50,19 +57,29 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.primary.main,
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {
+          position: "absolute",
           backgroundColor: colors.surface.primary,
-          borderTopWidth: 1,
-          borderTopColor: colors.border.light,
-          height: spacing.tabBarHeight + insets.bottom,
-          paddingBottom: insets.bottom + 8,
-          paddingTop: 8,
+          borderRadius: 22,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          borderTopWidth: 0,
+          height: 62 + insets.bottom,
+          marginHorizontal: 12,
+          marginBottom: 8 + insets.bottom,
+          elevation: 8,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          paddingTop: 6,
+          paddingBottom: 6,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
-          color: colors.text.tertiary,
         },
         tabBarItemStyle: {
+          minHeight: 52,
           paddingVertical: 4,
         },
       }}

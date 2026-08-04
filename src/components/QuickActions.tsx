@@ -1,0 +1,108 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useMemo, type ComponentProps } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
+import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { AnimatedPressable } from "./AnimatedPressable";
+
+export interface QuickAction {
+  key: string;
+  label: string;
+  icon: ComponentProps<typeof Ionicons>["name"];
+  route: string;
+}
+
+export const QUICK_ACTIONS: QuickAction[] = [
+  {
+    key: "new-invoice",
+    label: "Nueva factura",
+    icon: "document-text-outline",
+    route: "/facturas/nueva",
+  },
+  {
+    key: "pay-iva",
+    label: "Pago IVA",
+    icon: "card-outline",
+    route: "/pagos/iva/nueva",
+  },
+  {
+    key: "pay-general",
+    label: "Pago general",
+    icon: "wallet-outline",
+    route: "/pagos/general/nueva",
+  },
+  {
+    key: "retention",
+    label: "Retención",
+    icon: "file-tray-full-outline",
+    route: "/retenciones/nueva",
+  },
+];
+
+interface QuickActionsProps {
+  onPress: (route: string) => void;
+}
+
+export function QuickActions({ onPress }: QuickActionsProps) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  return (
+    <View style={styles.grid}>
+      {QUICK_ACTIONS.map((item) => (
+        <AnimatedPressable
+          key={item.key}
+          accessibilityLabel={item.label}
+          accessibilityRole="button"
+          hapticOnPress
+          onPress={() => onPress(item.route)}
+          style={[styles.item, shadows.card]}
+        >
+          <View style={styles.iconBadge}>
+            <Ionicons name={item.icon} size={22} color={colors.primary.main} />
+          </View>
+          <Text numberOfLines={1} style={styles.label}>
+            {item.label}
+          </Text>
+        </AnimatedPressable>
+      ))}
+    </View>
+  );
+}
+
+const createStyles = (c: Colors) =>
+  StyleSheet.create({
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.gridGap,
+    },
+    item: {
+      alignItems: "center",
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      flexBasis: "48%",
+      flexDirection: "row",
+      flexGrow: 1,
+      gap: spacing.sm,
+      justifyContent: "center",
+      minHeight: 64,
+      padding: spacing.cardPadding,
+    },
+    iconBadge: {
+      alignItems: "center",
+      backgroundColor: c.primary.light,
+      borderRadius: 22,
+      height: 44,
+      justifyContent: "center",
+      width: 44,
+    },
+    label: {
+      ...typography.small,
+      color: c.text.primary,
+      flexShrink: 1,
+      fontWeight: "600",
+    },
+  });
