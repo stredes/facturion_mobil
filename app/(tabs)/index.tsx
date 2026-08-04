@@ -30,7 +30,7 @@ import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrency, formatCurrencyCompact } from "@/utils/currency";
 
 const ICON_GLYPHS = {
   docs: "\u2A9A",
@@ -287,7 +287,9 @@ export default function HomeScreen() {
             numberOfLines={1}
             style={[styles.mainAmount, totalExpanded && styles.mainAmountExpanded]}
           >
-            {formatCurrency(totalInvoiced)}
+            {totalExpanded
+              ? formatCurrency(totalInvoiced)
+              : formatCurrencyCompact(totalInvoiced)}
           </Text>
           <View style={styles.mainStats}>
             <View style={styles.statItem}>
@@ -303,7 +305,9 @@ export default function HomeScreen() {
                 numberOfLines={1}
                 style={[styles.statValue, { color: colors.status.success }]}
               >
-                {formatCurrency(paidAmount)}
+                {totalExpanded
+                  ? formatCurrency(paidAmount)
+                  : formatCurrencyCompact(paidAmount)}
               </Text>
               <Text style={styles.statLabel}>Pagado</Text>
             </View>
@@ -316,7 +320,9 @@ export default function HomeScreen() {
                 numberOfLines={1}
                 style={[styles.statValue, { color: colors.status.warning }]}
               >
-                {formatCurrency(pendingAmount)}
+                {totalExpanded
+                  ? formatCurrency(pendingAmount)
+                  : formatCurrencyCompact(pendingAmount)}
               </Text>
               <Text style={styles.statLabel}>Pendiente</Text>
             </View>
@@ -387,18 +393,18 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label="IVA Total"
-            value={formatCurrency(totalTax)}
+            value={totalTax}
             icon={ICON_GLYPHS.docs}
           />
           <SummaryCard
             label="IVA Pagado"
-            value={formatCurrency(totalTaxPayment)}
+            value={totalTaxPayment}
             icon={ICON_GLYPHS.check}
             tone="warning"
           />
           <SummaryCard
             label="IVA Sobrante"
-            value={formatCurrency(sobranteIva)}
+            value={sobranteIva}
             icon={ICON_GLYPHS.cash}
             tone="strong"
           />
@@ -412,13 +418,11 @@ export default function HomeScreen() {
               key={category.value}
               label={`Saldo ${category.label}`}
               value={
-                formatCurrency(
-                  category.value === "tag"
-                    ? tagBalance
-                    : category.value === "accountant"
-                    ? accountantBalance
-                    : savingsBalance
-                )
+                category.value === "tag"
+                  ? tagBalance
+                  : category.value === "accountant"
+                  ? accountantBalance
+                  : savingsBalance
               }
               icon={ICON_GLYPHS[category.value === "tag" ? "tag" : category.value === "accountant" ? "chart" : "savings"]}
             />
@@ -430,7 +434,7 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label={`Saldo ${RETENTION_CATEGORIES.find((c) => c.value === "savings")?.label}`}
-            value={formatCurrency(savingsBalance)}
+            value={savingsBalance}
             icon={ICON_GLYPHS.savings}
           />
         </View>
@@ -442,7 +446,7 @@ export default function HomeScreen() {
             <SummaryCard
               key={category.value}
               label={category.label}
-              value={formatCurrency(retentionValues[category.value])}
+              value={retentionValues[category.value]}
               icon={ICON_GLYPHS.retention}
             />
           ))}

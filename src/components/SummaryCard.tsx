@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { formatCurrency, formatCurrencyCompact } from "../utils/currency";
 
 interface SummaryCardProps {
   label: string;
-  value: string;
+  value: number;
   icon?: string;
   tone?: "default" | "strong" | "warning" | "error";
   secondary?: string;
@@ -33,8 +34,8 @@ export function SummaryCard({
 
   return (
     <Pressable
-      accessibilityLabel={`${label}: ${value}`}
-      accessibilityHint="Toca para ampliar o contraer el monto"
+      accessibilityHint="Toca para ver el monto exacto o contraer"
+      accessibilityLabel={`${label}: ${formatCurrency(value)}`}
       accessibilityRole="button"
       accessibilityState={{ expanded: isExpanded }}
       onPress={() => setIsExpanded((prev) => !prev)}
@@ -63,7 +64,7 @@ export function SummaryCard({
           tone === "error" && styles.errorValue,
         ]}
       >
-        {value}
+        {isExpanded ? formatCurrency(value) : formatCurrencyCompact(value)}
       </Text>
       {secondary ? (
         <Text numberOfLines={1} style={styles.secondary}>

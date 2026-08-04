@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../../theme";
-import { formatCurrency } from "../../utils/currency";
+import { formatCurrency, formatCurrencyCompact } from "../../utils/currency";
 import { formatMonthPeriod } from "../../utils/dates";
 import type { CombinedMonth } from "../../utils/monthlySummary";
 import { SummaryCard } from "../SummaryCard";
@@ -22,6 +22,7 @@ export function MonthlySummaryCard({
 }: MonthlySummaryCardProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [isTotalExpanded, setIsTotalExpanded] = useState(false);
 
   return (
     <View style={styles.monthBlock}>
@@ -50,42 +51,61 @@ export function MonthlySummaryCard({
         </View>
       </Pressable>
 
-      <View style={[styles.summaryCard, shadows.card]}>
+      <Pressable
+        accessibilityHint="Toca para ver el monto exacto o contraer"
+        accessibilityLabel={`Facturado: ${formatCurrency(summary.totalAmount)}`}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: isTotalExpanded }}
+        onPress={() => setIsTotalExpanded((prev) => !prev)}
+        style={({ pressed }) => [
+          styles.summaryCard,
+          shadows.card,
+          isTotalExpanded && styles.summaryCardExpanded,
+          pressed && styles.summaryCardPressed,
+        ]}
+      >
         <Text style={styles.summaryLabel}>Facturado</Text>
         <Text
           adjustsFontSizeToFit
           ellipsizeMode="tail"
-          minimumFontScale={0.6}
+          minimumFontScale={0.55}
           numberOfLines={1}
-          style={[styles.summaryValue, { fontSize: isSmallScreen ? 23 : 26 }]}
+          style={[
+            styles.summaryValue,
+            isTotalExpanded
+              ? styles.summaryValueExpanded
+              : { fontSize: isSmallScreen ? 23 : 26 },
+          ]}
         >
-          {formatCurrency(summary.totalAmount)}
+          {isTotalExpanded
+            ? formatCurrency(summary.totalAmount)
+            : formatCurrencyCompact(summary.totalAmount)}
         </Text>
-      </View>
+      </Pressable>
 
       {isExpanded ? (
         <View style={styles.grid}>
-          <SummaryCard label="Neto" value={formatCurrency(summary.netAmount)} />
+          <SummaryCard label="Neto" value={summary.netAmount} />
           <SummaryCard
             label="IVA generado"
-            value={formatCurrency(summary.taxAmount)}
+            value={summary.taxAmount}
           />
-          <SummaryCard label="TAG" value={formatCurrency(summary.tagAmount)} />
+          <SummaryCard label="TAG" value={summary.tagAmount} />
           <SummaryCard
             label="Contador"
-            value={formatCurrency(summary.accountantAmount)}
+            value={summary.accountantAmount}
           />
           <SummaryCard
             label="Ahorro"
-            value={formatCurrency(summary.savingsAmount)}
+            value={summary.savingsAmount}
           />
           <SummaryCard
             label="IVA pagado"
-            value={formatCurrency(summary.paidTax)}
+            value={summary.paidTax}
           />
           <SummaryCard
             label={summary.vatReserveOverpaid ? "Exceso IVA" : "Reserva IVA"}
-            value={formatCurrency(Math.abs(summary.vatReserve))}
+            value={Math.abs(summary.vatReserve)}
             tone={summary.vatReserveOverpaid ? "error" : "strong"}
           />
         </View>
@@ -139,6 +159,12 @@ const createStyles = (c: Colors) =>
       minHeight: 128,
       padding: spacing.cardPadding,
     },
+    summaryCardExpanded: {
+      minHeight: 170,
+    },
+    summaryCardPressed: {
+      transform: [{ scale: 0.99 }],
+    },
     summaryLabel: {
       ...typography.label,
       color: c.text.inverse,
@@ -148,6 +174,10 @@ const createStyles = (c: Colors) =>
       ...typography.primaryAmount,
       color: c.text.inverse,
       marginTop: spacing.xxs,
+    },
+    summaryValueExpanded: {
+      fontSize: 36,
+      lineHeight: 44,
     },
     grid: {
       flexDirection: "row",
