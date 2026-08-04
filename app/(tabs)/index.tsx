@@ -122,7 +122,7 @@ export default function HomeScreen() {
     return (
       <ScreenContainer>
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
-        <ErrorState message={error} onRetry={refreshInvoices} />
+        <ErrorState message={error} onRetry={onRefresh} />
       </ScreenContainer>
     );
   }

@@ -26,6 +26,7 @@ import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
+import { formatGeneralPaymentCategoryLabel } from "../../utils/paymentLabels";
 
 type Segment = "general" | "iva";
 type GPFilter = "all" | GeneralPaymentCategory;
@@ -36,17 +37,6 @@ const CATEGORY_FILTERS: { value: GPFilter; label: string }[] = [
   { value: "accountant", label: "Contador" },
   { value: "savings", label: "Ahorro" },
 ];
-
-function formatCategoryLabel(category: GeneralPaymentCategory): string {
-  switch (category) {
-    case "tag":
-      return "TAG";
-    case "accountant":
-      return "Contador";
-    case "savings":
-      return "Ahorro";
-  }
-}
 
 export default function PagosScreen() {
   const router = useRouter();
@@ -159,7 +149,7 @@ function GeneralPaymentsView({
   const renderItem = useCallback(
     ({ item }: { item: GeneralPayment }) => (
       <AnimatedPressable
-        accessibilityLabel={`Pago de ${formatCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
+        accessibilityLabel={`Pago de ${formatGeneralPaymentCategoryLabel(item.category)} por ${formatCurrency(item.amount)}`}
         accessibilityRole="button"
         onPress={() =>
           router.push({
@@ -171,7 +161,7 @@ function GeneralPaymentsView({
         <View style={styles.card}>
           <View style={styles.cardTop}>
             <Text style={styles.cardCategory}>
-              {formatCategoryLabel(item.category)}
+              {formatGeneralPaymentCategoryLabel(item.category)}
             </Text>
             <Text style={styles.cardAmount}>
               {formatCurrency(item.amount)}

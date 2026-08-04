@@ -79,8 +79,8 @@ export default function TabsLayout() {
           fontWeight: "600",
         },
         tabBarItemStyle: {
-          minHeight: 52,
-          paddingVertical: 4,
+          minHeight: 56,
+          paddingVertical: 6,
         },
       }}
     >

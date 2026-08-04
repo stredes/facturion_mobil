@@ -12,12 +12,7 @@ import { useGeneralPaymentService } from "@/infrastructure/di/ServiceContext";
 import { spacing, useThemeColors, type Colors } from "@/theme";
 import { formatCurrency } from "@/utils/currency";
 import { formatDisplayDate } from "@/utils/dates";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  tag: "TAG",
-  accountant: "Contador",
-  savings: "Ahorro",
-};
+import { formatGeneralPaymentCategoryLabel } from "../../utils/paymentLabels";
 
 export default function GeneralPaymentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -103,8 +98,7 @@ export default function GeneralPaymentDetailScreen() {
     );
   }
 
-  const categoryLabel =
-    CATEGORY_LABELS[payment.category] ?? payment.category;
+  const categoryLabel = formatGeneralPaymentCategoryLabel(payment.category);
 
   return (
     <DetailScreen
