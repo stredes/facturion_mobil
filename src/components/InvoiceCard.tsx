@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { Invoice } from "../domain/Invoice";
-import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useTheme, type Colors } from "../theme";
 import { formatCurrency } from "../utils/currency";
 import { formatDisplayDate } from "../utils/dates";
 import { AnimatedPressable } from "./AnimatedPressable";
@@ -14,7 +14,7 @@ interface InvoiceCardProps {
 }
 
 export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (

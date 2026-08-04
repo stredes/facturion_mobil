@@ -1,5 +1,10 @@
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+const monthPeriodFormatter = new Intl.DateTimeFormat("es-CL", {
+  month: "long",
+  year: "numeric",
+});
+
 export function isValidISODate(value: string): boolean {
   if (!ISO_DATE_PATTERN.test(value)) {
     return false;
@@ -30,8 +35,5 @@ export function formatMonthPeriod(period: string): string {
   const [year, month] = period.split("-");
   const date = new Date(Number(year), Number(month) - 1, 1);
 
-  return new Intl.DateTimeFormat("es-CL", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
+  return monthPeriodFormatter.format(date);
 }

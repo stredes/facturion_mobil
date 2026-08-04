@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMemo, type ComponentProps } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useTheme, type Colors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 export interface QuickAction {
@@ -44,7 +44,7 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onPress }: QuickActionsProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (

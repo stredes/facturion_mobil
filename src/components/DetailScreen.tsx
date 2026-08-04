@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 
-import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useTheme, useThemeColors, type Colors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { ConfirmModal } from "./ConfirmModal";
 
@@ -44,7 +44,7 @@ export function DetailScreen({
   onEdit,
   onDelete,
 }: DetailScreenProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 360;
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);

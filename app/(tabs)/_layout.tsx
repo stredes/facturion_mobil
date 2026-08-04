@@ -67,7 +67,7 @@ export default function TabsLayout() {
           marginHorizontal: 12,
           marginBottom: 8 + insets.bottom,
           elevation: 8,
-          shadowColor: "#000000",
+          shadowColor: colors.overlay,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.15,
           shadowRadius: 12,

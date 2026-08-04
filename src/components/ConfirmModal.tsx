@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useTheme, type Colors } from "../theme";
 import { hapticLight, hapticSuccess } from "../utils/haptics";
 import { SecondaryButton } from "./SecondaryButton";
 
@@ -34,7 +34,7 @@ export function ConfirmModal({
   onCancel,
   destructive = false,
 }: ConfirmModalProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const scale = useRef(new Animated.Value(0.96)).current;
   const confirmRef = useRef<ComponentRef<typeof Pressable>>(null);
   const styles = useMemo(() => createStyles(colors), [colors]);

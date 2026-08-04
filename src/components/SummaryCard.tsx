@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useTheme, type Colors } from "../theme";
 import { formatCurrency, formatCurrencyCompact } from "../utils/currency";
 
 interface SummaryCardProps {
@@ -19,7 +19,7 @@ export function SummaryCard({
   tone = "default",
   secondary,
 }: SummaryCardProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isExpanded, setIsExpanded] = useState(false);
 

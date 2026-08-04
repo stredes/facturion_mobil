@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { radius, shadows, spacing, useThemeColors } from "../theme";
+import { radius, spacing, useTheme } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface FloatingActionButtonProps {
@@ -17,7 +17,7 @@ export function FloatingActionButton({
   accessibilityLabel = "Agregar",
   icon = "add",
 }: FloatingActionButtonProps) {
-  const colors = useThemeColors();
+  const { colors, shadows } = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
