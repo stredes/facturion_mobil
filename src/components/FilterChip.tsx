@@ -49,12 +49,15 @@ export function FilterChip({ label, selected, onPress }: FilterChipProps) {
 const createStyles = (c: Colors) =>
   StyleSheet.create({
     chip: {
+      alignItems: "center",
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
       borderRadius: radius.chip,
       borderWidth: 1,
-      paddingHorizontal: 14,
-      paddingVertical: 6,
+      justifyContent: "center",
+      minHeight: spacing.buttonHeight,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.xs,
     },
     selected: {
       backgroundColor: c.primary.main,

@@ -1,25 +1,17 @@
-import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { radius, spacing, useThemeColors, type Colors } from "../../theme";
+import { radius, spacing } from "../../theme";
 import { Skeleton } from "../LoadingSkeleton";
 
 export function MonthlySummarySkeleton() {
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
-
   return (
     <View style={styles.skeletonList}>
       {Array.from({ length: 3 }).map((_, index) => (
         <View key={index} style={styles.skeletonMonth}>
           <Skeleton width="50%" height={20} />
-          <View style={styles.skeletonGrid}>
-            {Array.from({ length: 4 }).map((__, gridIndex) => (
-              <View key={gridIndex} style={styles.skeletonCard}>
-                <Skeleton width={40} height={12} />
-                <Skeleton width="80%" height={22} />
-              </View>
-            ))}
+          <View style={styles.summaryCard}>
+            <Skeleton width="35%" height={14} />
+            <Skeleton width="60%" height={28} />
           </View>
         </View>
       ))}
@@ -27,27 +19,18 @@ export function MonthlySummarySkeleton() {
   );
 }
 
-const createStyles = (c: Colors) =>
-  StyleSheet.create({
-    skeletonList: {
-      gap: spacing.xl,
-    },
-    skeletonMonth: {
-      gap: spacing.md,
-    },
-    skeletonGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing.gridGap,
-    },
-    skeletonCard: {
-      backgroundColor: c.surface.primary,
-      borderColor: c.border.light,
-      borderRadius: radius.card,
-      borderWidth: 1,
-      flexBasis: "47%",
-      flexGrow: 1,
-      gap: spacing.xs,
-      padding: spacing.cardPadding,
-    },
-  });
+const styles = StyleSheet.create({
+  skeletonList: {
+    gap: spacing.xl,
+  },
+  skeletonMonth: {
+    gap: spacing.md,
+  },
+  summaryCard: {
+    borderRadius: radius.card,
+    gap: spacing.xxs,
+    minHeight: 128,
+    justifyContent: "center",
+    padding: spacing.cardPadding,
+  },
+});

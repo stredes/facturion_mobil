@@ -1,6 +1,13 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { PieChart3D } from "@/components/PieChart3D";
 
@@ -44,6 +51,11 @@ export default function HomeScreen() {
   const router = useRouter();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const chartWidth = Math.min(
+    350,
+    width - spacing.screenPadding * 2 - spacing.cardPadding * 2,
+  );
   const {
     invoices,
     isLoading: invoicesLoading,
@@ -198,14 +210,13 @@ export default function HomeScreen() {
   const chartData = {
     labels: chartMonths.map((m) => formatMonthLabel(m)),
     datasets: [
-      { data: last6(series.ivaGenerado).map(inM), color: (o = 1) => rgba(colors.primary.main, o), strokeWidth: 2 },
-      { data: last6(series.ivaPagado).map(inM), color: (o = 1) => rgba(colors.status.success, o), strokeWidth: 2 },
-      { data: last6(series.sobrante).map(inM), color: (o = 1) => rgba(colors.status.warning, o), strokeWidth: 2 },
-      { data: last6(series.tag).map(inM), color: (o = 1) => rgba(colors.status.info, o), strokeWidth: 2 },
-      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba(colors.series.accountant, o), strokeWidth: 2 },
-      { data: last6(series.savings).map(inM), color: (o = 1) => rgba(colors.series.savings, o), strokeWidth: 2 },
+      { data: last6(series.ivaGenerado).map(inM), color: (o = 1) => rgba(colors.series.ivaGenerado, o), strokeWidth: 2 },
+      { data: last6(series.ivaPagado).map(inM), color: (o = 1) => rgba(colors.series.ivaPagado, o), strokeWidth: 2 },
+      { data: last6(series.sobrante).map(inM), color: (o = 1) => rgba(colors.series.sobrante, o), strokeWidth: 2 },
+      { data: last6(series.tag).map(inM), color: (o = 1) => rgba(colors.series.tac, o), strokeWidth: 2 },
+      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba(colors.series.contactos, o), strokeWidth: 2 },
+      { data: last6(series.savings).map(inM), color: (o = 1) => rgba(colors.series.ahorro, o), strokeWidth: 2 },
     ],
-    legend: ["IVA gen.", "IVA pag.", "Sobrante", "TAG", "Contador", "Ahorro"],
   };
 
   // Datos para grafico de distribucion (una sola torta con las acumulaciones)
@@ -277,12 +288,12 @@ export default function HomeScreen() {
         <View style={styles.chartCard}>
           <SectionTitle title="Saldos acumulados" subtitle="Últimos 6 meses" />
           {isLoading ? (
-            <ChartSkeleton height={300} width={350} />
+            <ChartSkeleton height={300} width={chartWidth} />
           ) : (
             <View style={styles.chartContainer} accessibilityRole="image" accessibilityLabel="Gráfico de líneas: saldos acumulados de IVA, TAG, Contador y Ahorro en los últimos 6 meses">
               <LineChart
                 data={chartData}
-                width={350}
+                width={chartWidth}
                 height={300}
                 yAxisSuffix="M"
                 yAxisLabel="CLP"
@@ -311,7 +322,7 @@ export default function HomeScreen() {
               { name: 'IVA generado', color: colors.series.ivaGenerado },
               { name: 'IVA pagado', color: colors.series.ivaPagado },
               { name: 'Sobrante', color: colors.series.sobrante },
-            ].map((item, i) => (
+            ].map((item) => (
               <View key={item.name} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: item.color }]} />
                 <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
@@ -320,10 +331,10 @@ export default function HomeScreen() {
           </View>
           <View style={styles.legendRow}>
             {[
-              { name: 'TAC', color: colors.series.tac },
-              { name: 'Contactos', color: colors.series.contactos },
+              { name: 'TAG', color: colors.series.tac },
+              { name: 'Contador', color: colors.series.contactos },
               { name: 'Ahorro', color: colors.series.ahorro },
-            ].map((item, i) => (
+            ].map((item) => (
               <View key={item.name} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: item.color }]} />
                 <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
@@ -412,7 +423,7 @@ export default function HomeScreen() {
           <View style={styles.chartCard}>
             <SectionTitle title="Distribución de fondos" subtitle="Desglose de pagos y ahorros" />
             {isLoading ? (
-              <ChartSkeleton height={250} width={350} />
+              <ChartSkeleton height={250} width={chartWidth} />
             ) : (
               <View style={styles.pieContainer} accessibilityRole="image" accessibilityLabel="Gráfico circular: distribución de fondos por categoría (IVA, TAG, Contador, Ahorro, Retenciones)">
                 <PieChart3D data={pieData} size={350} innerRadius={90} depth={10} />
@@ -442,11 +453,11 @@ export default function HomeScreen() {
           </View>
         )}
       </ScrollView>
-      <FloatingActionButton
-        onPress={() => router.push("/facturas/nueva")}
-        accessibilityLabel="Crear factura"
-      />
     </ScreenContainer>
+    <FloatingActionButton
+      onPress={() => router.push("/facturas/nueva")}
+      accessibilityLabel="Crear factura"
+    />
     </View>
   );
 }

@@ -5,13 +5,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../../theme";
 import { AnimatedPressable } from "../AnimatedPressable";
-import { hapticLight, hapticSuccess, hapticError } from "../../utils/haptics";
+import { hapticLight } from "../../utils/haptics";
 
 interface FormScaffoldProps {
   children: ReactNode;

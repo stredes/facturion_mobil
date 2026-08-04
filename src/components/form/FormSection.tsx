@@ -8,10 +8,9 @@ interface FormSectionProps {
   icon: string;
   title: string;
   children: ReactNode;
-  delay?: number;
 }
 
-export function FormSection({ icon, title, children, delay = 0 }: FormSectionProps) {
+export function FormSection({ icon, title, children }: FormSectionProps) {
   const colors = useThemeColors();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
