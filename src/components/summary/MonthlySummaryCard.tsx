@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../../theme";
-import { formatCurrencyCompact } from "../../utils/currency";
+import { formatCurrency } from "../../utils/currency";
 import { formatMonthPeriod } from "../../utils/dates";
 import type { CombinedMonth } from "../../utils/monthlySummary";
 import { SummaryCard } from "../SummaryCard";
@@ -54,37 +54,38 @@ export function MonthlySummaryCard({
         <Text style={styles.summaryLabel}>Facturado</Text>
         <Text
           adjustsFontSizeToFit
-          minimumFontScale={0.85}
+          ellipsizeMode="tail"
+          minimumFontScale={0.6}
           numberOfLines={1}
           style={[styles.summaryValue, { fontSize: isSmallScreen ? 23 : 26 }]}
         >
-          {formatCurrencyCompact(summary.totalAmount)}
+          {formatCurrency(summary.totalAmount)}
         </Text>
       </View>
 
       {isExpanded ? (
         <View style={styles.grid}>
-          <SummaryCard label="Neto" value={formatCurrencyCompact(summary.netAmount)} />
+          <SummaryCard label="Neto" value={formatCurrency(summary.netAmount)} />
           <SummaryCard
             label="IVA generado"
-            value={formatCurrencyCompact(summary.taxAmount)}
+            value={formatCurrency(summary.taxAmount)}
           />
-          <SummaryCard label="TAG" value={formatCurrencyCompact(summary.tagAmount)} />
+          <SummaryCard label="TAG" value={formatCurrency(summary.tagAmount)} />
           <SummaryCard
             label="Contador"
-            value={formatCurrencyCompact(summary.accountantAmount)}
+            value={formatCurrency(summary.accountantAmount)}
           />
           <SummaryCard
             label="Ahorro"
-            value={formatCurrencyCompact(summary.savingsAmount)}
+            value={formatCurrency(summary.savingsAmount)}
           />
           <SummaryCard
             label="IVA pagado"
-            value={formatCurrencyCompact(summary.paidTax)}
+            value={formatCurrency(summary.paidTax)}
           />
           <SummaryCard
             label={summary.vatReserveOverpaid ? "Exceso IVA" : "Reserva IVA"}
-            value={formatCurrencyCompact(Math.abs(summary.vatReserve))}
+            value={formatCurrency(Math.abs(summary.vatReserve))}
             tone={summary.vatReserveOverpaid ? "error" : "strong"}
           />
         </View>

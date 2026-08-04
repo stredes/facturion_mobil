@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
 
@@ -20,16 +20,25 @@ export function SummaryCard({
 }: SummaryCardProps) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const cardStyle = [
+    styles.card,
+    shadows.card,
+    isExpanded && styles.expandedCard,
+    tone === "strong" && styles.strongCard,
+    tone === "warning" && styles.warningCard,
+    tone === "error" && styles.errorCard,
+  ];
 
   return (
-    <View
-      style={[
-        styles.card,
-        shadows.card,
-        tone === "strong" && styles.strongCard,
-        tone === "warning" && styles.warningCard,
-        tone === "error" && styles.errorCard,
-      ]}
+    <Pressable
+      accessibilityLabel={`${label}: ${value}`}
+      accessibilityHint="Toca para ampliar o contraer el monto"
+      accessibilityRole="button"
+      accessibilityState={{ expanded: isExpanded }}
+      onPress={() => setIsExpanded((prev) => !prev)}
+      style={({ pressed }) => [cardStyle, pressed && styles.pressed]}
     >
       <View style={styles.top}>
         {icon ? (
@@ -42,11 +51,13 @@ export function SummaryCard({
         </Text>
       </View>
       <Text
-        numberOfLines={1}
         adjustsFontSizeToFit
-        minimumFontScale={0.82}
+        ellipsizeMode="tail"
+        minimumFontScale={0.55}
+        numberOfLines={1}
         style={[
           styles.value,
+          isExpanded && styles.valueExpanded,
           tone === "strong" && styles.strongValue,
           tone === "warning" && styles.warningValue,
           tone === "error" && styles.errorValue,
@@ -59,7 +70,7 @@ export function SummaryCard({
           {secondary}
         </Text>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
@@ -75,6 +86,12 @@ const createStyles = (c: Colors) =>
       gap: spacing.xs,
       minHeight: 104,
       padding: spacing.cardPadding,
+    },
+    expandedCard: {
+      minHeight: 140,
+    },
+    pressed: {
+      transform: [{ scale: 0.98 }],
     },
     strongCard: {
       backgroundColor: c.primary.light,
@@ -113,6 +130,10 @@ const createStyles = (c: Colors) =>
     value: {
       ...typography.cardAmount,
       color: c.text.primary,
+    },
+    valueExpanded: {
+      fontSize: 30,
+      lineHeight: 36,
     },
     strongValue: {
       color: c.primary.main,

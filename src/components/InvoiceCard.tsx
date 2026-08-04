@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { Invoice } from "../domain/Invoice";
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
-import { formatCurrencyCompact } from "../utils/currency";
+import { formatCurrency } from "../utils/currency";
 import { formatDisplayDate } from "../utils/dates";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { StatusBadge } from "./StatusBadge";
@@ -45,36 +45,39 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
           <View style={styles.amountItem}>
             <Text style={styles.amountLabel}>Neto</Text>
             <Text
-              numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={0.8}
+              ellipsizeMode="tail"
+              minimumFontScale={0.6}
+              numberOfLines={1}
               style={styles.amountValue}
             >
-              {formatCurrencyCompact(invoice.netAmount)}
+              {formatCurrency(invoice.netAmount)}
             </Text>
           </View>
           <View style={styles.amountDivider} />
           <View style={styles.amountItem}>
             <Text style={styles.amountLabel}>IVA</Text>
             <Text
-              numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={0.8}
+              ellipsizeMode="tail"
+              minimumFontScale={0.6}
+              numberOfLines={1}
               style={styles.amountValue}
             >
-              {formatCurrencyCompact(invoice.taxAmount)}
+              {formatCurrency(invoice.taxAmount)}
             </Text>
           </View>
           <View style={styles.amountDivider} />
           <View style={[styles.amountItem, styles.amountItemTotal]}>
             <Text style={styles.amountLabel}>Total</Text>
             <Text
-              numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={0.8}
+              ellipsizeMode="tail"
+              minimumFontScale={0.6}
+              numberOfLines={1}
               style={styles.totalValue}
             >
-              {formatCurrencyCompact(invoice.totalAmount)}
+              {formatCurrency(invoice.totalAmount)}
             </Text>
           </View>
         </View>

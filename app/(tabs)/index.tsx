@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -29,7 +30,7 @@ import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
-import { formatCurrencyCompact } from "@/utils/currency";
+import { formatCurrency } from "@/utils/currency";
 
 const ICON_GLYPHS = {
   docs: "\u2A9A",
@@ -84,6 +85,7 @@ export default function HomeScreen() {
     refresh: refreshTaxPayments,
   } = useTaxPayments();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [totalExpanded, setTotalExpanded] = useState(false);
 
   const isLoading = invoicesLoading || gpLoading || rLoading || tpLoading;
   const error = invoicesError || gpError || rError || tpError;
@@ -266,9 +268,27 @@ export default function HomeScreen() {
         <QuickActions onPress={(route) => router.push(route as never)} />
 
         {/* Tarjeta principal - Total facturado */}
-        <View style={styles.mainCard}>
+        <Pressable
+          accessibilityHint="Toca para ampliar o contraer el monto"
+          accessibilityLabel={`Total facturado: ${formatCurrency(totalInvoiced)}`}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: totalExpanded }}
+          onPress={() => setTotalExpanded((prev) => !prev)}
+          style={({ pressed }) => [
+            styles.mainCard,
+            pressed && styles.mainCardPressed,
+          ]}
+        >
           <Text style={styles.mainLabel}>Total facturado</Text>
-          <Text style={styles.mainAmount}>{formatCurrencyCompact(totalInvoiced)}</Text>
+          <Text
+            adjustsFontSizeToFit
+            ellipsizeMode="tail"
+            minimumFontScale={0.55}
+            numberOfLines={1}
+            style={[styles.mainAmount, totalExpanded && styles.mainAmountExpanded]}
+          >
+            {formatCurrency(totalInvoiced)}
+          </Text>
           <View style={styles.mainStats}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{invoices.length}</Text>
@@ -276,16 +296,32 @@ export default function HomeScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.success }]}>{formatCurrencyCompact(paidAmount)}</Text>
+              <Text
+                adjustsFontSizeToFit
+                ellipsizeMode="tail"
+                minimumFontScale={0.5}
+                numberOfLines={1}
+                style={[styles.statValue, { color: colors.status.success }]}
+              >
+                {formatCurrency(paidAmount)}
+              </Text>
               <Text style={styles.statLabel}>Pagado</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.warning }]}>{formatCurrencyCompact(pendingAmount)}</Text>
+              <Text
+                adjustsFontSizeToFit
+                ellipsizeMode="tail"
+                minimumFontScale={0.5}
+                numberOfLines={1}
+                style={[styles.statValue, { color: colors.status.warning }]}
+              >
+                {formatCurrency(pendingAmount)}
+              </Text>
               <Text style={styles.statLabel}>Pendiente</Text>
             </View>
           </View>
-        </View>
+        </Pressable>
 
         {/* Grafico de acumulados */}
         <View style={styles.chartCard}>
@@ -351,18 +387,18 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label="IVA Total"
-            value={formatCurrencyCompact(totalTax)}
+            value={formatCurrency(totalTax)}
             icon={ICON_GLYPHS.docs}
           />
           <SummaryCard
             label="IVA Pagado"
-            value={formatCurrencyCompact(totalTaxPayment)}
+            value={formatCurrency(totalTaxPayment)}
             icon={ICON_GLYPHS.check}
             tone="warning"
           />
           <SummaryCard
             label="IVA Sobrante"
-            value={formatCurrencyCompact(sobranteIva)}
+            value={formatCurrency(sobranteIva)}
             icon={ICON_GLYPHS.cash}
             tone="strong"
           />
@@ -376,7 +412,7 @@ export default function HomeScreen() {
               key={category.value}
               label={`Saldo ${category.label}`}
               value={
-                formatCurrencyCompact(
+                formatCurrency(
                   category.value === "tag"
                     ? tagBalance
                     : category.value === "accountant"
@@ -394,7 +430,7 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label={`Saldo ${RETENTION_CATEGORIES.find((c) => c.value === "savings")?.label}`}
-            value={formatCurrencyCompact(savingsBalance)}
+            value={formatCurrency(savingsBalance)}
             icon={ICON_GLYPHS.savings}
           />
         </View>
@@ -406,7 +442,7 @@ export default function HomeScreen() {
             <SummaryCard
               key={category.value}
               label={category.label}
-              value={formatCurrencyCompact(retentionValues[category.value])}
+              value={formatCurrency(retentionValues[category.value])}
               icon={ICON_GLYPHS.retention}
             />
           ))}
@@ -480,6 +516,9 @@ const createStyles = (c: Colors) =>
       marginBottom: spacing.lg,
       padding: spacing.lg,
     },
+    mainCardPressed: {
+      transform: [{ scale: 0.99 }],
+    },
     mainLabel: {
       ...typography.label,
       color: c.text.inverse,
@@ -489,6 +528,10 @@ const createStyles = (c: Colors) =>
       ...typography.primaryAmount,
       color: c.text.inverse,
       marginTop: spacing.xxs,
+    },
+    mainAmountExpanded: {
+      fontSize: 36,
+      lineHeight: 44,
     },
     mainStats: {
       flexDirection: "row",

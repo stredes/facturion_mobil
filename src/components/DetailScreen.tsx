@@ -62,7 +62,8 @@ export function DetailScreen({
           <Text style={styles.totalLabel}>{totalLabel}</Text>
           <Text
             adjustsFontSizeToFit
-            minimumFontScale={0.85}
+            ellipsizeMode="tail"
+            minimumFontScale={0.6}
             numberOfLines={1}
             style={[
               styles.totalValue,
@@ -142,7 +143,8 @@ export function DetailRow({ label, value }: DetailRowProps) {
       <Text style={styles.detailLabel}>{label}</Text>
       <Text
         adjustsFontSizeToFit
-        minimumFontScale={0.82}
+        ellipsizeMode="tail"
+        minimumFontScale={0.6}
         numberOfLines={1}
         style={styles.detailValue}
       >
