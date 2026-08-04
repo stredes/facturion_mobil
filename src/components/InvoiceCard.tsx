@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { Invoice } from "../domain/Invoice";
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../theme";
-import { formatCurrency } from "../utils/currency";
+import { formatCurrencyCompact } from "../utils/currency";
 import { formatDisplayDate } from "../utils/dates";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { StatusBadge } from "./StatusBadge";
@@ -50,7 +50,7 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
               minimumFontScale={0.8}
               style={styles.amountValue}
             >
-              {formatCurrency(invoice.netAmount)}
+              {formatCurrencyCompact(invoice.netAmount)}
             </Text>
           </View>
           <View style={styles.amountDivider} />
@@ -62,7 +62,7 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
               minimumFontScale={0.8}
               style={styles.amountValue}
             >
-              {formatCurrency(invoice.taxAmount)}
+              {formatCurrencyCompact(invoice.taxAmount)}
             </Text>
           </View>
           <View style={styles.amountDivider} />
@@ -74,7 +74,7 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
               minimumFontScale={0.8}
               style={styles.totalValue}
             >
-              {formatCurrency(invoice.totalAmount)}
+              {formatCurrencyCompact(invoice.totalAmount)}
             </Text>
           </View>
         </View>

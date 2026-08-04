@@ -29,7 +29,7 @@ import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
-import { formatCurrency } from "@/utils/currency";
+import { formatCurrencyCompact } from "@/utils/currency";
 
 const ICON_GLYPHS = {
   docs: "\u2A9A",
@@ -268,7 +268,7 @@ export default function HomeScreen() {
         {/* Tarjeta principal - Total facturado */}
         <View style={styles.mainCard}>
           <Text style={styles.mainLabel}>Total facturado</Text>
-          <Text style={styles.mainAmount}>{formatCurrency(totalInvoiced)}</Text>
+          <Text style={styles.mainAmount}>{formatCurrencyCompact(totalInvoiced)}</Text>
           <View style={styles.mainStats}>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{invoices.length}</Text>
@@ -276,12 +276,12 @@ export default function HomeScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.success }]}>{formatCurrency(paidAmount)}</Text>
+              <Text style={[styles.statValue, { color: colors.status.success }]}>{formatCurrencyCompact(paidAmount)}</Text>
               <Text style={styles.statLabel}>Pagado</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.status.warning }]}>{formatCurrency(pendingAmount)}</Text>
+              <Text style={[styles.statValue, { color: colors.status.warning }]}>{formatCurrencyCompact(pendingAmount)}</Text>
               <Text style={styles.statLabel}>Pendiente</Text>
             </View>
           </View>
@@ -351,18 +351,18 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label="IVA Total"
-            value={formatCurrency(totalTax)}
+            value={formatCurrencyCompact(totalTax)}
             icon={ICON_GLYPHS.docs}
           />
           <SummaryCard
             label="IVA Pagado"
-            value={formatCurrency(totalTaxPayment)}
+            value={formatCurrencyCompact(totalTaxPayment)}
             icon={ICON_GLYPHS.check}
             tone="warning"
           />
           <SummaryCard
             label="IVA Sobrante"
-            value={formatCurrency(sobranteIva)}
+            value={formatCurrencyCompact(sobranteIva)}
             icon={ICON_GLYPHS.cash}
             tone="strong"
           />
@@ -376,7 +376,7 @@ export default function HomeScreen() {
               key={category.value}
               label={`Saldo ${category.label}`}
               value={
-                formatCurrency(
+                formatCurrencyCompact(
                   category.value === "tag"
                     ? tagBalance
                     : category.value === "accountant"
@@ -394,7 +394,7 @@ export default function HomeScreen() {
         <View style={styles.summarySection}>
           <SummaryCard
             label={`Saldo ${RETENTION_CATEGORIES.find((c) => c.value === "savings")?.label}`}
-            value={formatCurrency(savingsBalance)}
+            value={formatCurrencyCompact(savingsBalance)}
             icon={ICON_GLYPHS.savings}
           />
         </View>
@@ -406,7 +406,7 @@ export default function HomeScreen() {
             <SummaryCard
               key={category.value}
               label={category.label}
-              value={formatCurrency(retentionValues[category.value])}
+              value={formatCurrencyCompact(retentionValues[category.value])}
               icon={ICON_GLYPHS.retention}
             />
           ))}

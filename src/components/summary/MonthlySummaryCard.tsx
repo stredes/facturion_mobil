@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { radius, shadows, spacing, typography, useThemeColors, type Colors } from "../../theme";
-import { formatCurrency } from "../../utils/currency";
+import { formatCurrencyCompact } from "../../utils/currency";
 import { formatMonthPeriod } from "../../utils/dates";
 import type { CombinedMonth } from "../../utils/monthlySummary";
 import { SummaryCard } from "../SummaryCard";
@@ -58,33 +58,33 @@ export function MonthlySummaryCard({
           numberOfLines={1}
           style={[styles.summaryValue, { fontSize: isSmallScreen ? 23 : 26 }]}
         >
-          {formatCurrency(summary.totalAmount)}
+          {formatCurrencyCompact(summary.totalAmount)}
         </Text>
       </View>
 
       {isExpanded ? (
         <View style={styles.grid}>
-          <SummaryCard label="Neto" value={formatCurrency(summary.netAmount)} />
+          <SummaryCard label="Neto" value={formatCurrencyCompact(summary.netAmount)} />
           <SummaryCard
             label="IVA generado"
-            value={formatCurrency(summary.taxAmount)}
+            value={formatCurrencyCompact(summary.taxAmount)}
           />
-          <SummaryCard label="TAG" value={formatCurrency(summary.tagAmount)} />
+          <SummaryCard label="TAG" value={formatCurrencyCompact(summary.tagAmount)} />
           <SummaryCard
             label="Contador"
-            value={formatCurrency(summary.accountantAmount)}
+            value={formatCurrencyCompact(summary.accountantAmount)}
           />
           <SummaryCard
             label="Ahorro"
-            value={formatCurrency(summary.savingsAmount)}
+            value={formatCurrencyCompact(summary.savingsAmount)}
           />
           <SummaryCard
             label="IVA pagado"
-            value={formatCurrency(summary.paidTax)}
+            value={formatCurrencyCompact(summary.paidTax)}
           />
           <SummaryCard
             label={summary.vatReserveOverpaid ? "Exceso IVA" : "Reserva IVA"}
-            value={formatCurrency(Math.abs(summary.vatReserve))}
+            value={formatCurrencyCompact(Math.abs(summary.vatReserve))}
             tone={summary.vatReserveOverpaid ? "error" : "strong"}
           />
         </View>
