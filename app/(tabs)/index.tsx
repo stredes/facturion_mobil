@@ -277,13 +277,13 @@ export default function HomeScreen() {
         <View style={styles.chartCard}>
           <SectionTitle title="Saldos acumulados" subtitle="Últimos 6 meses" />
           {isLoading ? (
-            <ChartSkeleton height={280} width={350} />
+            <ChartSkeleton height={300} width={350} />
           ) : (
             <View style={styles.chartContainer} accessibilityRole="image" accessibilityLabel="Gráfico de líneas: saldos acumulados de IVA, TAG, Contador y Ahorro en los últimos 6 meses">
               <LineChart
                 data={chartData}
                 width={350}
-                height={280}
+                height={300}
                 yAxisSuffix="M"
                 yAxisLabel="CLP"
                 yLabelsOffset={-10}
@@ -302,6 +302,34 @@ export default function HomeScreen() {
               />
             </View>
           )}
+        </View>
+
+        {/* Leyenda del gráfico de líneas - en la parte inferior */}
+        <View style={styles.legendContainer}>
+          <View style={styles.legendRow}>
+            {[
+              { name: 'IVA generado', color: colors.series.ivaGenerado },
+              { name: 'IVA pagado', color: colors.series.ivaPagado },
+              { name: 'Sobrante', color: colors.series.sobrante },
+            ].map((item, i) => (
+              <View key={item.name} style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.legendRow}>
+            {[
+              { name: 'TAC', color: colors.series.tac },
+              { name: 'Contactos', color: colors.series.contactos },
+              { name: 'Ahorro', color: colors.series.ahorro },
+            ].map((item, i) => (
+              <View key={item.name} style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* Seccion IVA */}
@@ -489,6 +517,32 @@ const createStyles = (c: Colors) =>
     },
     chart: {
       borderRadius: radius.card,
+    },
+    legendContainer: {
+      alignItems: "center",
+      marginBottom: spacing.md,
+      marginTop: spacing.sm,
+    },
+    legendRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: spacing.md,
+      marginBottom: spacing.xs,
+    },
+    legendItem: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.xs,
+    },
+    legendDot: {
+      borderRadius: 5,
+      height: 10,
+      width: 10,
+    },
+    legendText: {
+      fontSize: 11,
     },
     pieContainer: {
       alignItems: "center",

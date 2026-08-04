@@ -38,6 +38,12 @@ export const colors = {
   series: {
     accountant: "#8B5CF6",
     savings: "#10B981",
+    ivaGenerado: "#0EA5E9",
+    ivaPagado: "#22C55E",
+    sobrante: "#F97316",
+    tac: "#3B82F6",
+    contactos: "#A855F7",
+    ahorro: "#84CC16",
   },
   chart: {
     axis: "#8A949E",
@@ -88,8 +94,14 @@ export const darkColors = {
     medium: "#26324A",
   },
   series: {
-    accountant: "#8B5CF6",
-    savings: "#10B981",
+    accountant: "#A78BFA",
+    savings: "#34D399",
+    ivaGenerado: "#38BDF8",
+    ivaPagado: "#4ADE80",
+    sobrante: "#FB923C",
+    tac: "#60A5FA",
+    contactos: "#C084FC",
+    ahorro: "#A3E635",
   },
   chart: {
     axis: "#64748B",
@@ -110,7 +122,16 @@ export interface ThemeColors {
   status: { success: string; warning: string; error: string; info: string };
   statusLight: { success: string; warning: string; error: string; info: string };
   border: { light: string; medium: string };
-  series: { accountant: string; savings: string };
+  series: {
+    accountant: string;
+    savings: string;
+    ivaGenerado: string;
+    ivaPagado: string;
+    sobrante: string;
+    tac: string;
+    contactos: string;
+    ahorro: string;
+  },
   chart: { axis: string; grid: string; legend: string; tooltipBg: string; tooltipBorder: string };
   overlay: string;
   shadow: string;
