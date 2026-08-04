@@ -121,6 +121,22 @@ export default function InvoiceDetailScreen() {
       <DetailBlock title="Informacion">
         <DetailRow label="Fecha" value={formatDisplayDate(invoice.invoiceDate)} />
         <DetailRow
+          label="Estado"
+          value={
+            invoice.status === "paid"
+              ? "Pagada - dinero recibido"
+              : "Pendiente - no aprobada / sin dinero"
+          }
+        />
+        <DetailRow
+          label="Fecha de pago"
+          value={
+            invoice.paymentDate
+              ? formatDisplayDate(invoice.paymentDate)
+              : "Sin fecha de pago"
+          }
+        />
+        <DetailRow
           label="Descripcion"
           value={invoice.description || "Sin descripcion"}
         />

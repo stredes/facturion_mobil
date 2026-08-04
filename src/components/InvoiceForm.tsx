@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useController, type Control } from "react-hook-form";
 
-import type { CreateInvoiceInput } from "../domain/Invoice";
+import type { CreateInvoiceInput, InvoiceStatus } from "../domain/Invoice";
 import {
   calculateInvoiceTotal,
   calculateTax,
@@ -17,6 +18,7 @@ import { FormScaffold } from "./form/FormScaffold";
 import { MoneyField } from "./form/MoneyField";
 import { TextField } from "./form/TextField";
 import { useFormWithReset } from "./form/useFormWithReset";
+import { FilterChip } from "./FilterChip";
 
 interface InvoiceFormProps {
   initialValues?: Partial<CreateInvoiceInput>;
@@ -33,12 +35,18 @@ interface InvoiceFormProps {
 function buildDefaultValues(
   initialValues?: Partial<CreateInvoiceInput>,
 ): InvoiceFormValues {
+  const status =
+    initialValues?.status ?? (initialValues?.paymentDate ? "paid" : "pending");
+
   return {
     invoiceNumber: initialValues?.invoiceNumber ?? "",
     invoiceDate: initialValues?.invoiceDate ?? toISODate(new Date()),
     clientName: initialValues?.clientName ?? "",
     description: initialValues?.description ?? "",
     netAmount: initialValues?.netAmount ?? 0,
+    status,
+    paymentDate:
+      status === "paid" ? initialValues?.paymentDate ?? toISODate(new Date()) : "",
   };
 }
 
@@ -60,6 +68,7 @@ export function InvoiceForm({
   const {
     control,
     handleSubmit,
+    setValue,
     watch,
     formState: { isSubmitting: isFormSubmitting },
   } = useFormWithReset<InvoiceFormValues>(defaultValues, {
@@ -67,6 +76,7 @@ export function InvoiceForm({
   });
 
   const netAmount = watch("netAmount") ?? 0;
+  const status = watch("status");
   const taxAmount = calculateTax(netAmount);
   const totalAmount = calculateInvoiceTotal(netAmount, taxAmount);
   const isBusy = isSubmitting || isFormSubmitting;
@@ -78,8 +88,20 @@ export function InvoiceForm({
       clientName: values.clientName,
       description: values.description?.trim() || undefined,
       netAmount: values.netAmount,
+      status: values.status,
+      paymentDate:
+        values.status === "paid" ? values.paymentDate?.trim() : null,
     });
   });
+
+  const setInvoiceStatus = (nextStatus: InvoiceStatus) => {
+    setValue("status", nextStatus, { shouldDirty: true, shouldValidate: true });
+    setValue(
+      "paymentDate",
+      nextStatus === "paid" ? watch("paymentDate") || toISODate(new Date()) : "",
+      { shouldDirty: true, shouldValidate: true },
+    );
+  };
 
   return (
     <FormScaffold
@@ -124,7 +146,56 @@ export function InvoiceForm({
           hint="Calculado automaticamente"
         />
       </FormSection>
+
+      <FormSection icon="E" title="Estado de pago">
+        <InvoiceStatusField
+          control={control}
+          onSelectStatus={setInvoiceStatus}
+        />
+        {status === "paid" ? (
+          <TextField
+            control={control}
+            keyboardType="numbers-and-punctuation"
+            label="Fecha en que cayo el dinero"
+            name="paymentDate"
+            placeholder="AAAA-MM-DD"
+          />
+        ) : (
+          <ReadonlyBox
+            label="Pendiente"
+            value="No aprobado / sin dinero recibido"
+            hint="No se registra fecha de pago"
+          />
+        )}
+      </FormSection>
     </FormScaffold>
+  );
+}
+
+function InvoiceStatusField({
+  control,
+  onSelectStatus,
+}: {
+  control: Control<InvoiceFormValues>;
+  onSelectStatus: (status: InvoiceStatus) => void;
+}) {
+  const { field } = useController({ control, name: "status" });
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  return (
+    <View style={styles.statusGroup}>
+      <FilterChip
+        label="Pendiente"
+        selected={field.value === "pending"}
+        onPress={() => onSelectStatus("pending")}
+      />
+      <FilterChip
+        label="Pagada"
+        selected={field.value === "paid"}
+        onPress={() => onSelectStatus("paid")}
+      />
+    </View>
   );
 }
 
@@ -184,5 +255,10 @@ const createStyles = (c: Colors) =>
     readonlyValue: {
       ...typography.cardAmount,
       color: c.text.primary,
+    },
+    statusGroup: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
     },
   });

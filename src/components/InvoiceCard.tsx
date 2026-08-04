@@ -36,8 +36,8 @@ export function InvoiceCard({ invoice, onPress }: InvoiceCardProps) {
             </Text>
           </View>
           <StatusBadge
-            label={invoice.paymentDate ? "Pagada" : "Sin fecha de pago"}
-            status={invoice.paymentDate ? "paid" : "none"}
+            label={invoice.status === "paid" ? "Pagada" : "Pendiente"}
+            status={invoice.status === "paid" ? "paid" : "pending"}
           />
         </View>
 

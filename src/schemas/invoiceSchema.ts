@@ -18,6 +18,10 @@ export const invoiceSchema = z.object({
     .number()
     .int()
     .positive("El monto neto debe ser mayor que cero"),
+
+  status: z.enum(["pending", "paid"]),
+
+  paymentDate: z.string().optional(),
 }).superRefine((input, context) => {
   if (!isValidISODate(input.invoiceDate)) {
     context.addIssue({
@@ -25,6 +29,16 @@ export const invoiceSchema = z.object({
       path: ["invoiceDate"],
       message: "Usa una fecha valida con formato AAAA-MM-DD",
     });
+  }
+
+  if (input.status === "paid") {
+    if (!input.paymentDate || !isValidISODate(input.paymentDate)) {
+      context.addIssue({
+        code: "custom",
+        path: ["paymentDate"],
+        message: "Ingresa la fecha en que el dinero cayo en cuenta",
+      });
+    }
   }
 });
 

@@ -1,9 +1,11 @@
+import * as FileSystem from "expo-file-system/legacy";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
   RefreshControl,
-  Share,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -19,13 +21,13 @@ import { ScreenContainer } from "@/components/ScreenContainer";
 import { SecondaryButton } from "@/components/SecondaryButton";
 import { MonthlySummaryCard } from "@/components/summary/MonthlySummaryCard";
 import { MonthlySummarySkeleton } from "@/components/summary/MonthlySummarySkeleton";
+import { useMonthlySummary } from "@/hooks/useMonthlySummary";
 import {
   useGeneralPaymentService,
   useInvoiceService,
   useRetentionService,
   useTaxPaymentService,
 } from "@/infrastructure/di/ServiceContext";
-import { useMonthlySummary } from "@/hooks/useMonthlySummary";
 import {
   radius,
   spacing,
@@ -39,7 +41,11 @@ import {
   DEFAULT_MONTHLY_REPORT_SECTIONS,
   MONTHLY_REPORT_SECTION_OPTIONS,
   buildMonthlyReport,
+  buildMonthlyReportFileName,
+  buildMonthlyReportHtml,
   hasSelectedMonthlyReportSection,
+  type MonthlyReportData,
+  type MonthlyReportPeriodData,
   type MonthlyReportSectionKey,
   type MonthlyReportSections,
 } from "@/utils/monthlyReport";
@@ -47,7 +53,14 @@ import type { CombinedMonth } from "@/utils/monthlySummary";
 
 type ReportStep = 0 | 1 | 2;
 
-const REPORT_STEPS = ["Mes", "Datos", "Informe"] as const;
+interface GeneratedMonthlyReport {
+  fileName: string;
+  fileUri: string;
+  pageCount: number;
+  preview: string;
+}
+
+const REPORT_STEPS = ["Meses", "Datos", "PDF"] as const;
 
 export default function SummaryScreen() {
   const { combined, isLoading, error, refresh } = useMonthlySummary();
@@ -62,38 +75,51 @@ export default function SummaryScreen() {
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [reportStep, setReportStep] = useState<ReportStep>(0);
-  const [selectedReportPeriod, setSelectedReportPeriod] = useState<
-    string | null
-  >(null);
+  const [selectedReportPeriods, setSelectedReportPeriods] = useState<
+    Set<string>
+  >(new Set());
   const [reportSections, setReportSections] = useState<MonthlyReportSections>(
     () => ({ ...DEFAULT_MONTHLY_REPORT_SECTIONS }),
   );
-  const [generatedReport, setGeneratedReport] = useState<string | null>(null);
+  const [generatedReport, setGeneratedReport] =
+    useState<GeneratedMonthlyReport | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 360;
 
   useEffect(() => {
     if (combined.length === 0) {
-      setSelectedReportPeriod(null);
+      setSelectedReportPeriods(new Set());
       setGeneratedReport(null);
       return;
     }
 
-    const hasSelectedPeriod = combined.some(
-      (month) => month.period === selectedReportPeriod,
-    );
+    const validPeriods = new Set(combined.map((month) => month.period));
+    let changed = false;
 
-    if (!selectedReportPeriod || !hasSelectedPeriod) {
-      setSelectedReportPeriod(combined[0].period);
+    setSelectedReportPeriods((prev) => {
+      const next = new Set(
+        Array.from(prev).filter((period) => validPeriods.has(period)),
+      );
+
+      if (next.size === 0) {
+        next.add(combined[0].period);
+      }
+
+      changed = !areSetsEqual(prev, next);
+      return changed ? next : prev;
+    });
+
+    if (changed) {
       setGeneratedReport(null);
     }
-  }, [combined, selectedReportPeriod]);
+  }, [combined]);
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await refresh();
+      setGeneratedReport(null);
     } finally {
       setIsRefreshing(false);
     }
@@ -111,8 +137,26 @@ export default function SummaryScreen() {
     });
   }, []);
 
-  const selectReportPeriod = useCallback((period: string) => {
-    setSelectedReportPeriod(period);
+  const toggleReportPeriod = useCallback((period: string) => {
+    setSelectedReportPeriods((prev) => {
+      const next = new Set(prev);
+      if (next.has(period)) {
+        next.delete(period);
+      } else {
+        next.add(period);
+      }
+      return next;
+    });
+    setGeneratedReport(null);
+  }, []);
+
+  const selectAllReportPeriods = useCallback(() => {
+    setSelectedReportPeriods(new Set(combined.map((month) => month.period)));
+    setGeneratedReport(null);
+  }, [combined]);
+
+  const clearReportPeriods = useCallback(() => {
+    setSelectedReportPeriods(new Set());
     setGeneratedReport(null);
   }, []);
 
@@ -126,8 +170,8 @@ export default function SummaryScreen() {
 
   const goToNextReportStep = useCallback(() => {
     if (reportStep === 0) {
-      if (!selectedReportPeriod) {
-        Alert.alert("Selecciona un mes", "Elige un mes para continuar.");
+      if (selectedReportPeriods.size === 0) {
+        Alert.alert("Selecciona meses", "Elige al menos un mes para continuar.");
         return;
       }
       setReportStep(1);
@@ -144,7 +188,7 @@ export default function SummaryScreen() {
       }
       setReportStep(2);
     }
-  }, [reportSections, reportStep, selectedReportPeriod]);
+  }, [reportSections, reportStep, selectedReportPeriods]);
 
   const goToPreviousReportStep = useCallback(() => {
     setReportStep((current) =>
@@ -152,9 +196,29 @@ export default function SummaryScreen() {
     );
   }, []);
 
+  const shareGeneratedReport = useCallback(
+    async (report: GeneratedMonthlyReport) => {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert(
+          "Compartir no disponible",
+          "El dispositivo no tiene disponible el compartir nativo.",
+        );
+        return;
+      }
+
+      await Sharing.shareAsync(report.fileUri, {
+        dialogTitle: `Compartir ${report.fileName}`,
+        mimeType: "application/pdf",
+        UTI: "com.adobe.pdf",
+      });
+    },
+    [],
+  );
+
   const generateReport = useCallback(async () => {
-    if (!selectedReportPeriod) {
-      Alert.alert("Selecciona un mes", "Elige un mes para generar el informe.");
+    if (selectedReportPeriods.size === 0) {
+      Alert.alert("Selecciona meses", "Elige al menos un mes para generar el PDF.");
       setReportStep(0);
       return;
     }
@@ -168,34 +232,66 @@ export default function SummaryScreen() {
       return;
     }
 
-    const [year, month] = selectedReportPeriod.split("-");
     setIsGeneratingReport(true);
 
     try {
-      const [invoices, taxPayments, generalPayments, retentions] =
-        await Promise.all([
-          invoiceService.getAll({ year, month }),
-          taxPaymentService.getAll({ taxPeriod: selectedReportPeriod }),
-          generalPaymentService.getAll({ year, month }),
-          retentionService.getAll({ year, month }),
-        ]);
+      const periods = await Promise.all(
+        Array.from(selectedReportPeriods)
+          .sort((a, b) => b.localeCompare(a))
+          .map(async (period) => {
+            const [year, month] = period.split("-");
+            const [invoices, taxPayments, generalPayments, retentions] =
+              await Promise.all([
+                reportSections.invoices
+                  ? invoiceService.getAll({ year, month })
+                  : [],
+                reportSections.taxPayments
+                  ? taxPaymentService.getAll({ taxPeriod: period })
+                  : [],
+                reportSections.generalPayments
+                  ? generalPaymentService.getAll({ year, month })
+                  : [],
+                reportSections.retentions
+                  ? retentionService.getAll({ year, month })
+                  : [],
+              ]);
 
-      setGeneratedReport(
-        buildMonthlyReport({
-          period: selectedReportPeriod,
-          sections: reportSections,
-          invoices: reportSections.invoices ? invoices : [],
-          taxPayments: reportSections.taxPayments ? taxPayments : [],
-          generalPayments: reportSections.generalPayments
-            ? generalPayments
-            : [],
-          retentions: reportSections.retentions ? retentions : [],
-        }),
+            return {
+              period,
+              invoices,
+              taxPayments,
+              generalPayments,
+              retentions,
+            } satisfies MonthlyReportPeriodData;
+          }),
       );
+      const reportData: MonthlyReportData = {
+        generatedAt: new Date().toISOString(),
+        periods,
+        sections: reportSections,
+      };
+      const html = buildMonthlyReportHtml(reportData);
+      const fileName = buildMonthlyReportFileName(reportData);
+      const printResult = await Print.printToFileAsync({
+        height: 842,
+        html,
+        textZoom: 100,
+        width: 595,
+      });
+      const fileUri = await copyPdfToNamedCache(printResult.uri, fileName);
+      const nextReport: GeneratedMonthlyReport = {
+        fileName,
+        fileUri,
+        pageCount: printResult.numberOfPages,
+        preview: buildMonthlyReport(reportData),
+      };
+
+      setGeneratedReport(nextReport);
+      await shareGeneratedReport(nextReport);
     } catch (currentError) {
       Alert.alert(
         "No se pudo generar",
-        toErrorMessage(currentError, "No se pudo generar el informe"),
+        toErrorMessage(currentError, "No se pudo generar el PDF"),
       );
     } finally {
       setIsGeneratingReport(false);
@@ -205,27 +301,25 @@ export default function SummaryScreen() {
     invoiceService,
     reportSections,
     retentionService,
-    selectedReportPeriod,
+    selectedReportPeriods,
+    shareGeneratedReport,
     taxPaymentService,
   ]);
 
   const shareReport = useCallback(async () => {
-    if (!generatedReport || !selectedReportPeriod) {
+    if (!generatedReport) {
       return;
     }
 
     try {
-      await Share.share({
-        title: `Informe Factrion ${selectedReportPeriod}`,
-        message: generatedReport,
-      });
+      await shareGeneratedReport(generatedReport);
     } catch (currentError) {
       Alert.alert(
         "No se pudo compartir",
-        toErrorMessage(currentError, "No se pudo compartir el informe"),
+        toErrorMessage(currentError, "No se pudo compartir el PDF"),
       );
     }
-  }, [generatedReport, selectedReportPeriod]);
+  }, [generatedReport, shareGeneratedReport]);
 
   const renderItem = useCallback(
     ({ item }: { item: CombinedMonth }) => (
@@ -291,14 +385,16 @@ export default function SummaryScreen() {
             generatedReport={generatedReport}
             isGenerating={isGeneratingReport}
             onBack={goToPreviousReportStep}
+            onClearPeriods={clearReportPeriods}
             onGenerate={generateReport}
             onNext={goToNextReportStep}
-            onPeriodChange={selectReportPeriod}
+            onSelectAllPeriods={selectAllReportPeriods}
             onShare={shareReport}
+            onTogglePeriod={toggleReportPeriod}
             onToggleSection={toggleReportSection}
             periods={combined}
             sections={reportSections}
-            selectedPeriod={selectedReportPeriod}
+            selectedPeriods={selectedReportPeriods}
             step={reportStep}
           />
         }
@@ -318,12 +414,14 @@ export default function SummaryScreen() {
 
 interface MonthlyReportStepperProps {
   periods: CombinedMonth[];
-  selectedPeriod: string | null;
+  selectedPeriods: Set<string>;
   sections: MonthlyReportSections;
   step: ReportStep;
-  generatedReport: string | null;
+  generatedReport: GeneratedMonthlyReport | null;
   isGenerating: boolean;
-  onPeriodChange: (period: string) => void;
+  onTogglePeriod: (period: string) => void;
+  onSelectAllPeriods: () => void;
+  onClearPeriods: () => void;
   onToggleSection: (key: MonthlyReportSectionKey) => void;
   onNext: () => void;
   onBack: () => void;
@@ -333,12 +431,14 @@ interface MonthlyReportStepperProps {
 
 function MonthlyReportStepper({
   periods,
-  selectedPeriod,
+  selectedPeriods,
   sections,
   step,
   generatedReport,
   isGenerating,
-  onPeriodChange,
+  onTogglePeriod,
+  onSelectAllPeriods,
+  onClearPeriods,
   onToggleSection,
   onNext,
   onBack,
@@ -350,26 +450,25 @@ function MonthlyReportStepper({
   const selectedSections = MONTHLY_REPORT_SECTION_OPTIONS.filter(
     ({ key }) => sections[key],
   );
+  const selectedPeriodCount = selectedPeriods.size;
   const canGenerate =
-    Boolean(selectedPeriod) && hasSelectedMonthlyReportSection(sections);
+    selectedPeriodCount > 0 && hasSelectedMonthlyReportSection(sections);
   const primaryLabel =
     step === 2
       ? isGenerating
-        ? "Generando..."
+        ? "Generando PDF..."
         : generatedReport
-          ? "Regenerar informe"
-          : "Generar informe"
+          ? "Regenerar PDF"
+          : "Generar PDF"
       : "Siguiente";
   const primaryDisabled =
     step === 0
-      ? !selectedPeriod
+      ? selectedPeriodCount === 0
       : step === 1
         ? !hasSelectedMonthlyReportSection(sections)
         : isGenerating || !canGenerate;
   const primaryAction = step === 2 ? onGenerate : onNext;
-  const selectedPeriodLabel = selectedPeriod
-    ? formatMonthPeriod(selectedPeriod)
-    : "Sin mes";
+  const selectedPeriodLabel = formatSelectedPeriodLabel(selectedPeriods);
 
   return (
     <View style={styles.reportPanel}>
@@ -406,10 +505,7 @@ function MonthlyReportStepper({
               </View>
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.stepLabel,
-                  isActive && styles.stepLabelActive,
-                ]}
+                style={[styles.stepLabel, isActive && styles.stepLabelActive]}
               >
                 {label}
               </Text>
@@ -421,14 +517,31 @@ function MonthlyReportStepper({
       <View style={styles.stepBody}>
         {step === 0 ? (
           <>
-            <Text style={styles.stepTitle}>Mes</Text>
+            <View style={styles.stepHeaderRow}>
+              <Text style={styles.stepTitle}>Meses</Text>
+              <Text style={styles.selectionCount}>
+                {selectedPeriodCount} seleccionados
+              </Text>
+            </View>
+            <View style={styles.inlineActions}>
+              <SecondaryButton
+                fullWidth={false}
+                label="Todos"
+                onPress={onSelectAllPeriods}
+              />
+              <SecondaryButton
+                fullWidth={false}
+                label="Limpiar"
+                onPress={onClearPeriods}
+              />
+            </View>
             <View style={styles.chipGrid}>
               {periods.map((month) => (
                 <FilterChip
                   key={month.period}
                   label={formatMonthPeriod(month.period)}
-                  selected={selectedPeriod === month.period}
-                  onPress={() => onPeriodChange(month.period)}
+                  selected={selectedPeriods.has(month.period)}
+                  onPress={() => onTogglePeriod(month.period)}
                 />
               ))}
             </View>
@@ -453,7 +566,7 @@ function MonthlyReportStepper({
 
         {step === 2 ? (
           <>
-            <Text style={styles.stepTitle}>Informe</Text>
+            <Text style={styles.stepTitle}>PDF</Text>
             <View style={styles.reportMetaBox}>
               <Text style={styles.reportMetaText}>{selectedPeriodLabel}</Text>
               <Text style={styles.reportMetaText}>
@@ -461,12 +574,17 @@ function MonthlyReportStepper({
                   ? selectedSections.map((option) => option.label).join(" / ")
                   : "Sin datos seleccionados"}
               </Text>
+              {generatedReport ? (
+                <Text style={styles.reportMetaText}>
+                  {generatedReport.fileName} | {generatedReport.pageCount} pag.
+                </Text>
+              ) : null}
             </View>
             {generatedReport ? (
               <View style={styles.reportPreview}>
                 <Text style={styles.previewTitle}>Vista previa</Text>
                 <Text numberOfLines={14} style={styles.previewText}>
-                  {generatedReport}
+                  {generatedReport.preview}
                 </Text>
               </View>
             ) : null}
@@ -490,13 +608,53 @@ function MonthlyReportStepper({
         {step === 2 && generatedReport ? (
           <SecondaryButton
             disabled={isGenerating}
-            label="Compartir informe"
+            label="Compartir PDF"
             onPress={onShare}
           />
         ) : null}
       </View>
     </View>
   );
+}
+
+async function copyPdfToNamedCache(
+  sourceUri: string,
+  fileName: string,
+): Promise<string> {
+  if (!FileSystem.cacheDirectory) {
+    return sourceUri;
+  }
+
+  const targetUri = `${FileSystem.cacheDirectory}${fileName}`;
+  await FileSystem.deleteAsync(targetUri, { idempotent: true });
+  await FileSystem.copyAsync({ from: sourceUri, to: targetUri });
+  return targetUri;
+}
+
+function formatSelectedPeriodLabel(selectedPeriods: Set<string>): string {
+  const periods = Array.from(selectedPeriods).sort((a, b) =>
+    a.localeCompare(b),
+  );
+
+  if (periods.length === 0) {
+    return "Sin meses seleccionados";
+  }
+
+  if (periods.length === 1) {
+    return formatMonthPeriod(periods[0]);
+  }
+
+  return `${periods.length} meses | ${periods[0]} a ${
+    periods[periods.length - 1]
+  }`;
+}
+
+function areSetsEqual(left: Set<string>, right: Set<string>): boolean {
+  if (left.size !== right.size) {
+    return false;
+  }
+
+  return Array.from(left).every((item) => right.has(item));
 }
 
 const createStyles = (c: Colors) =>
@@ -576,9 +734,24 @@ const createStyles = (c: Colors) =>
     stepBody: {
       gap: spacing.md,
     },
+    stepHeaderRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      gap: spacing.sm,
+    },
     stepTitle: {
       ...typography.cardTitle,
       color: c.text.primary,
+    },
+    selectionCount: {
+      ...typography.caption,
+      color: c.text.secondary,
+      flexShrink: 0,
+    },
+    inlineActions: {
+      flexDirection: "row",
+      gap: spacing.sm,
     },
     chipGrid: {
       flexDirection: "row",

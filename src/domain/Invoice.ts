@@ -1,3 +1,5 @@
+export type InvoiceStatus = "pending" | "paid";
+
 export interface Invoice {
   id: string;
 
@@ -11,6 +13,7 @@ export interface Invoice {
   totalAmount: number;
 
   paymentDate: string | null;
+  status: InvoiceStatus;
   taxPayment: number;
 
   tagAmount: number;
@@ -27,6 +30,8 @@ export interface CreateInvoiceInput {
   clientName: string;
   description?: string;
   netAmount: number;
+  status?: InvoiceStatus;
+  paymentDate?: string | null;
 }
 
 export interface InvoiceSummary {

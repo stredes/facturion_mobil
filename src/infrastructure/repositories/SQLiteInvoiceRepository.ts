@@ -8,6 +8,7 @@ import { validateMoney } from "../../domain/money";
 import type {
   CreateInvoiceInput,
   Invoice,
+  InvoiceStatus,
   InvoiceSummary,
   MonthlyInvoiceSummary,
 } from "../../domain/Invoice";
@@ -41,6 +42,8 @@ interface NormalizedInvoiceInput {
   netAmount: number;
   taxAmount: number;
   totalAmount: number;
+  status: InvoiceStatus;
+  paymentDate: string | null;
 }
 
 interface SummaryRow {
@@ -69,6 +72,7 @@ function mapInvoiceRow(row: InvoiceRow): Invoice {
     taxAmount: row.tax_amount,
     totalAmount: row.total_amount,
     paymentDate: row.payment_date,
+    status: row.payment_date ? "paid" : "pending",
     taxPayment: row.tax_payment,
     tagAmount: row.tag_amount,
     accountantAmount: row.accountant_amount,
@@ -103,6 +107,9 @@ function normalizeInvoiceInput(
   const clientName = input.clientName.trim();
   const description = input.description?.trim() || null;
   const netAmount = Number(input.netAmount);
+  const status = input.status ?? (input.paymentDate ? "paid" : "pending");
+  const paymentDate =
+    status === "paid" ? input.paymentDate?.trim() ?? "" : null;
 
   if (!invoiceNumber) {
     throw new Error("El numero de factura es obligatorio.");
@@ -125,6 +132,16 @@ function normalizeInvoiceInput(
   const taxAmount = calculateTax(netAmount);
   const totalAmount = calculateInvoiceTotal(netAmount, taxAmount);
 
+  if (status !== "pending" && status !== "paid") {
+    throw new Error("El estado debe ser pendiente o pagada.");
+  }
+
+  if (status === "paid" && (!paymentDate || !isValidISODate(paymentDate))) {
+    throw new Error(
+      "La fecha de pago debe ser valida y usar formato AAAA-MM-DD.",
+    );
+  }
+
   return {
     invoiceNumber,
     invoiceDate,
@@ -133,6 +150,8 @@ function normalizeInvoiceInput(
     netAmount,
     taxAmount,
     totalAmount,
+    status,
+    paymentDate,
   };
 }
 
@@ -158,7 +177,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             net_amount, tax_amount, total_amount,
             payment_date, tax_payment, tag_amount, accountant_amount, savings_amount,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 0, 0, 0, 0, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?, ?)`,
           [
             id,
             normalized.invoiceNumber,
@@ -168,6 +187,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             normalized.netAmount,
             normalized.taxAmount,
             normalized.totalAmount,
+            normalized.paymentDate,
             now,
             now,
           ],
@@ -217,7 +237,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
           `UPDATE invoices
            SET invoice_number = ?, invoice_date = ?, client_name = ?,
                description = ?, net_amount = ?, tax_amount = ?,
-               total_amount = ?, updated_at = ?
+               total_amount = ?, payment_date = ?, updated_at = ?
            WHERE id = ?`,
           [
             normalized.invoiceNumber,
@@ -227,6 +247,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             normalized.netAmount,
             normalized.taxAmount,
             normalized.totalAmount,
+            normalized.paymentDate,
             now,
             id,
           ],

@@ -54,6 +54,16 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShadowVisible: false,
+        headerStyle: {
+          backgroundColor: colors.surface.primary,
+        },
+        headerTintColor: colors.primary.main,
+        headerTitleStyle: {
+          color: colors.text.primary,
+          fontSize: 18,
+          fontWeight: "700",
+        },
         tabBarActiveTintColor: colors.primary.main,
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarStyle: {

@@ -5,35 +5,45 @@ import type { TaxPayment } from "../../domain/TaxPayment";
 import {
   DEFAULT_MONTHLY_REPORT_SECTIONS,
   buildMonthlyReport,
+  buildMonthlyReportFileName,
+  buildMonthlyReportHtml,
   hasSelectedMonthlyReportSection,
 } from "../monthlyReport";
 
 describe("buildMonthlyReport", () => {
-  it("genera un informe mensual completo con totales y registros", () => {
+  it("genera una vista previa de varios meses con totales", () => {
     const report = buildMonthlyReport({
-      period: "2026-08",
+      periods: [
+        {
+          period: "2026-08",
+          invoices: [invoice()],
+          taxPayments: [taxPayment()],
+          generalPayments: [generalPayment()],
+          retentions: [retention()],
+        },
+        {
+          period: "2026-07",
+          invoices: [{ ...invoice(), id: "inv-2", invoiceNumber: "F-099" }],
+          taxPayments: [],
+          generalPayments: [],
+          retentions: [],
+        },
+      ],
       sections: DEFAULT_MONTHLY_REPORT_SECTIONS,
       generatedAt: "2026-08-04T10:00:00.000Z",
-      invoices: [invoice()],
-      taxPayments: [taxPayment()],
-      generalPayments: [generalPayment()],
-      retentions: [retention()],
     });
 
     expect(report).toContain("INFORME MENSUAL FACTRION");
-    expect(report).toContain("Periodo: agosto de 2026 (2026-08)");
-    expect(report).toContain("Facturas: 1");
+    expect(report).toContain("julio de 2026 (2026-07)");
+    expect(report).toContain("agosto de 2026 (2026-08)");
+    expect(report).toContain("Facturas: 2");
     expect(report).toContain("Pagos IVA: 1");
-    expect(report).toContain("Pagos generales: 1");
     expect(report).toContain("Retenciones: 1");
-    expect(report).toContain("F-100");
-    expect(report).toContain("Cliente Demo");
-    expect(report).toContain("Referencia RET-1");
   });
 
   it("omite las secciones que no fueron seleccionadas", () => {
     const report = buildMonthlyReport({
-      period: "2026-08",
+      periods: [periodData()],
       sections: {
         invoices: true,
         taxPayments: false,
@@ -41,10 +51,6 @@ describe("buildMonthlyReport", () => {
         retentions: false,
       },
       generatedAt: "2026-08-04T10:00:00.000Z",
-      invoices: [invoice()],
-      taxPayments: [taxPayment()],
-      generalPayments: [generalPayment()],
-      retentions: [retention()],
     });
 
     expect(report).toContain("Facturas");
@@ -52,24 +58,58 @@ describe("buildMonthlyReport", () => {
     expect(report).not.toContain("Pagos generales");
     expect(report).not.toContain("Retenciones");
   });
+});
 
-  it("informa cuando una seccion seleccionada no tiene registros", () => {
-    const report = buildMonthlyReport({
-      period: "2026-08",
-      sections: {
-        invoices: false,
-        taxPayments: false,
-        generalPayments: false,
-        retentions: true,
-      },
+describe("buildMonthlyReportHtml", () => {
+  it("genera HTML profesional para PDF", () => {
+    const html = buildMonthlyReportHtml({
+      periods: [periodData()],
+      sections: DEFAULT_MONTHLY_REPORT_SECTIONS,
       generatedAt: "2026-08-04T10:00:00.000Z",
-      invoices: [],
-      taxPayments: [],
-      generalPayments: [],
-      retentions: [],
     });
 
-    expect(report).toContain("- Sin retenciones en el periodo.");
+    expect(html).toContain("<!doctype html>");
+    expect(html).toContain("Informe mensual");
+    expect(html).toContain("Resumen general");
+    expect(html).toContain("Facturas");
+    expect(html).toContain("Cliente Demo");
+    expect(html).toContain("Retenciones");
+  });
+
+  it("escapa texto de usuario para no romper el documento", () => {
+    const html = buildMonthlyReportHtml({
+      periods: [
+        {
+          ...periodData(),
+          invoices: [
+            {
+              ...invoice(),
+              clientName: "<Cliente & Demo>",
+              description: 'Servicio "especial"',
+            },
+          ],
+        },
+      ],
+      sections: DEFAULT_MONTHLY_REPORT_SECTIONS,
+      generatedAt: "2026-08-04T10:00:00.000Z",
+    });
+
+    expect(html).toContain("&lt;Cliente &amp; Demo&gt;");
+    expect(html).toContain("Servicio &quot;especial&quot;");
+  });
+});
+
+describe("buildMonthlyReportFileName", () => {
+  it("usa el rango de meses seleccionados", () => {
+    expect(
+      buildMonthlyReportFileName({
+        periods: [
+          { ...periodData(), period: "2026-08" },
+          { ...periodData(), period: "2026-06" },
+        ],
+        sections: DEFAULT_MONTHLY_REPORT_SECTIONS,
+      }),
+    ).toBe("Factrion-Informe-2026-06-a-2026-08.pdf");
   });
 });
 
@@ -95,6 +135,16 @@ describe("hasSelectedMonthlyReportSection", () => {
   });
 });
 
+function periodData() {
+  return {
+    period: "2026-08",
+    invoices: [invoice()],
+    taxPayments: [taxPayment()],
+    generalPayments: [generalPayment()],
+    retentions: [retention()],
+  };
+}
+
 function invoice(): Invoice {
   return {
     id: "inv-1",
@@ -106,6 +156,7 @@ function invoice(): Invoice {
     taxAmount: 19000,
     totalAmount: 119000,
     paymentDate: "2026-08-10",
+    status: "paid",
     taxPayment: 19000,
     tagAmount: 5000,
     accountantAmount: 4000,

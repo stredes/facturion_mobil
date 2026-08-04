@@ -84,6 +84,8 @@ export default function EditInvoiceScreen() {
             clientName: invoice.clientName,
             description: invoice.description ?? "",
             netAmount: invoice.netAmount,
+            status: invoice.status,
+            paymentDate: invoice.paymentDate,
           }
         : undefined,
     [invoice],

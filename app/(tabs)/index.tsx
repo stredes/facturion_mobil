@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -24,13 +25,17 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { LoadingState } from "@/components/LoadingState";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ChartSkeleton } from "@/components/LoadingSkeleton";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import { createLocalBackup } from "@/database/localBackup";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
 import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
+import { loadAppSettings, type BackupSettings } from "@/settings/appSettings";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 import { formatCurrency, formatCurrencyCompact } from "@/utils/currency";
+import { toErrorMessage } from "@/utils/errors";
 
 const ICON_GLYPHS = {
   docs: "\u2A9A",
@@ -86,9 +91,25 @@ export default function HomeScreen() {
   } = useTaxPayments();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [totalExpanded, setTotalExpanded] = useState(false);
+  const [lastBackup, setLastBackup] = useState<BackupSettings | null>(null);
+  const [isBackingUp, setIsBackingUp] = useState(false);
 
   const isLoading = invoicesLoading || gpLoading || rLoading || tpLoading;
   const error = invoicesError || gpError || rError || tpError;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    loadAppSettings().then((settings) => {
+      if (isMounted) {
+        setLastBackup(settings.lastBackup);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -108,6 +129,25 @@ export default function HomeScreen() {
     refreshRetentions,
     refreshTaxPayments,
   ]);
+
+  const handleCreateBackup = useCallback(async () => {
+    setIsBackingUp(true);
+    try {
+      const backup = await createLocalBackup();
+      setLastBackup(backup);
+      Alert.alert(
+        "Backup local creado",
+        `${backup.fileName}\n${formatBytes(backup.sizeBytes)}`,
+      );
+    } catch (currentError) {
+      Alert.alert(
+        "No se pudo crear el backup",
+        toErrorMessage(currentError, "No se pudo crear el backup local"),
+      );
+    } finally {
+      setIsBackingUp(false);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -130,10 +170,10 @@ export default function HomeScreen() {
   // Calculos globales
   const totalInvoiced = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
   const pendingAmount = invoices
-    .filter((inv) => !inv.paymentDate)
+    .filter((inv) => inv.status !== "paid")
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
   const paidAmount = invoices
-    .filter((inv) => inv.paymentDate)
+    .filter((inv) => inv.status === "paid")
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
   const totalTax = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
   const totalTag = invoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
@@ -264,6 +304,29 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
         >
         <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
+
+        <View style={styles.homeControls}>
+          <ThemeToggleButton />
+          <AnimatedPressable
+            accessibilityLabel="Crear backup local"
+            accessibilityRole="button"
+            disabled={isBackingUp}
+            onPress={handleCreateBackup}
+            style={[
+              styles.backupButton,
+              isBackingUp && styles.backupButtonDisabled,
+            ]}
+          >
+            <Text style={styles.backupTitle}>
+              {isBackingUp ? "Generando..." : "Backup local"}
+            </Text>
+            <Text numberOfLines={1} style={styles.backupSubtitle}>
+              {lastBackup
+                ? `Ultimo ${formatBackupTime(lastBackup.createdAt)}`
+                : "Guardar base completa"}
+            </Text>
+          </AnimatedPressable>
+        </View>
 
         <QuickActions onPress={(route) => router.push(route as never)} />
 
@@ -505,6 +568,28 @@ export default function HomeScreen() {
   );
 }
 
+function formatBackupTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "reciente";
+  }
+
+  return new Intl.DateTimeFormat("es-CL", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+  }).format(date);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 const createStyles = (c: Colors) =>
   StyleSheet.create({
     screen: {
@@ -513,6 +598,36 @@ const createStyles = (c: Colors) =>
     scrollContent: {
       flexGrow: 1,
       paddingBottom: 100,
+    },
+    homeControls: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: spacing.sm,
+      marginBottom: spacing.lg,
+    },
+    backupButton: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.button,
+      borderWidth: 1,
+      flex: 1,
+      gap: spacing.xxs,
+      justifyContent: "center",
+      minHeight: 54,
+      minWidth: 150,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    backupButtonDisabled: {
+      opacity: 0.65,
+    },
+    backupTitle: {
+      ...typography.label,
+      color: c.text.primary,
+    },
+    backupSubtitle: {
+      ...typography.caption,
+      color: c.text.secondary,
     },
     mainCard: {
       backgroundColor: c.primary.dark,

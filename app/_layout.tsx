@@ -4,11 +4,19 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { spacing, typography, useTheme } from "@/theme";
+import { spacing, ThemeProvider, typography, useTheme } from "@/theme";
 import { initializeDatabase } from "@/database/database";
 import { ServiceProvider } from "@/infrastructure/di/ServiceContext";
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootLayoutContent />
+    </ThemeProvider>
+  );
+}
+
+function RootLayoutContent() {
   const { colors, isDark } = useTheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,8 +70,9 @@ export default function RootLayout() {
             },
             headerShadowVisible: false,
             headerStyle: {
-              backgroundColor: colors.background.primary,
+              backgroundColor: colors.surface.primary,
             },
+            headerTintColor: colors.primary.main,
             headerTitleStyle: {
               color: colors.text.primary,
               fontWeight: "700",

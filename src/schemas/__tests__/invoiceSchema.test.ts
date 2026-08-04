@@ -6,6 +6,8 @@ const valid = {
   clientName: "Cliente",
   description: "",
   netAmount: 1000,
+  status: "pending" as const,
+  paymentDate: "",
 };
 
 describe("invoiceSchema", () => {
@@ -41,5 +43,19 @@ describe("invoiceSchema", () => {
     expect(
       invoiceSchema.safeParse({ ...valid, invoiceNumber: "   " }).success,
     ).toBe(false);
+  });
+
+  it("exige fecha de pago cuando la factura esta pagada", () => {
+    expect(
+      invoiceSchema.safeParse({ ...valid, status: "paid", paymentDate: "" })
+        .success,
+    ).toBe(false);
+    expect(
+      invoiceSchema.safeParse({
+        ...valid,
+        status: "paid",
+        paymentDate: "2026-08-04",
+      }).success,
+    ).toBe(true);
   });
 });

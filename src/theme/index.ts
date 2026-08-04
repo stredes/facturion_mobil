@@ -4,4 +4,10 @@ export { typography } from "./typography";
 export { radius } from "./radius";
 export { createShadows, shadows, type Shadows } from "./shadows";
 export { springConfig, durations, haptics, type HapticFeedback } from "./animations";
-export { useTheme, useThemeColors, useThemeShadows } from "./useTheme";
+export {
+  ThemeProvider,
+  useTheme,
+  useThemeColors,
+  useThemeShadows,
+  type ThemeMode,
+} from "./useTheme";
