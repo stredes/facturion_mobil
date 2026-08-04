@@ -242,26 +242,5 @@ export async function runMigrations(
     }
   }
 
-  if (currentVersion < 4) {
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS retentions (
-        id TEXT PRIMARY KEY NOT NULL,
-        category TEXT NOT NULL CHECK (category IN ('tax', 'tag', 'accountant', 'savings')),
-        retention_date TEXT NOT NULL,
-        amount INTEGER NOT NULL DEFAULT 0,
-        description TEXT,
-        reference TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_retentions_category
-      ON retentions(category);
-
-      CREATE INDEX IF NOT EXISTS idx_retentions_date
-      ON retentions(retention_date);
-    `);
-  }
-
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }

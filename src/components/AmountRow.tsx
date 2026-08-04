@@ -32,7 +32,7 @@ const createStyles = (c: Colors) =>
     },
     label: {
       ...typography.label,
-      color: c.text.secondary,
+      color: c.text.primary,
     },
     value: {
       ...typography.body,

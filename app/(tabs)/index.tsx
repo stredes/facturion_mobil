@@ -329,23 +329,29 @@ export default function HomeScreen() {
         {/* Seccion Pagos extras */}
         <SectionTitle title="Pagos extras" />
         <View style={styles.summarySection}>
-          <SummaryCard
-            label="Saldo TAG"
-            value={formatCurrency(tagBalance)}
-            icon={ICON_GLYPHS.tag}
-          />
-          <SummaryCard
-            label="Saldo Contador"
-            value={formatCurrency(accountantBalance)}
-            icon={ICON_GLYPHS.chart}
-          />
+          {RETENTION_CATEGORIES.slice(0, 3).map((category) => (
+            <SummaryCard
+              key={category.value}
+              label={`Saldo ${category.label}`}
+              value={
+                formatCurrency(
+                  category.value === "tag"
+                    ? tagBalance
+                    : category.value === "accountant"
+                    ? accountantBalance
+                    : savingsBalance
+                )
+              }
+              icon={ICON_GLYPHS[category.value === "tag" ? "tag" : category.value === "accountant" ? "chart" : "savings"]}
+            />
+          ))}
         </View>
 
         {/* Seccion Ahorro */}
         <SectionTitle title="Ahorro" />
         <View style={styles.summarySection}>
           <SummaryCard
-            label="Saldo Ahorro"
+            label={`Saldo ${RETENTION_CATEGORIES.find((c) => c.value === "savings")?.label}`}
             value={formatCurrency(savingsBalance)}
             icon={ICON_GLYPHS.savings}
           />

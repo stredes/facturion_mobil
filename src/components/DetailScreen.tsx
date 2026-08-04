@@ -256,7 +256,7 @@ const createStyles = (c: Colors) =>
     },
     deleteButton: {
       backgroundColor: c.statusLight.error,
-      borderColor: c.status.error + "40",
+      borderColor: c.statusLight.error,
       borderWidth: 1,
     },
     deleteButtonText: {
@@ -265,7 +265,7 @@ const createStyles = (c: Colors) =>
     },
     inlineError: {
       backgroundColor: c.statusLight.error,
-      borderColor: c.status.error + "40",
+      borderColor: c.statusLight.error,
       borderRadius: radius.input,
       borderWidth: 1,
       padding: spacing.md,
