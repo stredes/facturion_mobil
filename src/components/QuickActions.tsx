@@ -50,21 +50,22 @@ export function QuickActions({ onPress }: QuickActionsProps) {
   return (
     <View style={styles.grid}>
       {QUICK_ACTIONS.map((item) => (
-        <AnimatedPressable
-          key={item.key}
-          accessibilityLabel={item.label}
-          accessibilityRole="button"
-          hapticOnPress
-          onPress={() => onPress(item.route)}
-          style={[styles.item, shadows.card]}
-        >
-          <View style={styles.iconBadge}>
-            <Ionicons name={item.icon} size={22} color={colors.primary.main} />
-          </View>
-          <Text numberOfLines={1} style={styles.label}>
-            {item.label}
-          </Text>
-        </AnimatedPressable>
+        <View key={item.key} style={styles.itemWrapper}>
+          <AnimatedPressable
+            accessibilityLabel={item.label}
+            accessibilityRole="button"
+            hapticOnPress
+            onPress={() => onPress(item.route)}
+            style={[styles.item, shadows.card]}
+          >
+            <View style={styles.iconBadge}>
+              <Ionicons name={item.icon} size={24} color={colors.primary.main} />
+            </View>
+            <Text numberOfLines={1} style={styles.label}>
+              {item.label}
+            </Text>
+          </AnimatedPressable>
+        </View>
       ))}
     </View>
   );
@@ -77,32 +78,33 @@ const createStyles = (c: Colors) =>
       flexWrap: "wrap",
       gap: spacing.gridGap,
     },
+    itemWrapper: {
+      flexBasis: "48%",
+      flexGrow: 1,
+    },
     item: {
       alignItems: "center",
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
       borderRadius: radius.card,
       borderWidth: 1,
-      flexBasis: "48%",
       flexDirection: "row",
-      flexGrow: 1,
       gap: spacing.sm,
       justifyContent: "center",
-      minHeight: 64,
+      minHeight: 72,
       padding: spacing.cardPadding,
     },
     iconBadge: {
       alignItems: "center",
       backgroundColor: c.primary.light,
-      borderRadius: 22,
-      height: 44,
+      borderRadius: 23,
+      height: 46,
       justifyContent: "center",
-      width: 44,
+      width: 46,
     },
     label: {
-      ...typography.small,
+      ...typography.label,
       color: c.text.primary,
       flexShrink: 1,
-      fontWeight: "600",
     },
   });
