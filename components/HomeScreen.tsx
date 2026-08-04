@@ -140,7 +140,7 @@ export default function HomeScreen() {
   }, [colors]);
 
   const chartDatasets = useMemo(() => LEGEND_ITEMS.map(item => ({
-    data: CHART_DATA.map(d => d[item.colorKey as keyof Omit<typeof CHART_DATA[0], month>]) as number[],
+    data: CHART_DATA.map(d => d[item.colorKey as keyof typeof CHART_DATA[0]]) as number[],
     color: (opacity: number) => rgba(colors.series[item.colorKey as keyof typeof colors.series], opacity),
     strokeWidth: 2.5,
   })), [colors]);
