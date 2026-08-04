@@ -91,15 +91,14 @@ const createStyles = (c: Colors) =>
     },
     prefix: {
       ...typography.body,
-      color: c.text.tertiary,
+      color: c.text.secondary,
       fontWeight: "600",
       marginRight: spacing.xs,
     },
     input: {
+      ...typography.body,
       color: c.text.primary,
       flex: 1,
-      fontSize: 15,
-      lineHeight: 20,
       paddingVertical: 0,
       textAlign: "right",
     },

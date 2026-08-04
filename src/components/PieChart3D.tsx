@@ -1,7 +1,7 @@
 import { useWindowDimensions, View, type AccessibilityRole } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 
-import { spacing, useThemeColors } from "../theme";
+import { spacing, typography, useThemeColors } from "../theme";
 
 const rgba = (hex: string, opacity: number) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -45,7 +45,7 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size, accessibilit
       population: d.value,
       color: d.color,
       legendFontColor: colors.chart.legend,
-      legendFontSize: 11,
+      legendFontSize: typography.small.fontSize,
     };
   });
 

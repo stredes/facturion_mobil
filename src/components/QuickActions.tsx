@@ -97,10 +97,10 @@ const createStyles = (c: Colors) =>
     iconBadge: {
       alignItems: "center",
       backgroundColor: c.primary.light,
-      borderRadius: 23,
-      height: 46,
+      borderRadius: spacing.xl,
+      height: spacing.xl * 2,
       justifyContent: "center",
-      width: 46,
+      width: spacing.xl * 2,
     },
     label: {
       ...typography.label,

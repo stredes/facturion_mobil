@@ -149,7 +149,7 @@ const createStyles = (c: Colors) =>
       color: c.primary.main,
     },
     expandIcon: {
-      fontSize: 12,
+      fontSize: typography.caption.fontSize,
       color: c.text.tertiary,
     },
     summaryCard: {

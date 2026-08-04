@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "absolute",
     right: spacing.screenPadding,
-    width: 44,
-    height: 44,
+    width: 56,
+    height: 56,
     zIndex: 10,
   },
 });

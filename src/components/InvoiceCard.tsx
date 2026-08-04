@@ -155,7 +155,7 @@ const createStyles = (c: Colors) =>
     },
     amountLabel: {
       ...typography.small,
-      color: c.text.tertiary,
+      color: c.text.secondary,
     },
     amountValue: {
       ...typography.bodyMedium,
@@ -174,10 +174,10 @@ const createStyles = (c: Colors) =>
     },
     date: {
       ...typography.caption,
-      color: c.text.tertiary,
+      color: c.text.secondary,
     },
     chevron: {
-      color: c.text.tertiary,
+      color: c.text.secondary,
       fontSize: 18,
       lineHeight: 20,
     },

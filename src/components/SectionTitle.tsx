@@ -40,6 +40,6 @@ const createStyles = (c: Colors) =>
       color: c.text.primary,
     },
     subtitle: {
-      color: c.text.tertiary,
+      color: c.text.secondary,
     },
   });

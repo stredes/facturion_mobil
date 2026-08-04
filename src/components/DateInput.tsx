@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { radius, spacing, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 
 interface DateInputProps {
   label: string;
@@ -62,17 +62,16 @@ const createStyles = (c: Colors) =>
       gap: spacing.xs,
     },
     label: {
+      ...typography.label,
       color: c.text.primary,
-      fontSize: 14,
-      fontWeight: "600",
     },
     input: {
+      ...typography.body,
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
       borderRadius: radius.input,
       borderWidth: 1,
       color: c.text.primary,
-      fontSize: 16,
       minHeight: spacing.inputHeight,
       paddingHorizontal: 14,
     },

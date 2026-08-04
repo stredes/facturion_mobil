@@ -64,7 +64,7 @@ export function InvoiceCardSkeleton() {
       </View>
       <Skeleton width="45%" height={14} />
       <Skeleton width="35%" height={22} />
-      <Skeleton width={60} height={18} borderRadius={6} />
+      <Skeleton width={60} height={18} borderRadius={radius.inner} />
     </View>
   );
 }

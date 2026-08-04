@@ -139,7 +139,7 @@ const createStyles = (c: Colors) =>
       borderColor: c.border.light,
       borderRadius: radius.button,
       borderWidth: 1,
-      minHeight: 48,
+      minHeight: spacing.buttonHeight,
       justifyContent: "center",
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,

@@ -67,8 +67,8 @@ const createStyles = (c: Colors) =>
     blockIcon: {
       backgroundColor: c.primary.light,
       borderRadius: radius.inner,
-      width: 28,
-      height: 28,
+      width: spacing.xl + spacing.sm,
+      height: spacing.xl + spacing.sm,
       alignItems: "center",
       justifyContent: "center",
     },

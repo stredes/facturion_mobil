@@ -91,11 +91,11 @@ const createStyles = (c: Colors) =>
     },
     iconContainer: {
       backgroundColor: c.surface.primary,
-      borderRadius: 36,
+      borderRadius: spacing.xl + spacing.sm,
       padding: spacing.lg,
     },
     icon: {
-      fontSize: 26,
+      fontSize: spacing.xl + spacing.xs,
       color: c.text.tertiary,
     },
     title: {

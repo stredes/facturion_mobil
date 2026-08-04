@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { typography, useThemeColors } from "../theme";
+import { spacing, typography, useThemeColors } from "../theme";
 
 interface AppHeaderProps {
   title: string;
@@ -24,8 +24,8 @@ export function AppHeader({ title, subtitle }: AppHeaderProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 4,
-    paddingVertical: 16,
+    gap: spacing.xxs,
+    paddingVertical: spacing.cardPadding,
   },
   title: {
     ...typography.screenTitle,

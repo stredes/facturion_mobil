@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 
-import { radius, spacing, useThemeColors, type Colors } from "../theme";
+import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 import { hapticLight } from "../utils/haptics";
 
 interface SearchInputProps {
@@ -107,10 +107,9 @@ const createStyles = (c: Colors) =>
       fontSize: 16,
     },
     input: {
+      ...typography.body,
       color: c.text.primary,
       flex: 1,
-      fontSize: 15,
-      lineHeight: 20,
       minHeight: spacing.inputHeight - 2,
       paddingVertical: 0,
     },
@@ -118,7 +117,7 @@ const createStyles = (c: Colors) =>
       padding: 4,
     },
     clearIcon: {
-      color: c.text.tertiary,
+      color: c.text.secondary,
       fontSize: 14,
       fontWeight: "600",
     },

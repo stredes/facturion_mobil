@@ -34,7 +34,7 @@ function buildBadgeConfig(
     },
     none: {
       label: "Sin fecha de pago",
-      bg: c.border.light + "80",
+      bg: c.background.tertiary,
       text: c.text.secondary,
       dot: c.text.tertiary,
     },
