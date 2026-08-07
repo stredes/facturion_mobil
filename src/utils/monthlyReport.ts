@@ -508,7 +508,7 @@ function buildRetentionsTable(retentions: Retention[]): string {
   ], rows);
 }
 
-function reportTable(
+export function reportTable(
   title: string,
   headers: string[],
   rows: string,
@@ -526,13 +526,13 @@ function reportTable(
   `;
 }
 
-function tableRow(values: string[]): string {
+export function tableRow(values: string[]): string {
   return `<tr>${values
     .map((value) => `<td>${escapeHtml(value)}</td>`)
     .join("")}</tr>`;
 }
 
-function emptySection(title: string, message: string): string {
+export function emptySection(title: string, message: string): string {
   return `
     <div class="table-block empty-block">
       <h3>${escapeHtml(title)}</h3>
@@ -541,7 +541,7 @@ function emptySection(title: string, message: string): string {
   `;
 }
 
-function summaryCard(label: string, value: string, detail?: string): string {
+export function summaryCard(label: string, value: string, detail?: string): string {
   return `
     <div class="summary-card">
       <span>${escapeHtml(label)}</span>
@@ -656,7 +656,7 @@ function formatInvoiceStatus(status: Invoice["status"]): string {
   return status === "paid" ? "Pagada" : "Pendiente";
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -665,7 +665,7 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function buildReportCss(): string {
+export function buildReportCss(): string {
   return `
     @page {
       size: A4;

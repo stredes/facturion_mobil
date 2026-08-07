@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
+import { ClientDebtsSection } from "@/components/ClientDebtsSection";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { FilterChip } from "@/components/FilterChip";
@@ -381,22 +382,25 @@ export default function SummaryScreen() {
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={ItemSeparatorComponent}
         ListHeaderComponent={
-          <MonthlyReportStepper
-            generatedReport={generatedReport}
-            isGenerating={isGeneratingReport}
-            onBack={goToPreviousReportStep}
-            onClearPeriods={clearReportPeriods}
-            onGenerate={generateReport}
-            onNext={goToNextReportStep}
-            onSelectAllPeriods={selectAllReportPeriods}
-            onShare={shareReport}
-            onTogglePeriod={toggleReportPeriod}
-            onToggleSection={toggleReportSection}
-            periods={combined}
-            sections={reportSections}
-            selectedPeriods={selectedReportPeriods}
-            step={reportStep}
-          />
+          <View style={styles.reportStack}>
+            <MonthlyReportStepper
+              generatedReport={generatedReport}
+              isGenerating={isGeneratingReport}
+              onBack={goToPreviousReportStep}
+              onClearPeriods={clearReportPeriods}
+              onGenerate={generateReport}
+              onNext={goToNextReportStep}
+              onSelectAllPeriods={selectAllReportPeriods}
+              onShare={shareReport}
+              onTogglePeriod={toggleReportPeriod}
+              onToggleSection={toggleReportSection}
+              periods={combined}
+              sections={reportSections}
+              selectedPeriods={selectedReportPeriods}
+              step={reportStep}
+            />
+            <ClientDebtsSection />
+          </View>
         }
         ListHeaderComponentStyle={styles.listHeader}
         refreshControl={
@@ -664,6 +668,9 @@ const createStyles = (c: Colors) =>
     },
     listHeader: {
       marginBottom: spacing.lg,
+    },
+    reportStack: {
+      gap: spacing.xl,
     },
     separator: {
       height: spacing.lg,
