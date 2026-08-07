@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type KeyboardTypeOptions,
+} from "react-native";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
 
@@ -8,7 +14,10 @@ interface TextInputFieldProps {
   value: string;
   error?: string;
   placeholder?: string;
-  keyboardType?: "default" | "numbers-and-punctuation";
+  keyboardType?: KeyboardTypeOptions;
+  secureTextEntry?: boolean;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  autoComplete?: "email" | "password" | "name" | "off";
   multiline?: boolean;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
@@ -20,6 +29,9 @@ export function TextInputField({
   error,
   placeholder,
   keyboardType = "default",
+  secureTextEntry = false,
+  autoCapitalize = "sentences",
+  autoComplete = "off",
   multiline = false,
   onBlur,
   onChangeText,
@@ -32,7 +44,11 @@ export function TextInputField({
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityHint={error ? "Campo con error" : undefined}
         accessibilityLabel={label}
+        aria-invalid={error ? true : false}
+        autoCapitalize={autoCapitalize}
+        autoComplete={autoComplete}
         keyboardType={keyboardType}
         multiline={multiline}
         onBlur={() => {
@@ -46,6 +62,7 @@ export function TextInputField({
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
         returnKeyType={multiline ? "default" : "done"}
+        secureTextEntry={secureTextEntry}
         style={[
           styles.input,
           multiline && styles.multiline,

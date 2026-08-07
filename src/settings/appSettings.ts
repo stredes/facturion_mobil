@@ -9,9 +9,16 @@ export interface BackupSettings {
   uri: string;
 }
 
+export interface BackupDirectorySetting {
+  uri: string;
+  displayName: string;
+}
+
 export interface AppSettings {
   themeMode: ThemeMode;
   lastBackup: BackupSettings | null;
+  backupDirectory: BackupDirectorySetting | null;
+  backupDirectoryDecided: boolean;
 }
 
 const SETTINGS_FILE_NAME = "factrion-settings.json";
@@ -19,6 +26,8 @@ const SETTINGS_FILE_NAME = "factrion-settings.json";
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   themeMode: "system",
   lastBackup: null,
+  backupDirectory: null,
+  backupDirectoryDecided: false,
 };
 
 export async function loadAppSettings(): Promise<AppSettings> {
@@ -63,6 +72,16 @@ export async function updateAppSettings(
   return saveAppSettings(update(current));
 }
 
+export async function setBackupDirectory(
+  backupDirectory: BackupDirectorySetting | null,
+): Promise<AppSettings> {
+  return updateAppSettings((current) => ({
+    ...current,
+    backupDirectory,
+    backupDirectoryDecided: true,
+  }));
+}
+
 function getSettingsUri(): string | null {
   return FileSystem.documentDirectory
     ? `${FileSystem.documentDirectory}${SETTINGS_FILE_NAME}`
@@ -77,6 +96,10 @@ function normalizeSettings(value: unknown): AppSettings {
   return {
     themeMode: normalizeThemeMode(value.themeMode),
     lastBackup: normalizeBackup(value.lastBackup),
+    backupDirectory: normalizeBackupDirectory(value.backupDirectory),
+    backupDirectoryDecided: normalizeBackupDirectoryDecided(
+      value.backupDirectoryDecided,
+    ),
   };
 }
 
@@ -106,6 +129,44 @@ function normalizeBackup(value: unknown): BackupSettings | null {
     sizeBytes: value.sizeBytes,
     uri: value.uri,
   };
+}
+
+function normalizeBackupDirectory(
+  value: unknown,
+): BackupDirectorySetting | null {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  if (
+    typeof value.uri !== "string" ||
+    typeof value.displayName !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    uri: value.uri,
+    displayName: value.displayName,
+  };
+}
+
+function normalizeBackupDirectoryDecided(value: unknown): boolean {
+  return typeof value === "boolean" ? value : false;
+}
+
+export function displayNameFromDirectoryUri(uri: string): string {
+  const treeMatch = uri.match(/tree\/(.+)/);
+  const rawPath = treeMatch ? treeMatch[1] : uri;
+  let decoded = rawPath;
+  try {
+    decoded = decodeURIComponent(rawPath);
+  } catch {
+    // mantener el valor original si no es un URI codificado
+  }
+
+  const parts = decoded.split("/").filter(Boolean);
+  return parts[parts.length - 1] || "Carpeta seleccionada";
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

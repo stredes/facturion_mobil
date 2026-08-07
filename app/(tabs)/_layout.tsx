@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import type { ComponentProps } from "react";
-import { View, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useThemeColors } from "@/theme";
+import { spacing, useThemeColors } from "@/theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -45,7 +45,35 @@ const tabStyles = StyleSheet.create({
     borderRadius: 18,
     padding: 6,
   },
+  settingsButton: {
+    alignItems: "center",
+    borderRadius: 20,
+    height: 40,
+    justifyContent: "center",
+    marginRight: spacing.sm,
+    width: 40,
+  },
 });
+
+function SettingsButton() {
+  const router = useRouter();
+  const colors = useThemeColors();
+
+  return (
+    <Pressable
+      accessibilityLabel="Ajustes"
+      accessibilityRole="button"
+      hitSlop={8}
+      onPress={() => router.push("/settings")}
+      style={({ pressed }) => [
+        tabStyles.settingsButton,
+        { backgroundColor: pressed ? colors.border.light : "transparent" },
+      ]}
+    >
+      <Ionicons name="settings-outline" size={24} color={colors.primary.main} />
+    </Pressable>
+  );
+}
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -98,6 +126,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Inicio",
+          headerRight: () => <SettingsButton />,
           tabBarIcon: ({ focused }) => (
             <TabIcon label="Inicio" focused={focused} />
           ),
