@@ -25,6 +25,11 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!databasePromise) {
     databasePromise = SQLite.openDatabaseAsync(
       databaseNameForUser(activeUserId),
+      {
+        // Evita reutilizar en Android una instancia nativa cacheada que pudo
+        // quedar invalida tras un restore, cierre de sesion o recarga de JS.
+        useNewConnection: true,
+      },
     )
       .then(async (db) => {
         await runMigrations(db);
