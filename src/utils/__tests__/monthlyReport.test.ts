@@ -58,6 +58,37 @@ describe("buildMonthlyReport", () => {
     expect(report).not.toContain("Pagos generales");
     expect(report).not.toContain("Retenciones");
   });
+
+  it("excluye las facturas pendientes de los totales pero las mantiene en el detalle", () => {
+    const pending = {
+      ...invoice(),
+      id: "inv-pending",
+      invoiceNumber: "F-200",
+      status: "pending" as const,
+      paymentDate: null,
+    };
+    const report = buildMonthlyReport({
+      periods: [
+        {
+          period: "2026-08",
+          invoices: [invoice(), pending],
+          taxPayments: [],
+          generalPayments: [],
+          retentions: [],
+        },
+      ],
+      sections: {
+        invoices: true,
+        taxPayments: false,
+        generalPayments: false,
+        retentions: false,
+      },
+      generatedAt: "2026-08-04T10:00:00.000Z",
+    });
+
+    expect(report).toContain("Facturas: 1");
+    expect(report).toContain("Facturas: 2 | Total $238.000");
+  });
 });
 
 describe("buildMonthlyReportHtml", () => {

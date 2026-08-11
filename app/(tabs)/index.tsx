@@ -103,19 +103,33 @@ export default function HomeScreen() {
     refreshTaxPayments,
   ]);
 
-  // Calculos globales
-  const totalInvoiced = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+  // Calculos globales (solo facturas aprobadas/pagadas)
+  const paidInvoices = invoices.filter((inv) => inv.status === "paid");
+  const totalInvoiced = paidInvoices.reduce(
+    (sum, inv) => sum + inv.totalAmount,
+    0,
+  );
   const pendingAmount = invoices
     .filter((inv) => inv.status !== "paid")
     .reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const paidAmount = invoices
-    .filter((inv) => inv.status === "paid")
-    .reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const totalTax = invoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
-  const totalTag = invoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
-  const totalAccountant = invoices.reduce((sum, inv) => sum + inv.accountantAmount, 0);
-  const totalSavings = invoices.reduce((sum, inv) => sum + inv.savingsAmount, 0);
-  const totalTaxPayment = invoices.reduce((sum, inv) => sum + inv.taxPayment, 0);
+  const paidAmount = paidInvoices.reduce(
+    (sum, inv) => sum + inv.totalAmount,
+    0,
+  );
+  const totalTax = paidInvoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
+  const totalTag = paidInvoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
+  const totalAccountant = paidInvoices.reduce(
+    (sum, inv) => sum + inv.accountantAmount,
+    0,
+  );
+  const totalSavings = paidInvoices.reduce(
+    (sum, inv) => sum + inv.savingsAmount,
+    0,
+  );
+  const totalTaxPayment = paidInvoices.reduce(
+    (sum, inv) => sum + inv.taxPayment,
+    0,
+  );
 
   // Acumulaciones globales
   const sobranteIva =
@@ -140,7 +154,7 @@ export default function HomeScreen() {
     monthData[month][key] = (monthData[month][key] ?? 0) + value;
   }
 
-  invoices.forEach((inv) => {
+  paidInvoices.forEach((inv) => {
     add(inv.invoiceDate, "tax", inv.taxAmount);
     add(inv.invoiceDate, "tag", inv.tagAmount);
     add(inv.invoiceDate, "accountant", inv.accountantAmount);
@@ -204,7 +218,7 @@ export default function HomeScreen() {
     { name: "Saldo TAG", value: tagBalance, color: colors.status.info },
     { name: "Saldo Contador", value: accountantBalance, color: colors.status.success },
     { name: "Saldo Ahorro", value: savingsBalance, color: colors.status.warning },
-    { name: "Restante", value: invoices.reduce((s, i) => s + (i.totalAmount - i.taxPayment - i.tagAmount - i.accountantAmount - i.savingsAmount), 0), color: colors.status.error },
+    { name: "Restante", value: paidInvoices.reduce((s, i) => s + (i.totalAmount - i.taxPayment - i.tagAmount - i.accountantAmount - i.savingsAmount), 0), color: colors.status.error },
   ].filter((d) => d.value > 0);
 
   const retentionValues: Record<string, number> = {

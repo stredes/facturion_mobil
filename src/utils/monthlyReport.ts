@@ -552,7 +552,9 @@ export function summaryCard(label: string, value: string, detail?: string): stri
 }
 
 function calculateTotals(periods: MonthlyReportPeriodData[]): ReportTotals {
-  const invoices = periods.flatMap((period) => period.invoices);
+  const invoices = periods
+    .flatMap((period) => period.invoices)
+    .filter((invoice) => invoice.status === "paid");
   const taxPayments = periods.flatMap((period) => period.taxPayments);
   const generalPayments = periods.flatMap((period) => period.generalPayments);
   const retentions = periods.flatMap((period) => period.retentions);
