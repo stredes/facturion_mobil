@@ -86,6 +86,10 @@ export default function EditInvoiceScreen() {
             netAmount: invoice.netAmount,
             status: invoice.status,
             paymentDate: invoice.paymentDate,
+            taxPayment: invoice.taxPayment,
+            tagAmount: invoice.tagAmount,
+            accountantAmount: invoice.accountantAmount,
+            savingsAmount: invoice.savingsAmount,
           }
         : undefined,
     [invoice],

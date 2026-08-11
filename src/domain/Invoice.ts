@@ -32,6 +32,10 @@ export interface CreateInvoiceInput {
   netAmount: number;
   status?: InvoiceStatus;
   paymentDate?: string | null;
+  taxPayment?: number;
+  tagAmount?: number;
+  accountantAmount?: number;
+  savingsAmount?: number;
 }
 
 export interface InvoiceSummary {

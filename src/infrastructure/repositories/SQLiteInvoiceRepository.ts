@@ -15,6 +15,7 @@ import type {
 import type { InvoiceRepository } from "../../domain/InvoiceRepository";
 import { isValidISODate } from "../../utils/dates";
 import { createId } from "../../utils/ids";
+import { syncInvoiceAllocations } from "./syncInvoiceAllocations";
 
 interface InvoiceRow {
   id: string;
@@ -44,6 +45,10 @@ interface NormalizedInvoiceInput {
   totalAmount: number;
   status: InvoiceStatus;
   paymentDate: string | null;
+  taxPayment: number;
+  tagAmount: number;
+  accountantAmount: number;
+  savingsAmount: number;
 }
 
 interface SummaryRow {
@@ -110,6 +115,10 @@ function normalizeInvoiceInput(
   const status = input.status ?? (input.paymentDate ? "paid" : "pending");
   const paymentDate =
     status === "paid" ? input.paymentDate?.trim() ?? "" : null;
+  const taxPayment = Number(input.taxPayment ?? 0);
+  const tagAmount = Number(input.tagAmount ?? 0);
+  const accountantAmount = Number(input.accountantAmount ?? 0);
+  const savingsAmount = Number(input.savingsAmount ?? 0);
 
   if (!invoiceNumber) {
     throw new Error("El numero de factura es obligatorio.");
@@ -142,6 +151,11 @@ function normalizeInvoiceInput(
     );
   }
 
+  validateMoney(taxPayment, "Pago de IVA");
+  validateMoney(tagAmount, "Saldo TAG");
+  validateMoney(accountantAmount, "Saldo Contador");
+  validateMoney(savingsAmount, "Saldo Ahorro");
+
   return {
     invoiceNumber,
     invoiceDate,
@@ -152,6 +166,10 @@ function normalizeInvoiceInput(
     totalAmount,
     status,
     paymentDate,
+    taxPayment,
+    tagAmount,
+    accountantAmount,
+    savingsAmount,
   };
 }
 
@@ -177,7 +195,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             net_amount, tax_amount, total_amount,
             payment_date, tax_payment, tag_amount, accountant_amount, savings_amount,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             id,
             normalized.invoiceNumber,
@@ -188,9 +206,29 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             normalized.taxAmount,
             normalized.totalAmount,
             normalized.paymentDate,
+            normalized.taxPayment,
+            normalized.tagAmount,
+            normalized.accountantAmount,
+            normalized.savingsAmount,
             now,
             now,
           ],
+        );
+
+        await syncInvoiceAllocations(
+          db,
+          {
+            id,
+            invoiceDate: normalized.invoiceDate,
+            paymentDate: normalized.paymentDate,
+          },
+          {
+            taxPayment: normalized.taxPayment,
+            tagAmount: normalized.tagAmount,
+            accountantAmount: normalized.accountantAmount,
+            savingsAmount: normalized.savingsAmount,
+          },
+          now,
         );
 
         const row = await findInvoiceRowById(db, id);
@@ -237,7 +275,9 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
           `UPDATE invoices
            SET invoice_number = ?, invoice_date = ?, client_name = ?,
                description = ?, net_amount = ?, tax_amount = ?,
-               total_amount = ?, payment_date = ?, updated_at = ?
+               total_amount = ?, payment_date = ?, tax_payment = ?,
+               tag_amount = ?, accountant_amount = ?, savings_amount = ?,
+               updated_at = ?
            WHERE id = ?`,
           [
             normalized.invoiceNumber,
@@ -248,6 +288,10 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
             normalized.taxAmount,
             normalized.totalAmount,
             normalized.paymentDate,
+            normalized.taxPayment,
+            normalized.tagAmount,
+            normalized.accountantAmount,
+            normalized.savingsAmount,
             now,
             id,
           ],
@@ -256,6 +300,22 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
         if (result.changes === 0) {
           throw new Error("La factura no existe");
         }
+
+        await syncInvoiceAllocations(
+          db,
+          {
+            id,
+            invoiceDate: normalized.invoiceDate,
+            paymentDate: normalized.paymentDate,
+          },
+          {
+            taxPayment: normalized.taxPayment,
+            tagAmount: normalized.tagAmount,
+            accountantAmount: normalized.accountantAmount,
+            savingsAmount: normalized.savingsAmount,
+          },
+          now,
+        );
 
         const nextRow = await findInvoiceRowById(db, id);
         if (!nextRow) throw new Error("No se pudo actualizar la factura");

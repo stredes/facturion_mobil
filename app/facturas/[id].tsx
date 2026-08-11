@@ -157,6 +157,25 @@ export default function InvoiceDetailScreen() {
           tone="success"
         />
       </DetailBlock>
+
+      <DetailBlock title="Reparto del cobro">
+        <AmountRow
+          label="Pago de IVA"
+          value={formatCurrency(invoice.taxPayment)}
+        />
+        <AmountRow
+          label="Saldo TAG"
+          value={formatCurrency(invoice.tagAmount)}
+        />
+        <AmountRow
+          label="Saldo Contador"
+          value={formatCurrency(invoice.accountantAmount)}
+        />
+        <AmountRow
+          label="Saldo Ahorro"
+          value={formatCurrency(invoice.savingsAmount)}
+        />
+      </DetailBlock>
     </DetailScreen>
   );
 }

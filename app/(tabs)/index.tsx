@@ -23,6 +23,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ChartSkeleton } from "@/components/LoadingSkeleton";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import { useAuth } from "@/infrastructure/di/AuthContext";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
 import { useRetentions } from "@/hooks/useRetentions";
@@ -50,6 +51,7 @@ const rgba = (hex: string, opacity: number) => {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { width } = useWindowDimensions();
@@ -253,7 +255,12 @@ export default function HomeScreen() {
           }
           contentContainerStyle={styles.scrollContent}
         >
-        <AppHeader title="Facturiion" subtitle="Control de tus facturas" />
+        <AppHeader
+          title="Facturiion"
+          subtitle={
+            user?.name ? `Hola, ${user.name}` : "Control de tus facturas"
+          }
+        />
 
         <View style={styles.homeControls}>
           <ThemeToggleButton />

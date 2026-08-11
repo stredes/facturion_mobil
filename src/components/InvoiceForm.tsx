@@ -47,6 +47,10 @@ function buildDefaultValues(
     status,
     paymentDate:
       status === "paid" ? initialValues?.paymentDate ?? toISODate(new Date()) : "",
+    taxPayment: initialValues?.taxPayment ?? 0,
+    tagAmount: initialValues?.tagAmount ?? 0,
+    accountantAmount: initialValues?.accountantAmount ?? 0,
+    savingsAmount: initialValues?.savingsAmount ?? 0,
   };
 }
 
@@ -91,6 +95,10 @@ export function InvoiceForm({
       status: values.status,
       paymentDate:
         values.status === "paid" ? values.paymentDate?.trim() : null,
+      taxPayment: values.taxPayment,
+      tagAmount: values.tagAmount,
+      accountantAmount: values.accountantAmount,
+      savingsAmount: values.savingsAmount,
     });
   });
 
@@ -144,6 +152,21 @@ export function InvoiceForm({
           label="Total factura"
           value={formatCurrency(totalAmount)}
           hint="Calculado automaticamente"
+        />
+      </FormSection>
+
+      <FormSection icon="R" title="Reparto del cobro">
+        <MoneyField control={control} name="taxPayment" label="Pago de IVA" />
+        <MoneyField control={control} name="tagAmount" label="Saldo TAG" />
+        <MoneyField
+          control={control}
+          name="accountantAmount"
+          label="Saldo Contador"
+        />
+        <MoneyField
+          control={control}
+          name="savingsAmount"
+          label="Saldo Ahorro"
         />
       </FormSection>
 

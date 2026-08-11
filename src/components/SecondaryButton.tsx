@@ -9,6 +9,7 @@ interface SecondaryButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
+  tone?: "default" | "danger";
 }
 
 export function SecondaryButton({
@@ -17,9 +18,12 @@ export function SecondaryButton({
   disabled = false,
   loading = false,
   fullWidth = true,
+  tone = "default",
 }: SecondaryButtonProps) {
   const colors = useThemeColors();
   const isDisabled = disabled || loading;
+  const activeColor =
+    tone === "danger" ? colors.status.error : colors.primary.main;
 
   return (
     <AnimatedPressable
@@ -28,7 +32,7 @@ export function SecondaryButton({
       onPress={onPress}
       style={[
         styles.button,
-        { borderColor: colors.primary.main },
+        { borderColor: activeColor },
         fullWidth && styles.fullWidth,
         isDisabled && { borderColor: colors.text.disabled },
       ]}
@@ -36,7 +40,7 @@ export function SecondaryButton({
       <Text
         style={[
           styles.text,
-          { color: colors.primary.main },
+          { color: activeColor },
           isDisabled && { color: colors.text.disabled },
         ]}
       >

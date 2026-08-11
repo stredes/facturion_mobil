@@ -25,6 +25,7 @@ import {
   restoreLocalBackup,
   type LocalBackupFile,
 } from "@/database/localBackup";
+import { clearBusinessData } from "@/database/dataCleanup";
 import {
   displayNameFromDirectoryUri,
   loadAppSettings,
@@ -57,8 +58,10 @@ export default function SettingsScreen() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreModalVisible, setRestoreModalVisible] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isClearingData, setIsClearingData] = useState(false);
   const isRestoringRef = useRef(false);
   const isLoggingOutRef = useRef(false);
+  const isClearingDataRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -336,6 +339,46 @@ export default function SettingsScreen() {
     );
   }, [performLogout]);
 
+  const performClearData = useCallback(async () => {
+    if (isClearingDataRef.current) {
+      return;
+    }
+    isClearingDataRef.current = true;
+    setIsClearingData(true);
+    try {
+      await clearBusinessData();
+      Alert.alert(
+        "Datos eliminados",
+        "Se eliminaron las facturas, pagos, retenciones e historial. Tu perfil, sesión, preferencias y backups se conservaron.",
+      );
+    } catch (currentError) {
+      Alert.alert(
+        "No se pudieron eliminar los datos",
+        toErrorMessage(currentError, "No se pudo limpiar la base de datos"),
+      );
+    } finally {
+      isClearingDataRef.current = false;
+      setIsClearingData(false);
+    }
+  }, []);
+
+  const handleClearData = useCallback(() => {
+    Alert.alert(
+      "Eliminar todos los datos",
+      "Se eliminarán definitivamente todas las facturas, pagos, retenciones e historial. Tu perfil, sesión, preferencias y backups no se eliminarán.\n\n¿Continuar?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar datos",
+          style: "destructive",
+          onPress: () => {
+            void performClearData();
+          },
+        },
+      ],
+    );
+  }, [performClearData]);
+
   return (
     <ScreenContainer scrollable>
       <AppHeader title="Ajustes" subtitle="Backup y guardado" />
@@ -454,6 +497,27 @@ export default function SettingsScreen() {
             a la nube.
           </Text>
         </View>
+      </View>
+
+      <SectionTitle title="Datos de la aplicación" />
+
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>Zona de eliminación</Text>
+        <Text style={styles.locationName}>Limpiar base de datos</Text>
+        <Text style={styles.locationUri}>
+          Elimina facturas, pagos, retenciones e historial. No afecta tu perfil,
+          sesión, preferencias ni archivos de backup.
+        </Text>
+      </View>
+
+      <View style={styles.actions}>
+        <SecondaryButton
+          fullWidth
+          disabled={isClearingData || isBackingUp || isRestoring}
+          label={isClearingData ? "Eliminando datos..." : "Eliminar todos los datos"}
+          onPress={handleClearData}
+          tone="danger"
+        />
       </View>
 
       <Modal

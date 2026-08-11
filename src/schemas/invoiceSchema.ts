@@ -22,6 +22,11 @@ export const invoiceSchema = z.object({
   status: z.enum(["pending", "paid"]),
 
   paymentDate: z.string().optional(),
+
+  taxPayment: z.number().int().min(0).optional(),
+  tagAmount: z.number().int().min(0).optional(),
+  accountantAmount: z.number().int().min(0).optional(),
+  savingsAmount: z.number().int().min(0).optional(),
 }).superRefine((input, context) => {
   if (!isValidISODate(input.invoiceDate)) {
     context.addIssue({
