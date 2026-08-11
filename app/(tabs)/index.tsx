@@ -136,6 +136,7 @@ export default function HomeScreen() {
   // Acumulaciones globales
   const sobranteIva =
     totalTax - totalTaxPayment + retentionSummary.totalTax;
+  const ivaSobranteOverpaid = sobranteIva < 0;
   const tagBalance =
     totalTag + retentionSummary.totalTag - generalSummary.totalTag;
   const accountantBalance =
@@ -257,6 +258,7 @@ export default function HomeScreen() {
         >
         <AppHeader
           title="Facturiion"
+          largeSubtitle
           subtitle={
             user?.name ? `Hola, ${user.name}` : "Control de tus facturas"
           }
@@ -406,10 +408,10 @@ export default function HomeScreen() {
             tone="warning"
           />
           <SummaryCard
-            label="IVA Sobrante"
-            value={sobranteIva}
+            label={ivaSobranteOverpaid ? "Exceso IVA" : "IVA Sobrante"}
+            value={Math.abs(sobranteIva)}
             icon={ICON_GLYPHS.cash}
-            tone="strong"
+            tone={ivaSobranteOverpaid ? "error" : "strong"}
           />
         </View>
 
