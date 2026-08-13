@@ -32,6 +32,10 @@ import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 import { formatCurrency, formatCurrencyCompact } from "@/utils/currency";
 import { buildMonthlyChartSummaries } from "@/utils/chartAnalytics";
 import {
+  calculateDashboardFundBalances,
+  EXTRA_PAYMENT_BALANCE_CATEGORIES,
+} from "@/utils/dashboardCategories";
+import {
   buildMonthlyTaxBalances,
   calculateTaxBalance,
 } from "@/utils/taxBalance";
@@ -145,16 +149,20 @@ export default function HomeScreen() {
   // Acumulaciones globales
   const sobranteIva = taxBalance.balance;
   const ivaSobranteOverpaid = taxBalance.overpaid;
-  const tagBalance =
-    totalTag + retentionSummary.totalTag - generalSummary.totalTag;
-  const accountantBalance =
-    totalAccountant +
-    retentionSummary.totalAccountant -
-    generalSummary.totalAccountant;
-  const savingsBalance =
-    totalSavings +
-    retentionSummary.totalSavings -
-    generalSummary.totalSavings;
+  const fundBalances = calculateDashboardFundBalances({
+    invoiceTag: totalTag,
+    invoiceAccountant: totalAccountant,
+    invoiceSavings: totalSavings,
+    retentionTag: retentionSummary.totalTag,
+    retentionAccountant: retentionSummary.totalAccountant,
+    retentionSavings: retentionSummary.totalSavings,
+    paidTag: generalSummary.totalTag,
+    paidAccountant: generalSummary.totalAccountant,
+    paidSavings: generalSummary.totalSavings,
+  });
+  const tagBalance = fundBalances.tag;
+  const accountantBalance = fundBalances.accountant;
+  const savingsBalance = fundBalances.savings;
 
   // Gráficos mensuales con la presentación histórica de Inicio.
   const inM = (v: number) => v / 1000000;
@@ -397,18 +405,16 @@ export default function HomeScreen() {
         {/* Seccion Pagos extras */}
         <SectionTitle title="Pagos extras" />
         <View style={styles.summarySection}>
-          {RETENTION_CATEGORIES.slice(0, 3).map((category) => (
+          {EXTRA_PAYMENT_BALANCE_CATEGORIES.map((category) => (
             <SummaryCard
               key={category.value}
               label={`Saldo ${category.label}`}
               value={
                 category.value === "tag"
                   ? tagBalance
-                  : category.value === "accountant"
-                  ? accountantBalance
-                  : savingsBalance
+                  : accountantBalance
               }
-              icon={ICON_GLYPHS[category.value === "tag" ? "tag" : category.value === "accountant" ? "chart" : "savings"]}
+              icon={ICON_GLYPHS[category.value === "tag" ? "tag" : "chart"]}
             />
           ))}
         </View>

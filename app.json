@@ -2,7 +2,7 @@
   "expo": {
     "name": "Facturiion",
     "slug": "factrion",
-    "version": "1.1.8",
+    "version": "1.1.19",
     "orientation": "portrait",
     "newArchEnabled": true,
     "scheme": "factrion",
@@ -12,7 +12,7 @@
       "supportsTablet": true
     },
     "android": {
-      "versionCode": 30,
+      "versionCode": 34,
       "adaptiveIcon": {
         "backgroundColor": "#00030D",
         "foregroundImage": "./assets/android-icon-foreground.png"
