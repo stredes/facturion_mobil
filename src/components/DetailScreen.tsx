@@ -6,6 +6,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography, useTheme, useThemeColors, type Colors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
@@ -46,13 +47,22 @@ export function DetailScreen({
 }: DetailScreenProps) {
   const { colors, shadows } = useTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isSmallScreen = width < 360;
   const [isDeleteDialogVisible, setIsDeleteDialogVisible] = useState(false);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        alwaysBounceVertical
+        contentContainerStyle={[
+          styles.container,
+          { paddingBottom: spacing.xxl * 2 + insets.bottom },
+        ]}
+        overScrollMode="always"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.headerSection}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>

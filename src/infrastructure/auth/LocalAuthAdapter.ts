@@ -109,6 +109,39 @@ export class LocalAuthAdapter implements AuthPort {
     await SecureStore.deleteItemAsync(USER_KEY);
   }
 
+  async resetPassword(
+    email: string,
+    profileName: string,
+    newPassword: string,
+  ): Promise<void> {
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedName = profileName.trim().toLocaleLowerCase();
+    if (!normalizedEmail || !normalizedName || !newPassword) {
+      throw new Error("Completa todos los campos");
+    }
+    if (newPassword.length < 6) {
+      throw new Error("La contraseña debe tener al menos 6 caracteres");
+    }
+
+    const users = await this.getUsers();
+    const index = users.findIndex(
+      (candidate) =>
+        candidate.email === normalizedEmail &&
+        candidate.name.trim().toLocaleLowerCase() === normalizedName,
+    );
+    if (index < 0) {
+      throw new Error("El email y el nombre no coinciden con ningún perfil");
+    }
+
+    const salt = this.generateSalt();
+    users[index] = {
+      ...users[index],
+      salt,
+      passwordHash: await this.hashPassword(newPassword, salt),
+    };
+    await SecureStore.setItemAsync(USERS_KEY, JSON.stringify(users));
+  }
+
   private async getUsers(): Promise<StoredUser[]> {
     const data = await SecureStore.getItemAsync(USERS_KEY);
     if (!data) {

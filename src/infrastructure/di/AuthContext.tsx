@@ -22,6 +22,7 @@ interface AuthContextValue {
   isInitializing: boolean;
   login(email: string, password: string): Promise<void>;
   register(name: string, email: string, password: string): Promise<void>;
+  resetPassword(email: string, profileName: string, newPassword: string): Promise<void>;
   logout(): Promise<void>;
 }
 
@@ -65,9 +66,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       const loggedIn = await auth.login(email, password);
-      setActiveUserId(loggedIn.id);
-      await initializeDatabase();
-      setUser(loggedIn);
+      try {
+        setActiveUserId(loggedIn.id);
+        await initializeDatabase();
+        setUser(loggedIn);
+      } catch (error) {
+        await auth.logout();
+        await resetDatabase();
+        setUser(null);
+        throw error;
+      }
     },
     [auth],
   );
@@ -75,9 +83,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (name: string, email: string, password: string) => {
       const created = await auth.register(name, email, password);
-      setActiveUserId(created.id);
-      await initializeDatabase();
-      setUser(created);
+      try {
+        setActiveUserId(created.id);
+        await initializeDatabase();
+        setUser(created);
+      } catch (error) {
+        await auth.logout();
+        await resetDatabase();
+        setUser(null);
+        throw error;
+      }
     },
     [auth],
   );
@@ -88,9 +103,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, [auth]);
 
+  const resetPassword = useCallback(
+    async (email: string, profileName: string, newPassword: string) => {
+      await auth.resetPassword(email, profileName, newPassword);
+    },
+    [auth],
+  );
+
   const value = useMemo(
-    () => ({ user, isInitializing, login, register, logout }),
-    [user, isInitializing, login, register, logout],
+    () => ({ user, isInitializing, login, register, resetPassword, logout }),
+    [user, isInitializing, login, register, resetPassword, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

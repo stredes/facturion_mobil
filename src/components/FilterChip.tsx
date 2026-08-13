@@ -55,6 +55,7 @@ const createStyles = (c: Colors) =>
       borderRadius: radius.chip,
       borderWidth: 1,
       justifyContent: "center",
+      margin: spacing.xxs,
       minHeight: spacing.buttonHeight,
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.xs,

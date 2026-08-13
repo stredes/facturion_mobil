@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../../theme";
 import { AnimatedPressable } from "../AnimatedPressable";
@@ -38,6 +39,7 @@ export function FormScaffold({
   onCancel,
 }: FormScaffoldProps) {
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleSubmit = () => {
@@ -87,7 +89,12 @@ export function FormScaffold({
         <View style={styles.footerSpacer} />
       </ScrollView>
 
-      <View style={styles.stickyFooter}>
+      <View
+        style={[
+          styles.stickyFooter,
+          { paddingBottom: spacing.lg + insets.bottom },
+        ]}
+      >
         <AnimatedPressable
           accessibilityRole="button"
           disabled={isSubmitting}

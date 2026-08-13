@@ -66,7 +66,13 @@ export default function PagosScreen() {
 
   return (
     <View style={styles.flex}>
-      <ScreenContainer>
+      <ScreenContainer
+        scrollable={
+          segment === "general"
+            ? generalPayments.length === 0
+            : taxPayments.length === 0
+        }
+      >
         <AppHeader title="Pagos" subtitle="Registros de pagos generales e IVA" />
         <View style={styles.segmentRow}>
           <FilterChip
@@ -268,10 +274,12 @@ function GeneralPaymentsView({
       </View>
 
       <FlatList<GeneralPayment>
+        alwaysBounceVertical
         contentContainerStyle={styles.listContent}
         data={payments}
         ItemSeparatorComponent={ItemSeparatorComponent}
         keyExtractor={keyExtractor}
+        overScrollMode="always"
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}
@@ -394,10 +402,12 @@ function TaxPaymentsView({
   return (
     <View style={styles.flex}>
       <FlatList<TaxPayment>
+        alwaysBounceVertical
         contentContainerStyle={styles.listContent}
         data={payments}
         ItemSeparatorComponent={ItemSeparatorComponent}
         keyExtractor={keyExtractor}
+        overScrollMode="always"
         refreshControl={
           <RefreshControl
             colors={[colors.primary.main]}
@@ -428,6 +438,7 @@ const createStyles = (c: Colors) =>
       marginBottom: spacing.md,
     },
     listContent: {
+      flexGrow: 1,
       paddingBottom: 120,
     },
     separator: {

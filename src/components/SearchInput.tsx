@@ -99,6 +99,7 @@ const createStyles = (c: Colors) =>
       borderWidth: 1,
       flexDirection: "row",
       gap: spacing.sm,
+      marginVertical: spacing.xxs,
       minHeight: spacing.inputHeight,
       paddingHorizontal: spacing.md,
     },

@@ -44,13 +44,19 @@ export function ScreenContainer({
     <View
       style={[
         styles.screen,
-        { backgroundColor: colors.background.primary, paddingTop: insets.top },
+        {
+          backgroundColor: colors.background.primary,
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
+        },
       ]}
     >
       {scrollable ? (
         <ScrollView
+          alwaysBounceVertical
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          overScrollMode="always"
           refreshControl={
             onRefresh ? (
               <RefreshControl
@@ -89,5 +95,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: spacing.tabBarHeight + spacing.xl,
   },
 });

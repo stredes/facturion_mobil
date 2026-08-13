@@ -2,8 +2,6 @@ import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
   Pressable,
-  RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -23,6 +21,7 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ChartSkeleton } from "@/components/LoadingSkeleton";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
+import { FilterChip } from "@/components/FilterChip";
 import { useAuth } from "@/infrastructure/di/AuthContext";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useGeneralPayments } from "@/hooks/useGeneralPayments";
@@ -31,6 +30,11 @@ import { useTaxPayments } from "@/hooks/useTaxPayments";
 import { useThemeColors, radius, spacing, typography, type Colors } from "@/theme";
 import { RETENTION_CATEGORIES } from "@/utils/retentionLabels";
 import { formatCurrency, formatCurrencyCompact } from "@/utils/currency";
+import { buildMonthlyChartSummaries } from "@/utils/chartAnalytics";
+import {
+  buildMonthlyTaxBalances,
+  calculateTaxBalance,
+} from "@/utils/taxBalance";
 
 const ICON_GLYPHS = {
   docs: "\u2A9A",
@@ -49,6 +53,14 @@ const rgba = (hex: string, opacity: number) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
+type ChartView = "invoicing" | "collections" | "tax";
+
+const CHART_VIEWS: { key: ChartView; label: string; subtitle: string }[] = [
+  { key: "invoicing", label: "Facturación", subtitle: "Neto, IVA y total" },
+  { key: "collections", label: "Cobros", subtitle: "Facturado, pagado y pendiente" },
+  { key: "tax", label: "IVA", subtitle: "Generado, pagado y saldo acumulado" },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -65,13 +77,11 @@ export default function HomeScreen() {
     refresh: refreshInvoices,
   } = useInvoices();
   const {
-    payments: generalPayments,
     summary: generalSummary,
     isLoading: gpLoading,
     refresh: refreshGeneralPayments,
   } = useGeneralPayments();
   const {
-    retentions,
     summary: retentionSummary,
     isLoading: rLoading,
     refresh: refreshRetentions,
@@ -83,6 +93,7 @@ export default function HomeScreen() {
   } = useTaxPayments();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [totalExpanded, setTotalExpanded] = useState(false);
+  const [chartView, setChartView] = useState<ChartView>("tax");
 
   const isLoading = invoicesLoading || gpLoading || rLoading || tpLoading;
 
@@ -107,7 +118,7 @@ export default function HomeScreen() {
 
   // Calculos globales (solo facturas aprobadas/pagadas)
   const paidInvoices = invoices.filter((inv) => inv.status === "paid");
-  const totalInvoiced = paidInvoices.reduce(
+  const totalInvoiced = invoices.reduce(
     (sum, inv) => sum + inv.totalAmount,
     0,
   );
@@ -118,7 +129,6 @@ export default function HomeScreen() {
     (sum, inv) => sum + inv.totalAmount,
     0,
   );
-  const totalTax = paidInvoices.reduce((sum, inv) => sum + inv.taxAmount, 0);
   const totalTag = paidInvoices.reduce((sum, inv) => sum + inv.tagAmount, 0);
   const totalAccountant = paidInvoices.reduce(
     (sum, inv) => sum + inv.accountantAmount,
@@ -128,15 +138,13 @@ export default function HomeScreen() {
     (sum, inv) => sum + inv.savingsAmount,
     0,
   );
-  const totalTaxPayment = paidInvoices.reduce(
-    (sum, inv) => sum + inv.taxPayment,
-    0,
-  );
+  const taxBalance = calculateTaxBalance(invoices, taxPayments);
+  const totalTax = taxBalance.totalTax;
+  const totalTaxPayment = taxBalance.paidTax;
 
   // Acumulaciones globales
-  const sobranteIva =
-    totalTax - totalTaxPayment + retentionSummary.totalTax;
-  const ivaSobranteOverpaid = sobranteIva < 0;
+  const sobranteIva = taxBalance.balance;
+  const ivaSobranteOverpaid = taxBalance.overpaid;
   const tagBalance =
     totalTag + retentionSummary.totalTag - generalSummary.totalTag;
   const accountantBalance =
@@ -148,72 +156,54 @@ export default function HomeScreen() {
     retentionSummary.totalSavings -
     generalSummary.totalSavings;
 
-  // Serie acumulada de todos los balances (últimos 6 meses)
-  const monthData: Record<string, Record<string, number>> = {};
-
-  function add(date: string, key: string, value: number) {
-    const month = formatMonthKey(date);
-    if (!monthData[month]) monthData[month] = {};
-    monthData[month][key] = (monthData[month][key] ?? 0) + value;
-  }
-
-  paidInvoices.forEach((inv) => {
-    add(inv.invoiceDate, "tax", inv.taxAmount);
-    add(inv.invoiceDate, "tag", inv.tagAmount);
-    add(inv.invoiceDate, "accountant", inv.accountantAmount);
-    add(inv.invoiceDate, "savings", inv.savingsAmount);
-  });
-  taxPayments.forEach((p) => add(p.paymentDate, "taxPaid", p.amount));
-  generalPayments.forEach((p) => add(p.paymentDate, `pay${p.category}`, p.amount));
-  retentions.forEach((r) => add(r.retentionDate, `ret${r.category.charAt(0).toUpperCase() + r.category.slice(1)}`, r.amount));
-
-  const months = Object.keys(monthData).sort();
-  const series: Record<string, number[]> = {
-    ivaGenerado: [],
-    ivaPagado: [],
-    sobrante: [],
-    tag: [],
-    accountant: [],
-    savings: [],
-  };
-  let rTax = 0, rPaid = 0, rSobrante = 0, rTag = 0, rAcc = 0, rSav = 0;
-  for (const key of months) {
-    const d = monthData[key] ?? {};
-    const tax = d.tax ?? 0;
-    const paid = d.taxPaid ?? 0;
-    const retTax = d.retTax ?? 0;
-    const tag = (d.tag ?? 0) + (d.retTag ?? 0) - (d.payTag ?? 0);
-    const acc = (d.accountant ?? 0) + (d.retAccountant ?? 0) - (d.payAccountant ?? 0);
-    const sav = (d.savings ?? 0) + (d.retSavings ?? 0) - (d.paySavings ?? 0);
-    rTax += tax;
-    rPaid += paid;
-    rSobrante += tax - paid + retTax;
-    rTag += tag;
-    rAcc += acc;
-    rSav += sav;
-    series.ivaGenerado.push(rTax);
-    series.ivaPagado.push(rPaid);
-    series.sobrante.push(rSobrante);
-    series.tag.push(rTag);
-    series.accountant.push(rAcc);
-    series.savings.push(rSav);
-  }
-
-  const last6 = <T,>(arr: T[]) => arr.slice(-6);
+  // Gráficos mensuales con la presentación histórica de Inicio.
   const inM = (v: number) => v / 1000000;
-
-  const chartMonths = months.slice(-6);
+  const monthlySummary = buildMonthlyChartSummaries(invoices);
+  const taxMonths = buildMonthlyTaxBalances(invoices, taxPayments);
+  const chartMonths = chartView === "tax" ? taxMonths : monthlySummary;
+  const activeChart = CHART_VIEWS.find((item) => item.key === chartView) ?? CHART_VIEWS[0];
+  const makeSeries = (data: number[], color: string) => ({
+    data: data.map(inM),
+    color: (opacity = 1) => rgba(color, opacity),
+    strokeWidth: 2,
+  });
   const chartData = {
-    labels: chartMonths.map((m) => formatMonthLabel(m)),
-    datasets: [
-      { data: last6(series.ivaGenerado).map(inM), color: (o = 1) => rgba(colors.series.ivaGenerado, o), strokeWidth: 2 },
-      { data: last6(series.ivaPagado).map(inM), color: (o = 1) => rgba(colors.series.ivaPagado, o), strokeWidth: 2 },
-      { data: last6(series.sobrante).map(inM), color: (o = 1) => rgba(colors.series.sobrante, o), strokeWidth: 2 },
-      { data: last6(series.tag).map(inM), color: (o = 1) => rgba(colors.series.tac, o), strokeWidth: 2 },
-      { data: last6(series.accountant).map(inM), color: (o = 1) => rgba(colors.series.contactos, o), strokeWidth: 2 },
-      { data: last6(series.savings).map(inM), color: (o = 1) => rgba(colors.series.ahorro, o), strokeWidth: 2 },
-    ],
+    labels: chartMonths.map((month) => formatMonthLabel(month.period)),
+    datasets: chartView === "invoicing"
+      ? [
+          makeSeries(monthlySummary.map((month) => month.netAmount), colors.primary.main),
+          makeSeries(monthlySummary.map((month) => month.taxAmount), colors.status.warning),
+          makeSeries(monthlySummary.map((month) => month.totalAmount), colors.status.success),
+        ]
+      : chartView === "collections"
+        ? [
+            makeSeries(monthlySummary.map((month) => month.totalAmount), colors.primary.main),
+            makeSeries(monthlySummary.map((month) => month.paidAmount), colors.status.success),
+            makeSeries(monthlySummary.map((month) => month.pendingAmount), colors.status.warning),
+          ]
+        : [
+            makeSeries(taxMonths.map((month) => month.generatedTax), colors.series.ivaGenerado),
+            makeSeries(taxMonths.map((month) => month.paidTax), colors.series.ivaPagado),
+            makeSeries(taxMonths.map((month) => month.balance), colors.series.sobrante),
+          ],
   };
+  const chartLegend = chartView === "invoicing"
+    ? [
+        { name: "Neto", color: colors.primary.main },
+        { name: "IVA", color: colors.status.warning },
+        { name: "Total", color: colors.status.success },
+      ]
+    : chartView === "collections"
+      ? [
+          { name: "Facturado", color: colors.primary.main },
+          { name: "Pagado", color: colors.status.success },
+          { name: "Pendiente", color: colors.status.warning },
+        ]
+      : [
+          { name: "IVA generado", color: colors.series.ivaGenerado },
+          { name: "IVA pagado", color: colors.series.ivaPagado },
+          { name: "Saldo IVA", color: colors.series.sobrante },
+        ];
 
   // Datos para grafico de distribucion (una sola torta con las acumulaciones)
   const pieData = [
@@ -231,11 +221,6 @@ export default function HomeScreen() {
     savings: retentionSummary.totalSavings,
   };
 
-  function formatMonthKey(dateStr: string) {
-    const [year, month] = dateStr.split("-");
-    return `${year}-${month}`;
-  }
-
   function formatMonthLabel(monthKey: string) {
     const [year, month] = monthKey.split("-");
     const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -244,18 +229,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenContainer>
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              colors={[colors.primary.main]}
-              onRefresh={onRefresh}
-              refreshing={isRefreshing}
-              tintColor={colors.primary.main}
-            />
-          }
-          contentContainerStyle={styles.scrollContent}
-        >
+      <ScreenContainer
+        scrollable
+        refreshing={isRefreshing}
+        onRefresh={onRefresh}
+        contentContainerStyle={styles.scrollContent}
+      >
         <AppHeader
           title="Facturiion"
           largeSubtitle
@@ -334,13 +313,28 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
-        {/* Grafico de acumulados */}
+        {/* Diseño histórico del gráfico de líneas */}
         <View style={styles.chartCard}>
-          <SectionTitle title="Saldos acumulados" subtitle="Últimos 6 meses" />
+          <SectionTitle title={activeChart.label} subtitle={`${activeChart.subtitle} · Últimos 6 meses`} />
+          <View style={styles.chartSelector}>
+            {CHART_VIEWS.map((item) => (
+              <FilterChip
+                key={item.key}
+                label={item.label}
+                selected={chartView === item.key}
+                onPress={() => setChartView(item.key)}
+              />
+            ))}
+          </View>
           {isLoading ? (
             <ChartSkeleton height={300} width={chartWidth} />
+          ) : chartMonths.length === 0 ? (
+            <EmptyState
+              message="Registra facturas para ver la evolución mensual."
+              title="Sin datos para graficar"
+            />
           ) : (
-            <View style={styles.chartContainer} accessibilityRole="image" accessibilityLabel="Gráfico de líneas: saldos acumulados de IVA, TAG, Contador y Ahorro en los últimos 6 meses">
+            <View style={styles.chartContainer}>
               <LineChart
                 data={chartData}
                 width={chartWidth}
@@ -365,29 +359,14 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Leyenda del gráfico de líneas - en la parte inferior */}
         <View style={styles.legendContainer}>
           <View style={styles.legendRow}>
-            {[
-              { name: 'IVA generado', color: colors.series.ivaGenerado },
-              { name: 'IVA pagado', color: colors.series.ivaPagado },
-              { name: 'Sobrante', color: colors.series.sobrante },
-            ].map((item) => (
+            {chartLegend.map((item) => (
               <View key={item.name} style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
-              </View>
-            ))}
-          </View>
-          <View style={styles.legendRow}>
-            {[
-              { name: 'TAG', color: colors.series.tac },
-              { name: 'Contador', color: colors.series.contactos },
-              { name: 'Ahorro', color: colors.series.ahorro },
-            ].map((item) => (
-              <View key={item.name} style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-                <Text style={[styles.legendText, { color: colors.text.primary }]}>{item.name}</Text>
+                <View
+                  style={[styles.legendDot, { backgroundColor: item.color }]}
+                />
+                <Text style={styles.legendText}>{item.name}</Text>
               </View>
             ))}
           </View>
@@ -500,9 +479,7 @@ export default function HomeScreen() {
             ))}
           </View>
         )}
-
-      </ScrollView>
-    </ScreenContainer>
+      </ScreenContainer>
     <FloatingActionButton
       onPress={() => router.push("/facturas/nueva")}
       accessibilityLabel="Crear factura"
@@ -591,6 +568,14 @@ const createStyles = (c: Colors) =>
     chartContainer: {
       alignItems: "center",
     },
+    chartSelector: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      columnGap: spacing.sm,
+      marginBottom: spacing.md,
+      marginHorizontal: -spacing.xxs,
+      rowGap: spacing.sm,
+    },
     chart: {
       borderRadius: radius.card,
     },
@@ -618,7 +603,8 @@ const createStyles = (c: Colors) =>
       width: 10,
     },
     legendText: {
-      fontSize: 11,
+      ...typography.small,
+      color: c.text.primary,
     },
     pieContainer: {
       alignItems: "center",

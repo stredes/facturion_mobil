@@ -7,6 +7,8 @@ import {
   buildMonthlyReport,
   buildMonthlyReportFileName,
   buildMonthlyReportHtml,
+  filterInvoicesByReportStatus,
+  filterInvoicesByReportClient,
   hasSelectedMonthlyReportSection,
 } from "../monthlyReport";
 
@@ -59,7 +61,7 @@ describe("buildMonthlyReport", () => {
     expect(report).not.toContain("Retenciones");
   });
 
-  it("excluye las facturas pendientes de los totales pero las mantiene en el detalle", () => {
+  it("resume exactamente las facturas recibidas para el estado seleccionado", () => {
     const pending = {
       ...invoice(),
       id: "inv-pending",
@@ -86,8 +88,29 @@ describe("buildMonthlyReport", () => {
       generatedAt: "2026-08-04T10:00:00.000Z",
     });
 
-    expect(report).toContain("Facturas: 1");
+    expect(report).toContain("Facturas: 2");
     expect(report).toContain("Facturas: 2 | Total $238.000");
+  });
+
+  it("filtra facturas confirmadas o pendientes antes de construir el reporte", () => {
+    const paid = invoice();
+    const pending = {
+      ...invoice(),
+      id: "inv-pending",
+      status: "pending" as const,
+      paymentDate: null,
+    };
+
+    expect(filterInvoicesByReportStatus([paid, pending], "paid")).toEqual([paid]);
+    expect(filterInvoicesByReportStatus([paid, pending], "pending")).toEqual([pending]);
+    expect(filterInvoicesByReportStatus([paid, pending], "all")).toHaveLength(2);
+  });
+
+  it("filtra facturas por cliente sin distinguir mayusculas", () => {
+    const first = invoice();
+    const second = { ...invoice(), id: "inv-2", clientName: "Otro Cliente" };
+    expect(filterInvoicesByReportClient([first, second], "cliente demo")).toEqual([first]);
+    expect(filterInvoicesByReportClient([first, second], null)).toHaveLength(2);
   });
 });
 

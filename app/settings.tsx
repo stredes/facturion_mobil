@@ -16,6 +16,7 @@ import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { SecondaryButton } from "@/components/SecondaryButton";
+import { SectionTitle } from "@/components/SectionTitle";
 import { useAuth } from "@/infrastructure/di/AuthContext";
 import {
   chooseBackupDirectory,

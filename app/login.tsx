@@ -105,6 +105,11 @@ export default function LoginScreen() {
                 void handleLogin();
               }}
             />
+            <SecondaryButton
+              disabled={isSubmitting}
+              label="Recuperar contraseña"
+              onPress={() => router.push("/recover-password")}
+            />
           </View>
         </View>
 
@@ -139,6 +144,7 @@ function createStyles(c: Colors) {
     },
     actions: {
       gap: spacing.md,
+      marginTop: spacing.sm,
     },
     error: {
       ...typography.body,

@@ -4,9 +4,12 @@ import {
   backfillInitialRecordHistory,
   ensureRecordHistoryTable,
 } from "./recordHistory";
-import { seedInitialInvoices } from "./seedInvoices";
+import {
+  replaceImportedSeedInvoices,
+  seedInitialInvoices,
+} from "./seedInvoices";
 
-const DATABASE_VERSION = 5;
+const DATABASE_VERSION = 8;
 
 export async function runMigrations(
   db: SQLite.SQLiteDatabase,
@@ -79,7 +82,6 @@ export async function runMigrations(
       ON invoices(invoice_number);
     `);
 
-    await seedInitialInvoices(db);
   }
 
   if (currentVersion < 2) {
@@ -250,8 +252,85 @@ export async function runMigrations(
     }
   }
 
+  if (currentVersion === 0) {
+    await seedInitialInvoices(db);
+  }
+
   if (currentVersion < 5) {
     await backfillInitialRecordHistory(db);
+  }
+
+  if (currentVersion < 6) {
+    const now = new Date().toISOString();
+    const taxPaymentsTable = await db.getFirstAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'tax_payments'",
+    );
+    const seedTaxPayments = [
+      ["excel-invoice-3", "2026-04", "2026-04-20", 150886, "3"],
+      ["excel-invoice-8", "2026-05", "2026-05-22", 292104, "8"],
+      ["excel-invoice-12", "2026-06", "2026-06-23", 179460, "12"],
+      ["excel-invoice-13", "2026-07", "2026-07-17", 537410, "13"],
+    ] as const;
+
+    await db.withTransactionAsync(async () => {
+      for (const [invoiceId, period, paymentDate, amount, reference] of seedTaxPayments) {
+        if (!taxPaymentsTable) break;
+        await db.runAsync(
+          `DELETE FROM tax_payments
+           WHERE source_invoice_id = ? AND source_type = 'migrated'`,
+          [invoiceId],
+        );
+        await db.runAsync(
+          `INSERT INTO tax_payments (
+            id, tax_period, payment_date, amount, description,
+            reference, source_invoice_id, source_type, created_at, updated_at
+          )
+          SELECT ?, ?, ?, ?, ?, ?, id, 'migrated', ?, ?
+          FROM invoices WHERE id = ?`,
+          [
+            `seed-tax-${invoiceId}`,
+            period,
+            paymentDate,
+            amount,
+            "Pago IVA importado desde Don Pollo.xlsx",
+            reference,
+            now,
+            now,
+            invoiceId,
+          ],
+        );
+      }
+
+      await db.runAsync(
+        `UPDATE invoices
+         SET payment_date = invoice_date, tax_payment = 0, tag_amount = 0,
+             accountant_amount = 0, savings_amount = 0, updated_at = ?
+         WHERE id LIKE 'excel-invoice-%'`,
+        [now],
+      );
+    });
+  }
+
+  if (currentVersion < 7) {
+    const generalPaymentsTable = await db.getFirstAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'general_payments'",
+    );
+    if (generalPaymentsTable) {
+      await db.runAsync(
+        `DELETE FROM general_payments
+         WHERE source_type = 'migrated'
+           AND source_invoice_id LIKE 'excel-invoice-%'`,
+      );
+    }
+  }
+
+  if (currentVersion < 8 && currentVersion > 0) {
+    const taxPaymentsTable = await db.getFirstAsync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'tax_payments'",
+    );
+    if (taxPaymentsTable) {
+      await replaceImportedSeedInvoices(db);
+    }
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);

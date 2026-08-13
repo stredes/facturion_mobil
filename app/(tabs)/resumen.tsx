@@ -44,15 +44,19 @@ import {
   buildMonthlyReport,
   buildMonthlyReportFileName,
   buildMonthlyReportHtml,
+  filterInvoicesByReportStatus,
+  filterInvoicesByReportClient,
+  formatReportInvoiceStatus,
   hasSelectedMonthlyReportSection,
   type MonthlyReportData,
   type MonthlyReportPeriodData,
   type MonthlyReportSectionKey,
   type MonthlyReportSections,
+  type MonthlyReportInvoiceStatus,
 } from "@/utils/monthlyReport";
 import type { CombinedMonth } from "@/utils/monthlySummary";
 
-type ReportStep = 0 | 1 | 2;
+type ReportStep = 0 | 1 | 2 | 3 | 4;
 
 interface GeneratedMonthlyReport {
   fileName: string;
@@ -61,7 +65,12 @@ interface GeneratedMonthlyReport {
   preview: string;
 }
 
-const REPORT_STEPS = ["Meses", "Datos", "PDF"] as const;
+const REPORT_STEPS = ["Meses", "Cliente", "Estado", "Datos", "PDF"] as const;
+const INVOICE_STATUS_OPTIONS: { value: MonthlyReportInvoiceStatus; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "paid", label: "Confirmadas" },
+  { value: "pending", label: "Pendientes" },
+];
 
 export default function SummaryScreen() {
   const { combined, isLoading, error, refresh } = useMonthlySummary();
@@ -82,6 +91,10 @@ export default function SummaryScreen() {
   const [reportSections, setReportSections] = useState<MonthlyReportSections>(
     () => ({ ...DEFAULT_MONTHLY_REPORT_SECTIONS }),
   );
+  const [reportInvoiceStatus, setReportInvoiceStatus] =
+    useState<MonthlyReportInvoiceStatus>("all");
+  const [reportClient, setReportClient] = useState<string | null>(null);
+  const [reportClients, setReportClients] = useState<string[]>([]);
   const [generatedReport, setGeneratedReport] =
     useState<GeneratedMonthlyReport | null>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -115,6 +128,30 @@ export default function SummaryScreen() {
       setGeneratedReport(null);
     }
   }, [combined]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadReportClients() {
+      const invoicesByPeriod = await Promise.all(
+        Array.from(selectedReportPeriods).map((period) => {
+          const [year, month] = period.split("-");
+          return invoiceService.getAll({ year, month });
+        }),
+      );
+      if (!active) return;
+      const clients = Array.from(
+        new Set(invoicesByPeriod.flat().map((invoice) => invoice.clientName.trim()).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b, "es"));
+      setReportClients(clients);
+      setReportClient((current) =>
+        current && clients.some((client) => client.toLocaleLowerCase() === current.toLocaleLowerCase())
+          ? current
+          : null,
+      );
+    }
+    void loadReportClients();
+    return () => { active = false; };
+  }, [invoiceService, selectedReportPeriods]);
 
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -180,6 +217,16 @@ export default function SummaryScreen() {
     }
 
     if (reportStep === 1) {
+      setReportStep(2);
+      return;
+    }
+
+    if (reportStep === 2) {
+      setReportStep(3);
+      return;
+    }
+
+    if (reportStep === 3) {
       if (!hasSelectedMonthlyReportSection(reportSections)) {
         Alert.alert(
           "Selecciona datos",
@@ -187,7 +234,7 @@ export default function SummaryScreen() {
         );
         return;
       }
-      setReportStep(2);
+      setReportStep(4);
     }
   }, [reportSections, reportStep, selectedReportPeriods]);
 
@@ -229,7 +276,7 @@ export default function SummaryScreen() {
         "Selecciona datos",
         "Activa al menos una seccion para el informe.",
       );
-      setReportStep(1);
+      setReportStep(3);
       return;
     }
 
@@ -259,7 +306,10 @@ export default function SummaryScreen() {
 
             return {
               period,
-              invoices,
+              invoices: filterInvoicesByReportStatus(
+                filterInvoicesByReportClient(invoices, reportClient),
+                reportInvoiceStatus,
+              ),
               taxPayments,
               generalPayments,
               retentions,
@@ -270,6 +320,8 @@ export default function SummaryScreen() {
         generatedAt: new Date().toISOString(),
         periods,
         sections: reportSections,
+        invoiceStatus: reportInvoiceStatus,
+        clientName: reportClient,
       };
       const html = buildMonthlyReportHtml(reportData);
       const fileName = buildMonthlyReportFileName(reportData);
@@ -301,6 +353,8 @@ export default function SummaryScreen() {
     generalPaymentService,
     invoiceService,
     reportSections,
+    reportInvoiceStatus,
+    reportClient,
     retentionService,
     selectedReportPeriods,
     shareGeneratedReport,
@@ -343,7 +397,7 @@ export default function SummaryScreen() {
 
   if (error) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scrollable>
         <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
         <ErrorState message={error} onRetry={refresh} />
       </ScreenContainer>
@@ -361,7 +415,7 @@ export default function SummaryScreen() {
 
   if (combined.length === 0) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scrollable>
         <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
         <EmptyState
           title="Sin resumen"
@@ -375,8 +429,10 @@ export default function SummaryScreen() {
     <ScreenContainer>
       <AppHeader title="Resumen" subtitle="Facturacion y pagos por mes" />
       <FlatList
+        alwaysBounceVertical
         data={combined}
         keyExtractor={keyExtractor}
+        overScrollMode="always"
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -394,6 +450,17 @@ export default function SummaryScreen() {
               onShare={shareReport}
               onTogglePeriod={toggleReportPeriod}
               onToggleSection={toggleReportSection}
+              invoiceStatus={reportInvoiceStatus}
+              client={reportClient}
+              clients={reportClients}
+              onClientChange={(client) => {
+                setReportClient(client);
+                setGeneratedReport(null);
+              }}
+              onInvoiceStatusChange={(status) => {
+                setReportInvoiceStatus(status);
+                setGeneratedReport(null);
+              }}
               periods={combined}
               sections={reportSections}
               selectedPeriods={selectedReportPeriods}
@@ -420,6 +487,9 @@ interface MonthlyReportStepperProps {
   periods: CombinedMonth[];
   selectedPeriods: Set<string>;
   sections: MonthlyReportSections;
+  invoiceStatus: MonthlyReportInvoiceStatus;
+  client: string | null;
+  clients: string[];
   step: ReportStep;
   generatedReport: GeneratedMonthlyReport | null;
   isGenerating: boolean;
@@ -427,6 +497,8 @@ interface MonthlyReportStepperProps {
   onSelectAllPeriods: () => void;
   onClearPeriods: () => void;
   onToggleSection: (key: MonthlyReportSectionKey) => void;
+  onInvoiceStatusChange: (status: MonthlyReportInvoiceStatus) => void;
+  onClientChange: (client: string | null) => void;
   onNext: () => void;
   onBack: () => void;
   onGenerate: () => void;
@@ -437,6 +509,9 @@ function MonthlyReportStepper({
   periods,
   selectedPeriods,
   sections,
+  invoiceStatus,
+  client,
+  clients,
   step,
   generatedReport,
   isGenerating,
@@ -444,6 +519,8 @@ function MonthlyReportStepper({
   onSelectAllPeriods,
   onClearPeriods,
   onToggleSection,
+  onInvoiceStatusChange,
+  onClientChange,
   onNext,
   onBack,
   onGenerate,
@@ -458,7 +535,7 @@ function MonthlyReportStepper({
   const canGenerate =
     selectedPeriodCount > 0 && hasSelectedMonthlyReportSection(sections);
   const primaryLabel =
-    step === 2
+    step === 4
       ? isGenerating
         ? "Generando PDF..."
         : generatedReport
@@ -468,10 +545,12 @@ function MonthlyReportStepper({
   const primaryDisabled =
     step === 0
       ? selectedPeriodCount === 0
-      : step === 1
+      : step === 1 || step === 2
+        ? false
+        : step === 3
         ? !hasSelectedMonthlyReportSection(sections)
         : isGenerating || !canGenerate;
-  const primaryAction = step === 2 ? onGenerate : onNext;
+  const primaryAction = step === 4 ? onGenerate : onNext;
   const selectedPeriodLabel = formatSelectedPeriodLabel(selectedPeriods);
 
   return (
@@ -554,6 +633,45 @@ function MonthlyReportStepper({
 
         {step === 1 ? (
           <>
+            <Text style={styles.stepTitle}>Cliente</Text>
+            <Text style={styles.reportMetaText}>Elige el cliente que aparecerá en el resumen.</Text>
+            <View style={styles.chipGrid}>
+              <FilterChip
+                label="Todos los clientes"
+                selected={client === null}
+                onPress={() => onClientChange(null)}
+              />
+              {clients.map((clientName) => (
+                <FilterChip
+                  key={clientName}
+                  label={clientName}
+                  selected={client?.toLocaleLowerCase() === clientName.toLocaleLowerCase()}
+                  onPress={() => onClientChange(clientName)}
+                />
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        {step === 2 ? (
+          <>
+            <Text style={styles.stepTitle}>Estado de las facturas</Text>
+            <Text style={styles.reportMetaText}>Elige qué facturas incluir en el resumen.</Text>
+            <View style={styles.chipGrid}>
+              {INVOICE_STATUS_OPTIONS.map((option) => (
+                <FilterChip
+                  key={option.value}
+                  label={option.label}
+                  selected={invoiceStatus === option.value}
+                  onPress={() => onInvoiceStatusChange(option.value)}
+                />
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        {step === 3 ? (
+          <>
             <Text style={styles.stepTitle}>Datos</Text>
             <View style={styles.chipGrid}>
               {MONTHLY_REPORT_SECTION_OPTIONS.map((option) => (
@@ -568,11 +686,17 @@ function MonthlyReportStepper({
           </>
         ) : null}
 
-        {step === 2 ? (
+        {step === 4 ? (
           <>
             <Text style={styles.stepTitle}>PDF</Text>
             <View style={styles.reportMetaBox}>
               <Text style={styles.reportMetaText}>{selectedPeriodLabel}</Text>
+              <Text style={styles.reportMetaText}>
+                Cliente: {client ?? "Todos los clientes"}
+              </Text>
+              <Text style={styles.reportMetaText}>
+                Facturas: {formatReportInvoiceStatus(invoiceStatus)}
+              </Text>
               <Text style={styles.reportMetaText}>
                 {selectedSections.length > 0
                   ? selectedSections.map((option) => option.label).join(" / ")
@@ -609,7 +733,7 @@ function MonthlyReportStepper({
             onPress={onBack}
           />
         ) : null}
-        {step === 2 && generatedReport ? (
+        {step === 4 && generatedReport ? (
           <SecondaryButton
             disabled={isGenerating}
             label="Compartir PDF"
@@ -664,6 +788,7 @@ function areSetsEqual(left: Set<string>, right: Set<string>): boolean {
 const createStyles = (c: Colors) =>
   StyleSheet.create({
     listContent: {
+      flexGrow: 1,
       paddingBottom: 120,
     },
     listHeader: {

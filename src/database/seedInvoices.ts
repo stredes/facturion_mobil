@@ -12,7 +12,7 @@ interface SeedInvoice {
   clientName: string;
   description: string;
   netAmount: number;
-  paymentDate?: string;
+  taxPaymentDate?: string;
   taxPayment?: number;
   tagAmount?: number;
   accountantAmount?: number;
@@ -43,7 +43,7 @@ const INITIAL_INVOICES: SeedInvoice[] = [
     clientName: "m&y sPA",
     description: "",
     netAmount: 483353,
-    paymentDate: "2026-04-20",
+    taxPaymentDate: "2026-04-20",
     taxPayment: 150886,
   },
   {
@@ -85,7 +85,7 @@ const INITIAL_INVOICES: SeedInvoice[] = [
     clientName: "M&Y Spa",
     description: "",
     netAmount: 421330,
-    paymentDate: "2026-05-22",
+    taxPaymentDate: "2026-05-22",
     taxPayment: 292104,
   },
   {
@@ -119,18 +119,50 @@ const INITIAL_INVOICES: SeedInvoice[] = [
     clientName: "M&Y Spa",
     description: "",
     netAmount: 1135174,
-    paymentDate: "2026-06-23",
+    taxPaymentDate: "2026-06-23",
     taxPayment: 179460,
   },
   {
-    id: "excel-invoice-13",
-    invoiceNumber: "13",
+    id: "excel-invoice-14",
+    invoiceNumber: "14",
     invoiceDate: "2026-07-05",
     clientName: "M&Y Spa",
     description: "",
-    netAmount: 1585019,
-    paymentDate: "2026-07-17",
+    netAmount: 1332000,
+    taxPaymentDate: "2026-07-17",
     taxPayment: 537410,
+  },
+  {
+    id: "excel-invoice-15",
+    invoiceNumber: "15",
+    invoiceDate: "2026-07-22",
+    clientName: "M&Y Spa",
+    description: "",
+    netAmount: 1308410,
+  },
+  {
+    id: "excel-invoice-16",
+    invoiceNumber: "16",
+    invoiceDate: "2026-07-23",
+    clientName: "M&Y Spa",
+    description: "",
+    netAmount: 656069,
+  },
+  {
+    id: "excel-invoice-18",
+    invoiceNumber: "18",
+    invoiceDate: "2026-08-10",
+    clientName: "M&Y Spa",
+    description: "",
+    netAmount: 954331,
+  },
+  {
+    id: "excel-invoice-19",
+    invoiceNumber: "19",
+    invoiceDate: "2026-08-11",
+    clientName: "M&Y Spa",
+    description: "",
+    netAmount: 740899,
   },
 ];
 
@@ -145,8 +177,29 @@ export async function seedInitialInvoices(
     return;
   }
 
+  await replaceImportedSeedInvoices(db);
+}
+
+export async function replaceImportedSeedInvoices(
+  db: SQLite.SQLiteDatabase,
+): Promise<void> {
   await db.withTransactionAsync(async () => {
+    await db.runAsync(
+      `DELETE FROM tax_payments
+       WHERE source_type = 'migrated'
+         AND source_invoice_id LIKE 'excel-invoice-%'`,
+    );
+    await db.runAsync("DELETE FROM invoices WHERE id LIKE 'excel-invoice-%'");
+
     for (const invoice of INITIAL_INVOICES) {
+      const existingInvoice = await db.getFirstAsync<{ id: string }>(
+        "SELECT id FROM invoices WHERE invoice_number = ?",
+        [invoice.invoiceNumber],
+      );
+      if (existingInvoice) {
+        continue;
+      }
+
       const taxAmount = calculateTax(invoice.netAmount);
       const totalAmount = calculateInvoiceTotal(invoice.netAmount, taxAmount);
       const timestamp = `${invoice.invoiceDate}T12:00:00.000Z`;
@@ -178,15 +231,35 @@ export async function seedInitialInvoices(
           invoice.netAmount,
           taxAmount,
           totalAmount,
-          invoice.paymentDate || null,
-          invoice.taxPayment ?? 0,
-          invoice.tagAmount ?? 0,
-          invoice.accountantAmount ?? 0,
-          invoice.savingsAmount ?? 0,
+          invoice.invoiceDate,
+          0,
+          0,
+          0,
+          0,
           timestamp,
           timestamp,
         ],
       );
+
+      if (invoice.taxPayment && invoice.taxPaymentDate) {
+        await db.runAsync(
+          `INSERT INTO tax_payments (
+            id, tax_period, payment_date, amount, description,
+            reference, source_invoice_id, source_type, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 'migrated', ?, ?)`,
+          [
+            `seed-tax-${invoice.id}`,
+            invoice.invoiceDate.slice(0, 7),
+            invoice.taxPaymentDate,
+            invoice.taxPayment,
+            "Pago IVA importado desde manuel pollo.xlsx",
+            invoice.invoiceNumber,
+            invoice.id,
+            timestamp,
+            timestamp,
+          ],
+        );
+      }
     }
   });
 }

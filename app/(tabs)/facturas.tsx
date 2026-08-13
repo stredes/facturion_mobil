@@ -94,7 +94,7 @@ export default function FacturasScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <ScreenContainer>
+      <ScreenContainer scrollable={!isLoading && invoices.length === 0}>
         {!isLoading && invoices.length === 0 ? (
           <View style={styles.centeredBody}>
             <AppHeader title="Facturas" subtitle="Todas tus facturas registradas" />
@@ -123,6 +123,7 @@ export default function FacturasScreen() {
           </View>
         ) : (
           <FlatList
+            alwaysBounceVertical
             ref={listRef}
             data={isLoading ? [] : invoices}
             keyExtractor={keyExtractor}
@@ -132,6 +133,7 @@ export default function FacturasScreen() {
             showsVerticalScrollIndicator={false}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             keyboardShouldPersistTaps="handled"
+            overScrollMode="always"
             refreshControl={
               <RefreshControl
                 colors={[colors.primary.main]}
@@ -161,6 +163,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   listContent: {
+    flexGrow: 1,
     paddingBottom: 120,
   },
   separator: {

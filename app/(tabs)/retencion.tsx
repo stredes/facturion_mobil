@@ -108,7 +108,7 @@ export default function RetencionScreen() {
 
   if (isInitialLoading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scrollable>
         <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <View style={styles.filters}>
           {CATEGORY_FILTERS.map((c) => (
@@ -131,7 +131,7 @@ export default function RetencionScreen() {
 
   if (error) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scrollable>
         <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <ErrorState message={error} onRetry={refresh} />
       </ScreenContainer>
@@ -141,7 +141,7 @@ export default function RetencionScreen() {
   if (retentions.length === 0) {
     const isFiltered = categoryFilter !== "all";
     return (
-      <ScreenContainer>
+      <ScreenContainer scrollable>
         <AppHeader title="Retenciones" subtitle="Acumulaciones por categoria" />
         <View style={styles.filters}>
           {CATEGORY_FILTERS.map((c) => (
@@ -187,10 +187,12 @@ export default function RetencionScreen() {
         </View>
 
         <FlatList
+          alwaysBounceVertical
           contentContainerStyle={styles.listContent}
           data={retentions}
           ItemSeparatorComponent={ItemSeparatorComponent}
           keyExtractor={keyExtractor}
+          overScrollMode="always"
           refreshControl={
             <RefreshControl
               colors={[colors.primary.main]}
@@ -222,6 +224,7 @@ const createStyles = (c: Colors) =>
       marginBottom: spacing.md,
     },
     listContent: {
+      flexGrow: 1,
       paddingBottom: 120,
     },
     separator: {

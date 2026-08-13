@@ -155,21 +155,6 @@ export function InvoiceForm({
         />
       </FormSection>
 
-      <FormSection icon="R" title="Reparto del cobro">
-        <MoneyField control={control} name="taxPayment" label="Pago de IVA" />
-        <MoneyField control={control} name="tagAmount" label="Saldo TAG" />
-        <MoneyField
-          control={control}
-          name="accountantAmount"
-          label="Saldo Contador"
-        />
-        <MoneyField
-          control={control}
-          name="savingsAmount"
-          label="Saldo Ahorro"
-        />
-      </FormSection>
-
       <FormSection icon="E" title="Estado de pago">
         <InvoiceStatusField
           control={control}

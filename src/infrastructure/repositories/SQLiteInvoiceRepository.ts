@@ -423,8 +423,7 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
         COALESCE(SUM(net_amount), 0) AS total_net_amount,
         COALESCE(SUM(tax_amount), 0) AS total_tax_amount,
         COALESCE(SUM(total_amount), 0) AS total_invoice_amount
-      FROM invoices
-      WHERE payment_date IS NOT NULL`,
+      FROM invoices`,
     );
 
     return {
@@ -445,7 +444,6 @@ export class SQLiteInvoiceRepository implements InvoiceRepository {
         COALESCE(SUM(tax_amount), 0) AS tax_amount,
         COALESCE(SUM(total_amount), 0) AS total_amount
       FROM invoices
-      WHERE payment_date IS NOT NULL
       GROUP BY SUBSTR(invoice_date, 1, 7)
       ORDER BY period DESC`,
     );

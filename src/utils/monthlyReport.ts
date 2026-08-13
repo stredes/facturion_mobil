@@ -5,6 +5,8 @@ import type { TaxPayment } from "../domain/TaxPayment";
 import { formatCurrency } from "./currency";
 import { formatDisplayDate, formatMonthPeriod } from "./dates";
 
+export type MonthlyReportInvoiceStatus = "all" | Invoice["status"];
+
 export type MonthlyReportSectionKey =
   | "invoices"
   | "taxPayments"
@@ -29,6 +31,8 @@ export interface MonthlyReportPeriodData {
 export interface MonthlyReportData {
   periods: MonthlyReportPeriodData[];
   sections: MonthlyReportSections;
+  invoiceStatus?: MonthlyReportInvoiceStatus;
+  clientName?: string | null;
   generatedAt?: string;
 }
 
@@ -106,6 +110,8 @@ export function buildMonthlyReport(data: MonthlyReportData): string {
     "INFORME MENSUAL FACTRION",
     `Periodos: ${formatPeriodList(data.periods.map((period) => period.period))}`,
     `Generado: ${formatGeneratedAt(data.generatedAt)}`,
+    `Estado de facturas: ${formatReportInvoiceStatus(data.invoiceStatus ?? "all")}`,
+    `Cliente: ${data.clientName ?? "Todos los clientes"}`,
     "",
   ];
 
@@ -142,6 +148,8 @@ export function buildMonthlyReportHtml(data: MonthlyReportData): string {
     "<h1>Informe mensual</h1>",
     `<p class="periods">${escapeHtml(periodLabel)}</p>`,
     `<p class="generated">Generado: ${escapeHtml(generatedAt)}</p>`,
+    `<p class="generated">Estado de facturas: ${escapeHtml(formatReportInvoiceStatus(data.invoiceStatus ?? "all"))}</p>`,
+    `<p class="generated">Cliente: ${escapeHtml(data.clientName ?? "Todos los clientes")}</p>`,
     "</header>",
     buildExecutiveSummary(data.sections, totals),
     periods.map((period) => buildPeriodSection(period, data.sections)).join(""),
@@ -552,9 +560,7 @@ export function summaryCard(label: string, value: string, detail?: string): stri
 }
 
 function calculateTotals(periods: MonthlyReportPeriodData[]): ReportTotals {
-  const invoices = periods
-    .flatMap((period) => period.invoices)
-    .filter((invoice) => invoice.status === "paid");
+  const invoices = periods.flatMap((period) => period.invoices);
   const taxPayments = periods.flatMap((period) => period.taxPayments);
   const generalPayments = periods.flatMap((period) => period.generalPayments);
   const retentions = periods.flatMap((period) => period.retentions);
@@ -578,6 +584,34 @@ function calculateTotals(periods: MonthlyReportPeriodData[]): ReportTotals {
     retentionSavings: sumRetentions(retentions, "savings"),
     retentionTotal: sum(retentions, (retention) => retention.amount),
   };
+}
+
+export function filterInvoicesByReportStatus(
+  invoices: Invoice[],
+  status: MonthlyReportInvoiceStatus,
+): Invoice[] {
+  return status === "all"
+    ? invoices
+    : invoices.filter((invoice) => invoice.status === status);
+}
+
+export function filterInvoicesByReportClient(
+  invoices: Invoice[],
+  clientName: string | null,
+): Invoice[] {
+  if (!clientName) return invoices;
+  const normalizedClient = clientName.trim().toLocaleLowerCase();
+  return invoices.filter(
+    (invoice) => invoice.clientName.trim().toLocaleLowerCase() === normalizedClient,
+  );
+}
+
+export function formatReportInvoiceStatus(
+  status: MonthlyReportInvoiceStatus,
+): string {
+  if (status === "paid") return "Confirmadas / pagadas";
+  if (status === "pending") return "Pendientes";
+  return "Todas";
 }
 
 function sum<T>(items: T[], pickAmount: (item: T) => number): number {

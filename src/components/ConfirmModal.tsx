@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography, useTheme, type Colors } from "../theme";
 import { hapticLight, hapticSuccess } from "../utils/haptics";
@@ -35,6 +36,7 @@ export function ConfirmModal({
   destructive = false,
 }: ConfirmModalProps) {
   const { colors, shadows } = useTheme();
+  const insets = useSafeAreaInsets();
   const scale = useRef(new Animated.Value(0.96)).current;
   const confirmRef = useRef<ComponentRef<typeof Pressable>>(null);
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -71,7 +73,13 @@ export function ConfirmModal({
       transparent
       visible={visible}
     >
-      <View style={styles.overlay} importantForAccessibility="auto">
+      <View
+        style={[
+          styles.overlay,
+          { paddingBottom: spacing.lg + insets.bottom },
+        ]}
+        importantForAccessibility="auto"
+      >
         <Animated.View
           accessibilityRole="alert"
           accessibilityLabel={`${title}. ${message}`}
