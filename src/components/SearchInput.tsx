@@ -100,7 +100,7 @@ const createStyles = (c: Colors) =>
       flexDirection: "row",
       gap: spacing.sm,
       minHeight: spacing.inputHeight,
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.md,
     },
     icon: {
       color: c.text.tertiary,
@@ -115,7 +115,7 @@ const createStyles = (c: Colors) =>
       paddingVertical: 0,
     },
     clearButton: {
-      padding: 4,
+      padding: spacing.xxs,
     },
     clearIcon: {
       color: c.text.tertiary,

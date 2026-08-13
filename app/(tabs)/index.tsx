@@ -259,7 +259,9 @@ export default function HomeScreen() {
           <ThemeToggleButton />
         </View>
 
-        <QuickActions onPress={(route) => router.push(route as never)} />
+        <View style={styles.quickActionsWrap}>
+          <QuickActions onPress={(route) => router.push(route as never)} />
+        </View>
 
         {/* Tarjeta principal - Total facturado */}
         <Pressable
@@ -515,6 +517,9 @@ const createStyles = (c: Colors) =>
       gap: spacing.sm,
       marginBottom: spacing.lg,
     },
+    quickActionsWrap: {
+      marginBottom: spacing.lg,
+    },
     mainCard: {
       backgroundColor: c.primary.dark,
       borderRadius: radius.mainCard,
@@ -638,6 +643,5 @@ const createStyles = (c: Colors) =>
     },
     list: {
       gap: spacing.gridGap,
-      paddingBottom: 100,
     },
   });

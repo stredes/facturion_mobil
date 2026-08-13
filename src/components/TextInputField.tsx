@@ -99,8 +99,8 @@ const createStyles = (c: Colors) =>
       fontSize: 15,
       lineHeight: 20,
       minHeight: spacing.inputHeight,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
     },
     multiline: {
       minHeight: 94,
@@ -116,6 +116,6 @@ const createStyles = (c: Colors) =>
       color: c.status.error,
       fontSize: 12,
       lineHeight: 16,
-      marginTop: 5,
+      marginTop: spacing.xs,
     },
   });

@@ -139,7 +139,7 @@ const createStyles = (c: Colors) =>
       borderColor: c.border.light,
       borderRadius: radius.button,
       borderWidth: 1,
-      minHeight: 48,
+      minHeight: spacing.buttonHeight,
       justifyContent: "center",
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
@@ -171,7 +171,7 @@ const createStyles = (c: Colors) =>
       borderTopColor: c.border.light,
       borderTopWidth: 1,
       padding: spacing.lg,
-      paddingBottom: spacing.lg + 6,
+      paddingBottom: spacing.xl,
     },
     submitButton: {
       alignItems: "center",
@@ -179,7 +179,7 @@ const createStyles = (c: Colors) =>
       borderRadius: radius.button,
       minHeight: spacing.buttonHeight,
       justifyContent: "center",
-      paddingHorizontal: 18,
+      paddingHorizontal: spacing.lg,
     },
     submitButtonDisabled: {
       backgroundColor: c.text.disabled,

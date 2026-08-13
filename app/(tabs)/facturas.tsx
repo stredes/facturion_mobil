@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
   },
   centeredBody: {
     flex: 1,
+    gap: spacing.md,
     justifyContent: "center",
   },
 });

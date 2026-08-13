@@ -62,7 +62,6 @@ const createStyles = (c: Colors) =>
       flexDirection: "row",
       alignItems: "center",
       gap: spacing.sm,
-      marginBottom: spacing.xs,
     },
     blockIcon: {
       backgroundColor: c.primary.light,

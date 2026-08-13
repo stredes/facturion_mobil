@@ -74,7 +74,7 @@ const createStyles = (c: Colors) =>
       color: c.text.primary,
       fontSize: 16,
       minHeight: spacing.inputHeight,
-      paddingHorizontal: 14,
+      paddingHorizontal: spacing.md,
     },
     inputError: {
       borderColor: c.status.error,

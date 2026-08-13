@@ -34,7 +34,7 @@ const createStyles = (c: Colors) =>
   StyleSheet.create({
     container: {
       gap: spacing.xxs,
-      marginBottom: spacing.xxs,
+      marginBottom: spacing.sm,
     },
     title: {
       color: c.text.primary,

@@ -673,7 +673,7 @@ const createStyles = (c: Colors) =>
       gap: spacing.xl,
     },
     separator: {
-      height: spacing.lg,
+      height: spacing.gridGap,
     },
     reportPanel: {
       backgroundColor: c.surface.primary,

@@ -120,7 +120,7 @@ const createStyles = (c: Colors) =>
     },
     headerLeft: {
       flex: 1,
-      gap: 2,
+      gap: spacing.xxs,
       minWidth: 0,
     },
     title: {
@@ -141,7 +141,7 @@ const createStyles = (c: Colors) =>
     },
     amountItem: {
       flex: 1,
-      gap: 2,
+      gap: spacing.xxs,
       minWidth: 0,
     },
     amountItemTotal: {

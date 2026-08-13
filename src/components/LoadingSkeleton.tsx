@@ -239,7 +239,7 @@ const createStyles = (c: Colors) =>
     },
     detailScreen: {
       gap: spacing.lg,
-      padding: spacing.lg,
+      padding: spacing.screenPadding,
     },
     totalCard: {
       backgroundColor: c.background.tertiary,
@@ -247,8 +247,8 @@ const createStyles = (c: Colors) =>
       gap: spacing.sm,
       minHeight: 128,
       justifyContent: "center",
-      paddingHorizontal: 20,
-      paddingVertical: 18,
+      paddingHorizontal: spacing.cardPadding,
+      paddingVertical: spacing.lg,
     },
     detailBlock: {
       gap: spacing.sm,
@@ -265,7 +265,7 @@ const createStyles = (c: Colors) =>
     },
     formScreen: {
       gap: spacing.xl,
-      padding: spacing.lg,
+      padding: spacing.screenPadding,
     },
     formHeader: {
       gap: spacing.sm,

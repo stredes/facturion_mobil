@@ -105,7 +105,7 @@ export function InvoiceForm({
 
   return (
     <FormScaffold
-      gap={spacing.xl}
+      gap={spacing.lg}
       isSubmitting={isBusy}
       onSubmit={submit}
       submitError={submitError}

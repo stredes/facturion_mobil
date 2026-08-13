@@ -138,7 +138,7 @@ function createStyles(c: Colors) {
       marginTop: spacing.lg,
     },
     actions: {
-      marginTop: spacing.sm,
+      gap: spacing.md,
     },
     error: {
       ...typography.body,

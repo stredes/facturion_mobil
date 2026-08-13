@@ -16,7 +16,6 @@ import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { SecondaryButton } from "@/components/SecondaryButton";
-import { SectionTitle } from "@/components/SectionTitle";
 import { useAuth } from "@/infrastructure/di/AuthContext";
 import {
   chooseBackupDirectory,
@@ -342,8 +341,8 @@ export default function SettingsScreen() {
       <AppHeader title="Ajustes" subtitle="Backup y guardado" />
 
       {user ? (
-        <>
-          <SectionTitle title="Cuenta" />
+        <View style={styles.group}>
+          <Text style={styles.groupTitle}>Perfil</Text>
 
           <View style={styles.card}>
             <Text style={styles.cardLabel}>Usuario</Text>
@@ -359,100 +358,102 @@ export default function SettingsScreen() {
               onPress={handleLogout}
             />
           </View>
-        </>
+        </View>
       ) : null}
 
-      <SectionTitle title="Backups" />
+      <View style={styles.group}>
+        <Text style={styles.groupTitle}>Backups</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>
-          {lastBackup ? "Último backup" : "Sin backups aún"}
-        </Text>
-        {lastBackup ? (
-          <>
-            <Text numberOfLines={1} style={styles.lastBackupName}>
-              {lastBackup.fileName}
-            </Text>
-            <Text style={styles.locationUri}>
-              {formatBackupTime(lastBackup.createdAt)} ·{" "}
-              {formatBytes(lastBackup.sizeBytes)}
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.locationName}>
-            Crea un backup para guardar la base completa.
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>
+            {lastBackup ? "Último backup" : "Sin backups aún"}
           </Text>
-        )}
-      </View>
-
-      <View style={styles.actions}>
-        <PrimaryButton
-          fullWidth
-          disabled={isBackingUp || isRestoring}
-          label={isBackingUp ? "Generando..." : "Crear backup local"}
-          onPress={handleCreateBackup}
-        />
-        <SecondaryButton
-          fullWidth
-          disabled={isSharing || isRestoring}
-          label={isSharing ? "Compartiendo..." : "Compartir backup"}
-          onPress={handleShareBackup}
-        />
-        <SecondaryButton
-          fullWidth
-          disabled={isRestoring || isBackingUp}
-          label={isRestoring ? "Restaurando..." : "Restaurar backup"}
-          onPress={handleRestoreBackup}
-        />
-        <SecondaryButton
-          fullWidth
-          disabled={isRestoring || isBackingUp}
-          label="Importar backup desde archivo"
-          onPress={handleImportBackup}
-        />
-      </View>
-
-      <SectionTitle title="Ubicación del backup" />
-
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>Los backups se guardan en</Text>
-        <View style={styles.locationRow}>
-          <Text style={styles.locationName}>
-            {backupDirectory?.displayName ?? "Carpeta interna (predeterminada)"}
-          </Text>
-          {backupDirectory ? (
-            <Text numberOfLines={2} style={styles.locationUri}>
-              {backupDirectory.uri}
+          {lastBackup ? (
+            <>
+              <Text numberOfLines={1} style={styles.lastBackupName}>
+                {lastBackup.fileName}
+              </Text>
+              <Text style={styles.locationUri}>
+                {formatBackupTime(lastBackup.createdAt)} ·{" "}
+                {formatBytes(lastBackup.sizeBytes)}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.locationName}>
+              Crea un backup para guardar la base completa.
             </Text>
-          ) : null}
+          )}
         </View>
-      </View>
 
-      <View style={styles.actions}>
-        <PrimaryButton
-          fullWidth
-          label={
-            isPicking ? "Abriendo selector..." : "Elegir carpeta de backup"
-          }
-          loading={isPicking}
-          onPress={handlePickDirectory}
-        />
-        {backupDirectory ? (
+        <View style={styles.actions}>
+          <PrimaryButton
+            fullWidth
+            disabled={isBackingUp || isRestoring}
+            label={isBackingUp ? "Generando..." : "Crear backup local"}
+            onPress={handleCreateBackup}
+          />
           <SecondaryButton
             fullWidth
-            label={isSaving ? "Guardando..." : "Usar carpeta interna"}
-            loading={isSaving}
-            onPress={handleUseInternal}
+            disabled={isSharing || isRestoring}
+            label={isSharing ? "Compartiendo..." : "Compartir backup"}
+            onPress={handleShareBackup}
           />
-        ) : null}
-      </View>
+          <SecondaryButton
+            fullWidth
+            disabled={isRestoring || isBackingUp}
+            label={isRestoring ? "Restaurando..." : "Restaurar backup"}
+            onPress={handleRestoreBackup}
+          />
+          <SecondaryButton
+            fullWidth
+            disabled={isRestoring || isBackingUp}
+            label="Importar backup desde archivo"
+            onPress={handleImportBackup}
+          />
+        </View>
 
-      <View style={styles.hint}>
-        <Text style={styles.hintText}>
-          Al elegir una carpeta, cada backup nuevo se guardará también en ella.
-          Así lo encuentras rápido para importarlo desde otro celular o moverlo
-          a la nube.
-        </Text>
+        <Text style={styles.groupSubtitle}>Ubicación del backup</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Los backups se guardan en</Text>
+          <View style={styles.locationRow}>
+            <Text style={styles.locationName}>
+              {backupDirectory?.displayName ?? "Carpeta interna (predeterminada)"}
+            </Text>
+            {backupDirectory ? (
+              <Text numberOfLines={2} style={styles.locationUri}>
+                {backupDirectory.uri}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.actions}>
+          <PrimaryButton
+            fullWidth
+            label={
+              isPicking ? "Abriendo selector..." : "Elegir carpeta de backup"
+            }
+            loading={isPicking}
+            onPress={handlePickDirectory}
+          />
+          {backupDirectory ? (
+            <SecondaryButton
+              fullWidth
+              label={isSaving ? "Guardando..." : "Usar carpeta interna"}
+              loading={isSaving}
+              onPress={handleUseInternal}
+            />
+          ) : null}
+        </View>
+
+        <View style={styles.hint}>
+          <Text style={styles.hintText}>
+            Al elegir una carpeta, cada backup nuevo se guardará también en ella.
+            Así lo encuentras rápido para importarlo desde otro celular o moverlo
+            a la nube.
+          </Text>
+        </View>
       </View>
 
       <Modal
@@ -530,6 +531,20 @@ function formatBytes(bytes: number): string {
 
 function createStyles(c: Colors) {
   return StyleSheet.create({
+    group: {
+      marginBottom: spacing.xl,
+    },
+    groupTitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      marginBottom: spacing.md,
+    },
+    groupSubtitle: {
+      ...typography.sectionTitle,
+      color: c.text.primary,
+      fontSize: 15,
+      marginBottom: spacing.sm,
+    },
     card: {
       backgroundColor: c.surface.primary,
       borderColor: c.border.light,
@@ -611,7 +626,7 @@ function createStyles(c: Colors) {
       gap: spacing.sm,
       justifyContent: "space-between",
       marginBottom: spacing.sm,
-      minHeight: 48,
+      minHeight: spacing.buttonHeight,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
     },

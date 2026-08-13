@@ -162,7 +162,7 @@ const createStyles = (c: Colors) =>
       backgroundColor: c.primary.main,
       borderRadius: radius.button,
       flex: 1,
-      minHeight: 48,
+      minHeight: spacing.buttonHeight,
       justifyContent: "center",
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.md,

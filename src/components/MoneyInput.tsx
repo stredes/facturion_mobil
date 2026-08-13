@@ -80,8 +80,8 @@ const createStyles = (c: Colors) =>
       borderWidth: 1,
       flexDirection: "row",
       minHeight: spacing.inputHeight,
-      paddingHorizontal: 14,
-      paddingVertical: 12,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
     },
     inputError: {
       borderColor: c.status.error,
@@ -107,6 +107,6 @@ const createStyles = (c: Colors) =>
       color: c.status.error,
       fontSize: 12,
       lineHeight: 16,
-      marginTop: 5,
+      marginTop: spacing.xs,
     },
   });

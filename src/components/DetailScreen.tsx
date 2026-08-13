@@ -179,7 +179,7 @@ const createStyles = (c: Colors) =>
     },
     container: {
       gap: spacing.lg,
-      padding: spacing.lg,
+      padding: spacing.screenPadding,
       paddingBottom: spacing.xxl * 2,
     },
     headerSection: {
@@ -198,8 +198,8 @@ const createStyles = (c: Colors) =>
       borderRadius: radius.mainCard,
       gap: spacing.xxs,
       minHeight: 128,
-      paddingHorizontal: 20,
-      paddingVertical: 18,
+      paddingHorizontal: spacing.cardPadding,
+      paddingVertical: spacing.lg,
     },
     totalLabel: {
       ...typography.label,
@@ -217,7 +217,6 @@ const createStyles = (c: Colors) =>
     blockTitle: {
       ...typography.sectionTitle,
       color: c.text.primary,
-      marginBottom: spacing.xxs,
     },
     detailRow: {
       backgroundColor: c.surface.primary,
