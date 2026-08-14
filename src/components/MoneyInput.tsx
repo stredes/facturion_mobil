@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 
-import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { useFieldStyles } from "./fieldStyles";
 import {
   formatMoneyInput,
   parseMoneyInput,
@@ -11,6 +10,7 @@ interface MoneyInputProps {
   label: string;
   value: number;
   error?: string;
+  disabled?: boolean;
   onChangeValue: (value: number) => void;
 }
 
@@ -18,11 +18,10 @@ export function MoneyInput({
   label,
   value,
   error,
+  disabled = false,
   onChangeValue,
 }: MoneyInputProps) {
-  const [focused, setFocused] = useState(false);
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, styles, focused, onFocus, onBlur } = useFieldStyles();
   const formattedValue = formatMoneyInput(value);
 
   return (
@@ -31,6 +30,7 @@ export function MoneyInput({
       <View
         style={[
           styles.inputWrapper,
+          disabled && { backgroundColor: colors.background.tertiary },
           error && !focused && styles.inputError,
           focused && styles.inputFocused,
         ]}
@@ -38,18 +38,18 @@ export function MoneyInput({
         <Text style={styles.prefix}>$</Text>
         <TextInput
           accessibilityLabel={label}
+          accessibilityState={{ disabled }}
+          editable={!disabled}
           keyboardType="numbers-and-punctuation"
           onChangeText={(text) => {
             onChangeValue(parseMoneyInput(text));
           }}
-          onFocus={() => {
-            setFocused(true);
-          }}
-          onBlur={() => setFocused(false)}
+          onFocus={onFocus}
+          onBlur={onBlur}
           placeholder="0"
           placeholderTextColor={colors.text.tertiary}
           returnKeyType="done"
-          style={styles.input}
+          style={[styles.input, disabled && styles.inputDisabled]}
           value={formattedValue}
         />
       </View>
@@ -61,52 +61,3 @@ export function MoneyInput({
     </View>
   );
 }
-
-const createStyles = (c: Colors) =>
-  StyleSheet.create({
-    container: {
-      gap: spacing.xs,
-    },
-    label: {
-      ...typography.label,
-      color: c.text.primary,
-      marginBottom: spacing.xxs,
-    },
-    inputWrapper: {
-      alignItems: "center",
-      backgroundColor: c.surface.primary,
-      borderColor: c.border.light,
-      borderRadius: radius.input,
-      borderWidth: 1,
-      flexDirection: "row",
-      minHeight: spacing.inputHeight,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-    },
-    inputError: {
-      borderColor: c.status.error,
-    },
-    inputFocused: {
-      borderColor: c.primary.main,
-    },
-    prefix: {
-      ...typography.body,
-      color: c.text.tertiary,
-      fontWeight: "600",
-      marginRight: spacing.xs,
-    },
-    input: {
-      color: c.text.primary,
-      flex: 1,
-      fontSize: 15,
-      lineHeight: 20,
-      paddingVertical: 0,
-      textAlign: "right",
-    },
-    error: {
-      color: c.status.error,
-      fontSize: 12,
-      lineHeight: 16,
-      marginTop: spacing.xs,
-    },
-  });

@@ -1,13 +1,6 @@
-import { useMemo, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type KeyboardTypeOptions,
-} from "react-native";
+import { Text, TextInput, View, type KeyboardTypeOptions } from "react-native";
 
-import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { useFieldStyles } from "./fieldStyles";
 
 interface TextInputFieldProps {
   label: string;
@@ -19,6 +12,7 @@ interface TextInputFieldProps {
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoComplete?: "email" | "password" | "name" | "off";
   multiline?: boolean;
+  disabled?: boolean;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
 }
@@ -33,12 +27,11 @@ export function TextInputField({
   autoCapitalize = "sentences",
   autoComplete = "off",
   multiline = false,
+  disabled = false,
   onBlur,
   onChangeText,
 }: TextInputFieldProps) {
-  const [focused, setFocused] = useState(false);
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, styles, focused, onFocus, onBlur: handleBlur } = useFieldStyles();
 
   return (
     <View style={styles.container}>
@@ -46,19 +39,19 @@ export function TextInputField({
       <TextInput
         accessibilityHint={error ? "Campo con error" : undefined}
         accessibilityLabel={label}
+        accessibilityState={{ disabled }}
         aria-invalid={error ? true : false}
         autoCapitalize={autoCapitalize}
         autoComplete={autoComplete}
+        editable={!disabled}
         keyboardType={keyboardType}
         multiline={multiline}
         onBlur={() => {
-          setFocused(false);
+          handleBlur();
           onBlur?.();
         }}
         onChangeText={onChangeText}
-        onFocus={() => {
-          setFocused(true);
-        }}
+        onFocus={onFocus}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
         returnKeyType={multiline ? "default" : "done"}
@@ -66,6 +59,7 @@ export function TextInputField({
         style={[
           styles.input,
           multiline && styles.multiline,
+          disabled && styles.inputDisabled,
           error && !focused && styles.inputError,
           focused && styles.inputFocused,
         ]}
@@ -79,43 +73,3 @@ export function TextInputField({
     </View>
   );
 }
-
-const createStyles = (c: Colors) =>
-  StyleSheet.create({
-    container: {
-      gap: spacing.xs,
-    },
-    label: {
-      ...typography.label,
-      color: c.text.primary,
-      marginBottom: spacing.xxs,
-    },
-    input: {
-      backgroundColor: c.surface.primary,
-      borderColor: c.border.light,
-      borderRadius: radius.input,
-      borderWidth: 1,
-      color: c.text.primary,
-      fontSize: 15,
-      lineHeight: 20,
-      minHeight: spacing.inputHeight,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-    },
-    multiline: {
-      minHeight: 94,
-      textAlignVertical: "top",
-    },
-    inputError: {
-      borderColor: c.status.error,
-    },
-    inputFocused: {
-      borderColor: c.primary.main,
-    },
-    error: {
-      color: c.status.error,
-      fontSize: 12,
-      lineHeight: 16,
-      marginTop: spacing.xs,
-    },
-  });

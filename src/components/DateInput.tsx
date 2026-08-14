@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 
-import { radius, spacing, useThemeColors, type Colors } from "../theme";
+import { useFieldStyles } from "./fieldStyles";
 
 interface DateInputProps {
   label: string;
   value: string;
   error?: string;
+  disabled?: boolean;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
 }
@@ -15,12 +15,11 @@ export function DateInput({
   label,
   value,
   error,
+  disabled = false,
   onBlur,
   onChangeText,
 }: DateInputProps) {
-  const [focused, setFocused] = useState(false);
-  const colors = useThemeColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, styles, focused, onFocus, onBlur: handleBlur } = useFieldStyles();
 
   return (
     <View style={styles.container}>
@@ -28,20 +27,21 @@ export function DateInput({
       <TextInput
         accessibilityLabel={`${label}, formato AAAA-MM-DD`}
         accessibilityHint={error ? "Campo con error" : undefined}
+        accessibilityState={{ disabled }}
+        editable={!disabled}
         keyboardType="numbers-and-punctuation"
         onBlur={() => {
-          setFocused(false);
+          handleBlur();
           onBlur?.();
         }}
         onChangeText={onChangeText}
-        onFocus={() => {
-          setFocused(true);
-        }}
+        onFocus={onFocus}
         placeholder="AAAA-MM-DD"
         placeholderTextColor={colors.text.tertiary}
         returnKeyType="done"
         style={[
           styles.input,
+          disabled && styles.inputDisabled,
           error && !focused && styles.inputError,
           focused && styles.inputFocused,
         ]}
@@ -55,36 +55,3 @@ export function DateInput({
     </View>
   );
 }
-
-const createStyles = (c: Colors) =>
-  StyleSheet.create({
-    container: {
-      gap: spacing.xs,
-    },
-    label: {
-      color: c.text.primary,
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    input: {
-      backgroundColor: c.surface.primary,
-      borderColor: c.border.light,
-      borderRadius: radius.input,
-      borderWidth: 1,
-      color: c.text.primary,
-      fontSize: 16,
-      minHeight: spacing.inputHeight,
-      paddingHorizontal: spacing.md,
-    },
-    inputError: {
-      borderColor: c.status.error,
-    },
-    inputFocused: {
-      borderColor: c.primary.main,
-    },
-    error: {
-      color: c.status.error,
-      fontSize: 12,
-      fontWeight: "500",
-    },
-  });
