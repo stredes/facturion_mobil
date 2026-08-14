@@ -81,4 +81,6 @@ export const typography = {
     lineHeight: 14,
     fontWeight: "400" as const,
   },
+
+  tabularNums,
 } as const;
