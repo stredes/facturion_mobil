@@ -15,15 +15,15 @@ export const colors = {
   text: {
     primary: "#17212B",
     secondary: "#66727E",
-    tertiary: "#8A949E",
+    tertiary: "#69737F",
     inverse: "#FFFFFF",
     disabled: "#CBD5E1",
   },
   status: {
-    success: "#2E8B57",
-    warning: "#C78316",
-    error: "#C84646",
-    info: "#3277A8",
+    success: "#23764B",
+    warning: "#96600A",
+    error: "#BE3D3D",
+    info: "#2C6E97",
   },
   statusLight: {
     success: "#E7F5EC",
@@ -46,7 +46,7 @@ export const colors = {
     ahorro: "#84CC16",
   },
   chart: {
-    axis: "#8A949E",
+    axis: "#69737F",
     legend: "#66727E",
     tooltipBg: "#17212B",
     tooltipBorder: "#CBD5E1",
@@ -71,15 +71,15 @@ export const darkColors = {
   text: {
     primary: "#E8EDF3",
     secondary: "#9AA7B7",
-    tertiary: "#64748B",
+    tertiary: "#8D9AAB",
     inverse: "#0B1220",
     disabled: "#3B4757",
   },
   status: {
     success: "#3FAE74",
     warning: "#E2A53A",
-    error: "#E26060",
-    info: "#4C8FC0",
+    error: "#E97070",
+    info: "#5FA0D0",
   },
   statusLight: {
     success: "rgba(63, 174, 116, 0.18)",
@@ -102,7 +102,7 @@ export const darkColors = {
     ahorro: "#A3E635",
   },
   chart: {
-    axis: "#64748B",
+    axis: "#8D9AAB",
     legend: "#9AA7B7",
     tooltipBg: "#E8EDF3",
     tooltipBorder: "#26324A",
