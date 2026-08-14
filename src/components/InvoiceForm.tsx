@@ -11,7 +11,7 @@ import {
 import { invoiceSchema } from "../schemas/invoiceSchema";
 import type { InvoiceFormValues } from "../schemas/invoiceSchema";
 import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
-import { formatCurrency } from "../utils/currency";
+import { formatCurrencyCompact } from "../utils/currency";
 import { toISODate } from "../utils/dates";
 import { FormSection } from "./form/FormSection";
 import { FormScaffold } from "./form/FormScaffold";
@@ -148,12 +148,12 @@ export function InvoiceForm({
         <MoneyField control={control} name="netAmount" label="Monto neto" />
         <ReadonlyBox
           label="IVA"
-          value={formatCurrency(taxAmount)}
+          value={formatCurrencyCompact(taxAmount)}
           hint="Calculado automaticamente"
         />
         <ReadonlyBox
           label="Total factura"
-          value={formatCurrency(totalAmount)}
+          value={formatCurrencyCompact(totalAmount)}
           hint="Calculado automaticamente"
         />
       </FormSection>

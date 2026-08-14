@@ -242,6 +242,7 @@ const createStyles = (c: Colors) =>
     },
     detailValue: {
       ...typography.bodyMedium,
+      ...typography.tabularNums,
       color: c.text.primary,
       flex: 1,
       textAlign: "right",
@@ -260,6 +261,7 @@ const createStyles = (c: Colors) =>
     },
     editButtonText: {
       ...typography.bodyMedium,
+      ...typography.tabularNums,
       color: c.text.inverse,
     },
     deleteButton: {
@@ -269,6 +271,7 @@ const createStyles = (c: Colors) =>
     },
     deleteButtonText: {
       ...typography.bodyMedium,
+      ...typography.tabularNums,
       color: c.status.error,
     },
     inlineError: {
@@ -280,6 +283,7 @@ const createStyles = (c: Colors) =>
     },
     inlineErrorText: {
       ...typography.bodyMedium,
+      ...typography.tabularNums,
       color: c.status.error,
     },
     disabledButton: {
