@@ -9,13 +9,31 @@ import { SummaryCard } from "../SummaryCard";
 
 interface MonthlySummaryCardProps {
   summary: CombinedMonth;
+  previous?: CombinedMonth;
   isExpanded: boolean;
   isSmallScreen: boolean;
   onToggle: () => void;
 }
 
+interface MonthComparison {
+  pct: number;
+  isUp: boolean;
+}
+
+function buildComparison(
+  summary: CombinedMonth,
+  previous?: CombinedMonth,
+): MonthComparison | null {
+  if (!previous || previous.totalAmount === 0) {
+    return null;
+  }
+  const delta = summary.totalAmount - previous.totalAmount;
+  return { pct: (delta / previous.totalAmount) * 100, isUp: delta >= 0 };
+}
+
 export function MonthlySummaryCard({
   summary,
+  previous,
   isExpanded,
   isSmallScreen,
   onToggle,
@@ -23,6 +41,14 @@ export function MonthlySummaryCard({
   const { colors, shadows } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [isTotalExpanded, setIsTotalExpanded] = useState(false);
+  const comparison = useMemo(
+    () => buildComparison(summary, previous),
+    [summary, previous],
+  );
+  const comparisonAccessibility =
+    comparison && previous
+      ? ` Variación vs ${formatMonthPeriod(previous.period)}: ${comparison.isUp ? "aumento" : "disminución"} de ${Math.abs(comparison.pct).toFixed(1)} por ciento`
+      : "";
 
   return (
     <View style={styles.monthBlock}>
@@ -53,7 +79,7 @@ export function MonthlySummaryCard({
 
       <Pressable
         accessibilityHint="Toca para ver el monto exacto o contraer"
-        accessibilityLabel={`Facturado: ${formatCurrency(summary.totalAmount)}`}
+        accessibilityLabel={`Facturado: ${formatCurrency(summary.totalAmount)}${comparisonAccessibility}`}
         accessibilityRole="button"
         accessibilityState={{ expanded: isTotalExpanded }}
         onPress={() => setIsTotalExpanded((prev) => !prev)}
@@ -81,6 +107,24 @@ export function MonthlySummaryCard({
             ? formatCurrency(summary.totalAmount)
             : formatCurrencyCompact(summary.totalAmount)}
         </Text>
+        {comparison && previous ? (
+          <View style={styles.comparisonRow}>
+            <Text
+              style={[
+                styles.comparisonBadge,
+                comparison.isUp
+                  ? styles.comparisonBadgeUp
+                  : styles.comparisonBadgeDown,
+              ]}
+            >
+              {comparison.isUp ? "\u25B4" : "\u25BE"}{" "}
+              {Math.abs(comparison.pct).toFixed(1)}%
+            </Text>
+            <Text style={styles.comparisonLabel}>
+              vs {formatMonthPeriod(previous.period)}
+            </Text>
+          </View>
+        ) : null}
       </Pressable>
 
       {isExpanded ? (
@@ -90,15 +134,6 @@ export function MonthlySummaryCard({
             label="IVA generado"
             value={summary.taxAmount}
           />
-          <SummaryCard label="TAG" value={summary.tagAmount} />
-          <SummaryCard
-            label="Contador"
-            value={summary.accountantAmount}
-          />
-          <SummaryCard
-            label="Ahorro"
-            value={summary.savingsAmount}
-          />
           <SummaryCard
             label="IVA pagado"
             value={summary.paidTax}
@@ -107,6 +142,15 @@ export function MonthlySummaryCard({
             label={summary.vatReserveOverpaid ? "Exceso IVA" : "Reserva IVA"}
             value={Math.abs(summary.vatReserve)}
             tone={summary.vatReserveOverpaid ? "error" : "strong"}
+          />
+          <SummaryCard label="TAG" value={summary.tagAmount} />
+          <SummaryCard
+            label="Contador"
+            value={summary.accountantAmount}
+          />
+          <SummaryCard
+            label="Ahorro"
+            value={summary.savingsAmount}
           />
           <SummaryCard
             label="Retenciones"
@@ -182,6 +226,32 @@ const createStyles = (c: Colors) =>
     summaryValueExpanded: {
       fontSize: 36,
       lineHeight: 44,
+    },
+    comparisonRow: {
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.xs,
+      marginTop: spacing.sm,
+    },
+    comparisonBadge: {
+      ...typography.small,
+      borderRadius: radius.badge,
+      fontWeight: "700",
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+    },
+    comparisonBadgeUp: {
+      backgroundColor: c.statusLight.success,
+      color: c.status.success,
+    },
+    comparisonBadgeDown: {
+      backgroundColor: c.statusLight.error,
+      color: c.status.error,
+    },
+    comparisonLabel: {
+      ...typography.small,
+      color: c.text.inverse,
+      opacity: 0.8,
     },
     grid: {
       flexDirection: "row",

@@ -1,6 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -20,6 +21,8 @@ import { FilterChip } from "@/components/FilterChip";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenContainer } from "@/components/ScreenContainer";
 import { SecondaryButton } from "@/components/SecondaryButton";
+import { SectionTitle } from "@/components/SectionTitle";
+import { SummaryCard } from "@/components/SummaryCard";
 import { MonthlySummaryCard } from "@/components/summary/MonthlySummaryCard";
 import { MonthlySummarySkeleton } from "@/components/summary/MonthlySummarySkeleton";
 import { useMonthlySummary } from "@/hooks/useMonthlySummary";
@@ -66,6 +69,11 @@ interface GeneratedMonthlyReport {
 }
 
 const REPORT_STEPS = ["Meses", "Cliente", "Estado", "Datos", "PDF"] as const;
+const ICON_GLYPHS = {
+  docs: "\u2A9A",
+  cash: "\u29E9",
+  retention: "\u2A9B",
+} as const;
 const INVOICE_STATUS_OPTIONS: { value: MonthlyReportInvoiceStatus; label: string }[] = [
   { value: "all", label: "Todas" },
   { value: "paid", label: "Confirmadas" },
@@ -73,6 +81,7 @@ const INVOICE_STATUS_OPTIONS: { value: MonthlyReportInvoiceStatus; label: string
 ];
 
 export default function SummaryScreen() {
+  const router = useRouter();
   const { combined, isLoading, error, refresh } = useMonthlySummary();
   const invoiceService = useInvoiceService();
   const generalPaymentService = useGeneralPaymentService();
@@ -100,6 +109,22 @@ export default function SummaryScreen() {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 360;
+
+  const grandTotals = useMemo(() => {
+    const totalInvoiced = combined.reduce(
+      (sum, month) => sum + month.totalAmount,
+      0,
+    );
+    const totalPaidTax = combined.reduce(
+      (sum, month) => sum + month.paidTax,
+      0,
+    );
+    const totalRetentions = combined.reduce(
+      (sum, month) => sum + month.totalRetentions,
+      0,
+    );
+    return { totalInvoiced, totalPaidTax, totalRetentions };
+  }, [combined]);
 
   useEffect(() => {
     if (combined.length === 0) {
@@ -377,15 +402,16 @@ export default function SummaryScreen() {
   }, [generatedReport, shareGeneratedReport]);
 
   const renderItem = useCallback(
-    ({ item }: { item: CombinedMonth }) => (
+    ({ item, index }: { item: CombinedMonth; index: number }) => (
       <MonthlySummaryCard
         summary={item}
+        previous={index + 1 < combined.length ? combined[index + 1] : undefined}
         isExpanded={expandedPeriods.has(item.period)}
         isSmallScreen={isSmallScreen}
         onToggle={() => toggleExpand(item.period)}
       />
     ),
-    [expandedPeriods, isSmallScreen, toggleExpand],
+    [combined, expandedPeriods, isSmallScreen, toggleExpand],
   );
 
   const keyExtractor = useCallback((item: CombinedMonth) => item.period, []);
@@ -420,6 +446,9 @@ export default function SummaryScreen() {
         <EmptyState
           title="Sin resumen"
           message="Registra una factura, pago o retencion para construir el resumen."
+          actionLabel="Crear factura"
+          iconName="document-text-outline"
+          onAction={() => router.push("/facturas/nueva")}
         />
       </ScreenContainer>
     );
@@ -439,6 +468,26 @@ export default function SummaryScreen() {
         ItemSeparatorComponent={ItemSeparatorComponent}
         ListHeaderComponent={
           <View style={styles.reportStack}>
+            <View style={styles.totalsSection}>
+              <SectionTitle title="Totales" subtitle="Todos los periodos" />
+              <View style={styles.totalsRow}>
+                <SummaryCard
+                  label="Facturado"
+                  value={grandTotals.totalInvoiced}
+                  icon={ICON_GLYPHS.docs}
+                />
+                <SummaryCard
+                  label="IVA pagado"
+                  value={grandTotals.totalPaidTax}
+                  icon={ICON_GLYPHS.cash}
+                />
+                <SummaryCard
+                  label="Retenciones"
+                  value={grandTotals.totalRetentions}
+                  icon={ICON_GLYPHS.retention}
+                />
+              </View>
+            </View>
             <MonthlyReportStepper
               generatedReport={generatedReport}
               isGenerating={isGeneratingReport}
@@ -789,13 +838,20 @@ const createStyles = (c: Colors) =>
   StyleSheet.create({
     listContent: {
       flexGrow: 1,
-      paddingBottom: 120,
+      paddingBottom: spacing.tabBarHeight + spacing.xxl,
     },
     listHeader: {
       marginBottom: spacing.lg,
     },
     reportStack: {
       gap: spacing.xl,
+    },
+    totalsSection: {
+      gap: spacing.sm,
+    },
+    totalsRow: {
+      flexDirection: "row",
+      gap: spacing.gridGap,
     },
     separator: {
       height: spacing.gridGap,

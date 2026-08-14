@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useWindowDimensions, View, type AccessibilityRole } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 
@@ -19,40 +20,54 @@ type SliceData = {
 interface PieChart3DProps {
   data: SliceData[];
   size?: number;
-  innerRadius?: number;
-  depth?: number;
-  startAngle?: number;
-  endAngle?: number;
   accessibilityLabel?: string;
   accessibilityRole?: AccessibilityRole;
 }
 
-export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size, accessibilityLabel, accessibilityRole }) => {
+export const PieChart3D: React.FC<PieChart3DProps> = ({
+  data,
+  size,
+  accessibilityLabel,
+  accessibilityRole,
+}) => {
   const { width } = useWindowDimensions();
   const colors = useThemeColors();
-  const total = data.reduce((sum, d) => sum + d.value, 0);
-  if (total === 0) return null;
+
+  const total = useMemo(
+    () => data.reduce((sum, slice) => sum + slice.value, 0),
+    [data],
+  );
+  const chartData = useMemo(
+    () =>
+      data.map((slice) => {
+        const pct = total === 0 ? 0 : (slice.value / total) * 100;
+        return {
+          name: `${slice.name} ${pct.toFixed(1)}%`,
+          population: slice.value,
+          color: slice.color,
+          legendFontColor: colors.chart.legend,
+          legendFontSize: 12,
+        };
+      }),
+    [colors.chart.legend, data, total],
+  );
+  const defaultLabel = data
+    .map((slice) => `${slice.name} ${slice.value}`)
+    .join(", ");
+
+  if (total === 0) {
+    return null;
+  }
 
   const availableWidth = width - spacing.screenPadding * 2;
   const chartSize = size
     ? Math.min(size, availableWidth)
     : Math.min(availableWidth, 350);
 
-  const chartData = data.map((d) => {
-    const pct = ((d.value / total) * 100).toFixed(1);
-    return {
-      name: `${d.name} ${pct}%`,
-      population: d.value,
-      color: d.color,
-      legendFontColor: colors.chart.legend,
-      legendFontSize: 11,
-    };
-  });
-
   return (
     <View
       accessibilityRole={accessibilityRole ?? "image"}
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? `Distribución de fondos: ${defaultLabel}`}
     >
       <PieChart
         data={chartData}
@@ -65,6 +80,7 @@ export const PieChart3D: React.FC<PieChart3DProps> = ({ data, size, accessibilit
         backgroundColor="transparent"
         paddingLeft="15"
         center={[10, 0]}
+        avoidFalseZero
       />
     </View>
   );

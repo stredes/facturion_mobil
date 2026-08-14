@@ -204,6 +204,59 @@ function InputSkeleton() {
   );
 }
 
+export function HomeDashboardSkeleton({ chartWidth }: { chartWidth: number }) {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  return (
+    <View
+      accessibilityLabel="Cargando panel principal"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      style={styles.home}
+    >
+      <View style={styles.headerBlock}>
+        <Skeleton width="45%" height={24} />
+        <Skeleton width="30%" height={14} />
+      </View>
+
+      <View style={styles.heroCard}>
+        <Skeleton width="35%" height={14} />
+        <Skeleton width="60%" height={32} />
+        <View style={styles.heroStats}>
+          <Skeleton width="28%" height={16} />
+          <Skeleton width="28%" height={16} />
+          <Skeleton width="28%" height={16} />
+        </View>
+      </View>
+
+      <View style={styles.chartCard}>
+        <Skeleton width="40%" height={16} />
+        <Skeleton width={chartWidth} height={260} borderRadius={radius.card} />
+      </View>
+
+      <View style={styles.summaryGrid}>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <View key={index} style={styles.summaryRow}>
+            <View style={styles.summaryCell}>
+              <Skeleton height={104} borderRadius={radius.card} />
+            </View>
+            <View style={styles.summaryCell}>
+              <Skeleton height={104} borderRadius={radius.card} />
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.list}>
+        <InvoiceCardSkeleton />
+        <InvoiceCardSkeleton />
+        <InvoiceCardSkeleton />
+      </View>
+    </View>
+  );
+}
+
 export function ChartSkeleton({ height = 280, width = 350 }: { height?: number; width?: number }) {
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -279,5 +332,45 @@ const createStyles = (c: Colors) =>
     chartContainer: {
       alignItems: "center",
       justifyContent: "center",
+    },
+    home: {
+      gap: spacing.lg,
+    },
+    headerBlock: {
+      gap: spacing.xs,
+      paddingVertical: spacing.screenPadding,
+    },
+    heroCard: {
+      backgroundColor: c.background.tertiary,
+      borderRadius: radius.mainCard,
+      gap: spacing.md,
+      minHeight: 150,
+      justifyContent: "center",
+      padding: spacing.lg,
+    },
+    heroStats: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    chartCard: {
+      backgroundColor: c.surface.primary,
+      borderColor: c.border.light,
+      borderRadius: radius.card,
+      borderWidth: 1,
+      gap: spacing.md,
+      padding: spacing.cardPadding,
+    },
+    summaryGrid: {
+      gap: spacing.gridGap,
+    },
+    summaryRow: {
+      flexDirection: "row",
+      gap: spacing.gridGap,
+    },
+    summaryCell: {
+      flex: 1,
+    },
+    list: {
+      gap: spacing.gridGap,
     },
   });
