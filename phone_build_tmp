@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Factrion",
+    "slug": "factrion",
+    "version": "1.0.22",
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "scheme": "factrion",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "versionCode": 24,
+      "adaptiveIcon": {
+        "backgroundColor": "#00030D",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.factrion"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

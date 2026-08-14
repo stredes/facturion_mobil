@@ -20,6 +20,7 @@ export function createFieldStyles(c: Colors) {
       borderWidth: 1,
       color: c.text.primary,
       fontSize: 15,
+      ...typography.tabularNums,
       lineHeight: 20,
       minHeight: spacing.inputHeight,
       paddingHorizontal: spacing.md,
