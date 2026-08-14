@@ -73,6 +73,7 @@ export function InvoiceForm({
     control,
     handleSubmit,
     setValue,
+    trigger,
     watch,
     formState: { isSubmitting: isFormSubmitting },
   } = useFormWithReset<InvoiceFormValues>(defaultValues, {
@@ -113,6 +114,7 @@ export function InvoiceForm({
 
   return (
     <FormScaffold
+      control={control}
       gap={spacing.lg}
       isSubmitting={isBusy}
       onSubmit={submit}
@@ -122,6 +124,7 @@ export function InvoiceForm({
       subtitle={subtitle}
       cancelLabel={cancelLabel}
       onCancel={onCancel}
+      trigger={trigger}
     >
       <FormSection icon="i" title="Informacion de la factura">
         <TextField control={control} name="invoiceNumber" label="Numero de factura" />

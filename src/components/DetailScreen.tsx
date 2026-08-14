@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { radius, spacing, typography, useTheme, useThemeColors, type Colors } from "../theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { ConfirmModal } from "./ConfirmModal";
+import { SectionTitle } from "./SectionTitle";
 
 interface DetailScreenProps {
   title: string;
@@ -175,7 +176,7 @@ export function DetailBlock({ title, children }: DetailBlockProps) {
 
   return (
     <View style={styles.block}>
-      <Text style={styles.blockTitle}>{title}</Text>
+      <SectionTitle title={title} />
       {children}
     </View>
   );
@@ -223,10 +224,6 @@ const createStyles = (c: Colors) =>
     },
     block: {
       gap: spacing.sm,
-    },
-    blockTitle: {
-      ...typography.sectionTitle,
-      color: c.text.primary,
     },
     detailRow: {
       backgroundColor: c.surface.primary,

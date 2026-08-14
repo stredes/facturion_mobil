@@ -21,3 +21,22 @@ export function formatMoneyInput(value: number): string {
 
   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+
+/**
+ * Normaliza el texto tal como lo escribe el usuario en vivo: solo digitos,
+ * con separadores de miles agrupados de a 3. Descarta cualquier otro
+ * caracter (incluido el signo "-"), por lo que el borrado de un digito de
+ * un valor agrupado ("1.500" -> "1.50" -> 150) nunca corrompe el monto.
+ */
+export function sanitizeMoneyText(raw: string): {
+  text: string;
+  value: number;
+} {
+  const digits = raw.replace(/[^\d]/g, "");
+  if (!digits) {
+    return { text: "", value: 0 };
+  }
+
+  const value = parseInt(digits, 10);
+  return { text: formatMoneyInput(value), value };
+}

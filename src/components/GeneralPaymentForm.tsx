@@ -65,6 +65,7 @@ export function GeneralPaymentForm({
   const {
     control,
     handleSubmit,
+    trigger,
     formState: { isSubmitting: isFormSubmitting },
   } = useFormWithReset<GeneralPaymentFormValues>(defaultValues, {
     resolver: zodResolver(generalPaymentSchema),
@@ -84,6 +85,7 @@ export function GeneralPaymentForm({
 
   return (
     <FormScaffold
+      control={control}
       isSubmitting={isBusy}
       onSubmit={submit}
       submitError={submitError}
@@ -92,6 +94,7 @@ export function GeneralPaymentForm({
       subtitle={subtitle}
       cancelLabel={cancelLabel}
       onCancel={onCancel}
+      trigger={trigger}
     >
       <Text
         accessibilityRole="header"

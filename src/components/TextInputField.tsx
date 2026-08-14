@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { Ref } from "react";
 import {
   StyleSheet,
   Text,
@@ -19,6 +20,7 @@ interface TextInputFieldProps {
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoComplete?: "email" | "password" | "name" | "off";
   multiline?: boolean;
+  inputRef?: Ref<TextInput>;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
 }
@@ -33,6 +35,7 @@ export function TextInputField({
   autoCapitalize = "sentences",
   autoComplete = "off",
   multiline = false,
+  inputRef,
   onBlur,
   onChangeText,
 }: TextInputFieldProps) {
@@ -61,6 +64,7 @@ export function TextInputField({
         }}
         placeholder={placeholder}
         placeholderTextColor={colors.text.tertiary}
+        ref={inputRef}
         returnKeyType={multiline ? "default" : "done"}
         secureTextEntry={secureTextEntry}
         style={[

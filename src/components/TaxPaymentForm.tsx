@@ -52,6 +52,7 @@ export function TaxPaymentForm({
   const {
     control,
     handleSubmit,
+    trigger,
     formState: { isSubmitting: isFormSubmitting },
   } = useFormWithReset<TaxPaymentFormValues>(defaultValues, {
     resolver: zodResolver(taxPaymentSchema),
@@ -71,10 +72,12 @@ export function TaxPaymentForm({
 
   return (
     <FormScaffold
+      control={control}
       isSubmitting={isBusy}
       onSubmit={submit}
       submitError={submitError}
       submitLabel={submitLabel}
+      trigger={trigger}
     >
       <TextField
         control={control}

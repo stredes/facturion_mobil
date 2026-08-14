@@ -52,6 +52,7 @@ export function RetentionForm({
   const {
     control,
     handleSubmit,
+    trigger,
     formState: { isSubmitting: isFormSubmitting },
   } = useFormWithReset<RetentionFormValues>(defaultValues, {
     resolver: zodResolver(retentionSchema),
@@ -71,10 +72,12 @@ export function RetentionForm({
 
   return (
     <FormScaffold
+      control={control}
       isSubmitting={isBusy}
       onSubmit={submit}
       submitError={submitError}
       submitLabel={submitLabel}
+      trigger={trigger}
     >
       <Text
         accessibilityRole="header"

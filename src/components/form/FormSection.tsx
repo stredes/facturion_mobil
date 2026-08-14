@@ -3,14 +3,21 @@ import type { ReactNode } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 
 import { radius, spacing, springConfig, typography, useThemeColors, type Colors } from "../../theme";
+import { SectionTitle } from "../SectionTitle";
 
 interface FormSectionProps {
   icon: string;
   title: string;
+  subtitle?: string;
   children: ReactNode;
 }
 
-export function FormSection({ icon, title, children }: FormSectionProps) {
+export function FormSection({
+  icon,
+  title,
+  subtitle,
+  children,
+}: FormSectionProps) {
   const colors = useThemeColors();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
@@ -44,10 +51,13 @@ export function FormSection({ icon, title, children }: FormSectionProps) {
         >
           <Text style={styles.blockIconText}>{icon}</Text>
         </View>
-        <Text accessibilityRole="header" style={styles.blockTitle}>
-          {title}
-        </Text>
+        <SectionTitle
+          style={styles.blockHeading}
+          subtitle={subtitle}
+          title={title}
+        />
       </View>
+      <View style={styles.divider} />
       {children}
     </Animated.View>
   );
@@ -63,6 +73,10 @@ const createStyles = (c: Colors) =>
       alignItems: "center",
       gap: spacing.sm,
     },
+    blockHeading: {
+      flex: 1,
+      marginBottom: 0,
+    },
     blockIcon: {
       backgroundColor: c.primary.light,
       borderRadius: radius.inner,
@@ -76,9 +90,9 @@ const createStyles = (c: Colors) =>
       color: c.primary.main,
       fontWeight: "700",
     },
-    blockTitle: {
-      ...typography.sectionTitle,
-      color: c.text.primary,
-      flex: 1,
+    divider: {
+      backgroundColor: c.border.light,
+      height: 1,
+      width: "100%",
     },
   });

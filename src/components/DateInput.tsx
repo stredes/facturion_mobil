@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { Ref } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { radius, spacing, useThemeColors, type Colors } from "../theme";
@@ -7,6 +8,7 @@ interface DateInputProps {
   label: string;
   value: string;
   error?: string;
+  inputRef?: Ref<TextInput>;
   onBlur?: () => void;
   onChangeText: (value: string) => void;
 }
@@ -15,6 +17,7 @@ export function DateInput({
   label,
   value,
   error,
+  inputRef,
   onBlur,
   onChangeText,
 }: DateInputProps) {
@@ -39,6 +42,7 @@ export function DateInput({
         }}
         placeholder="AAAA-MM-DD"
         placeholderTextColor={colors.text.tertiary}
+        ref={inputRef}
         returnKeyType="done"
         style={[
           styles.input,

@@ -1,5 +1,8 @@
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import type { ReactNode } from "react";
+import type { Control, FieldValues } from "react-hook-form";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,10 +13,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../../theme";
-import { AnimatedPressable } from "../AnimatedPressable";
 import { hapticLight } from "../../utils/haptics";
+import { AnimatedPressable } from "../AnimatedPressable";
+import {
+  FormFieldRegistryContext,
+  type FormFieldHandle,
+} from "./formFieldRegistry";
 
-interface FormScaffoldProps {
+interface FormScaffoldProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
+  trigger: () => Promise<boolean>;
   children: ReactNode;
   submitLabel: string;
   isSubmitting: boolean;
@@ -26,7 +35,9 @@ interface FormScaffoldProps {
   onCancel?: () => void;
 }
 
-export function FormScaffold({
+export function FormScaffold<TFieldValues extends FieldValues>({
+  control,
+  trigger,
   children,
   submitLabel,
   isSubmitting,
@@ -37,15 +48,78 @@ export function FormScaffold({
   subtitle,
   cancelLabel = "Cancelar",
   onCancel,
-}: FormScaffoldProps) {
+}: FormScaffoldProps<TFieldValues>) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const handleSubmit = () => {
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
+  const orderRef = useRef<string[]>([]);
+  const fieldsRef = useRef<Map<string, FormFieldHandle>>(new Map());
+
+  const registerField = useCallback((name: string, handle: FormFieldHandle) => {
+    if (!orderRef.current.includes(name)) {
+      orderRef.current.push(name);
+    }
+    fieldsRef.current.set(name, handle);
+
+    return () => {
+      fieldsRef.current.delete(name);
+      const index = orderRef.current.indexOf(name);
+      if (index >= 0) {
+        orderRef.current.splice(index, 1);
+      }
+    };
+  }, []);
+
+  const registryValue = useMemo(
+    () => ({ register: registerField }),
+    [registerField],
+  );
+
+  const scrollToFirstError = useCallback((errors: object) => {
+    const record = errors as Record<string, { message?: string } | undefined>;
+    const name = orderRef.current.find(
+      (fieldName) => record[fieldName]?.message,
+    );
+    if (!name) {
+      return;
+    }
+
+    const handle = fieldsRef.current.get(name);
+    const contentNode = contentRef.current;
+    if (!handle || !contentNode) {
+      return;
+    }
+
+    handle.view.current?.measureLayout(
+      contentNode,
+      (_x, y) => {
+        scrollRef.current?.scrollTo({
+          y: Math.max(0, y - spacing.sm),
+          animated: true,
+        });
+      },
+      () => undefined,
+    );
+    handle.focus();
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     hapticLight();
+    if (isSubmitting) {
+      return;
+    }
+
+    const isValid = await trigger();
+    if (!isValid) {
+      scrollToFirstError(control._formState.errors);
+      return;
+    }
+
     onSubmit();
-  };
+  }, [isSubmitting, trigger, control, scrollToFirstError, onSubmit]);
 
   return (
     <KeyboardAvoidingView
@@ -75,19 +149,19 @@ export function FormScaffold({
         </View>
       ) : null}
 
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { gap }]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {children}
-        {submitError ? (
-          <View accessibilityRole="alert" style={styles.submitErrorBox}>
-            <Text style={styles.submitErrorText}>{submitError}</Text>
+      <FormFieldRegistryContext.Provider value={registryValue}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false}
+        >
+          <View ref={contentRef} style={{ gap }}>
+            {children}
+            <View style={styles.footerSpacer} />
           </View>
-        ) : null}
-        <View style={styles.footerSpacer} />
-      </ScrollView>
+        </ScrollView>
+      </FormFieldRegistryContext.Provider>
 
       <View
         style={[
@@ -95,17 +169,28 @@ export function FormScaffold({
           { paddingBottom: spacing.lg + insets.bottom },
         ]}
       >
+        {submitError ? (
+          <View accessibilityRole="alert" style={styles.submitErrorBox}>
+            <Text style={styles.submitErrorText}>{submitError}</Text>
+          </View>
+        ) : null}
         <AnimatedPressable
           accessibilityRole="button"
+          accessibilityState={{ busy: isSubmitting, disabled: isSubmitting }}
           disabled={isSubmitting}
+          hapticOnPress={!isSubmitting}
           onPress={handleSubmit}
           style={[
             styles.submitButton,
             isSubmitting && styles.submitButtonDisabled,
           ]}
-          hapticOnPress={!isSubmitting}
         >
-          <Text style={[styles.submitText, isSubmitting && styles.submitTextDisabled]}>
+          {isSubmitting ? (
+            <ActivityIndicator color={colors.text.inverse} size="small" />
+          ) : null}
+          <Text
+            style={[styles.submitText, isSubmitting && styles.submitTextDisabled]}
+          >
             {isSubmitting ? "Guardando..." : submitLabel}
           </Text>
         </AnimatedPressable>
@@ -177,6 +262,7 @@ const createStyles = (c: Colors) =>
       backgroundColor: c.surface.primary,
       borderTopColor: c.border.light,
       borderTopWidth: 1,
+      gap: spacing.md,
       padding: spacing.lg,
       paddingBottom: spacing.xl,
     },
@@ -184,6 +270,8 @@ const createStyles = (c: Colors) =>
       alignItems: "center",
       backgroundColor: c.primary.main,
       borderRadius: radius.button,
+      flexDirection: "row",
+      gap: spacing.sm,
       minHeight: spacing.buttonHeight,
       justifyContent: "center",
       paddingHorizontal: spacing.lg,

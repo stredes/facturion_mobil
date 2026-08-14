@@ -1,16 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Ref } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
-import {
-  formatMoneyInput,
-  parseMoneyInput,
-} from "../utils/moneyInput";
+import { formatMoneyInput, sanitizeMoneyText } from "../utils/moneyInput";
 
 interface MoneyInputProps {
   label: string;
   value: number;
   error?: string;
+  inputRef?: Ref<TextInput>;
   onChangeValue: (value: number) => void;
 }
 
@@ -18,12 +17,29 @@ export function MoneyInput({
   label,
   value,
   error,
+  inputRef,
   onChangeValue,
 }: MoneyInputProps) {
   const [focused, setFocused] = useState(false);
+  const [text, setText] = useState(() => formatMoneyInput(value));
+  const lastSyncedValue = useRef(value);
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const formattedValue = formatMoneyInput(value);
+
+  useEffect(() => {
+    if (focused || value === lastSyncedValue.current) {
+      return;
+    }
+    lastSyncedValue.current = value;
+    setText(formatMoneyInput(value));
+  }, [value, focused]);
+
+  const handleChange = (raw: string) => {
+    const { text: nextText, value: next } = sanitizeMoneyText(raw);
+    lastSyncedValue.current = next;
+    setText(nextText);
+    onChangeValue(next);
+  };
 
   return (
     <View style={styles.container}>
@@ -35,23 +51,28 @@ export function MoneyInput({
           focused && styles.inputFocused,
         ]}
       >
-        <Text style={styles.prefix}>$</Text>
         <TextInput
-          accessibilityLabel={label}
+          accessibilityLabel={`${label}, en pesos chilenos`}
+          accessibilityHint={error ? "Campo con error" : undefined}
+          aria-invalid={error ? true : false}
           keyboardType="numbers-and-punctuation"
-          onChangeText={(text) => {
-            onChangeValue(parseMoneyInput(text));
+          onChangeText={handleChange}
+          onBlur={() => {
+            setFocused(false);
+            lastSyncedValue.current = value;
+            setText(formatMoneyInput(value));
           }}
           onFocus={() => {
             setFocused(true);
           }}
-          onBlur={() => setFocused(false)}
           placeholder="0"
           placeholderTextColor={colors.text.tertiary}
+          ref={inputRef}
           returnKeyType="done"
           style={styles.input}
-          value={formattedValue}
+          value={text}
         />
+        <Text style={styles.suffix}>$</Text>
       </View>
       {error ? (
         <Text accessibilityLiveRegion="assertive" style={styles.error}>
@@ -89,12 +110,6 @@ const createStyles = (c: Colors) =>
     inputFocused: {
       borderColor: c.primary.main,
     },
-    prefix: {
-      ...typography.body,
-      color: c.text.tertiary,
-      fontWeight: "600",
-      marginRight: spacing.xs,
-    },
     input: {
       color: c.text.primary,
       flex: 1,
@@ -102,6 +117,11 @@ const createStyles = (c: Colors) =>
       lineHeight: 20,
       paddingVertical: 0,
       textAlign: "right",
+    },
+    suffix: {
+      ...typography.bodyMedium,
+      color: c.text.secondary,
+      marginLeft: spacing.xs,
     },
     error: {
       color: c.status.error,
