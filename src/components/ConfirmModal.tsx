@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography, useTheme, type Colors } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 import { hapticLight, hapticSuccess } from "../utils/haptics";
 import { SecondaryButton } from "./SecondaryButton";
 
@@ -40,8 +41,13 @@ export function ConfirmModal({
   const scale = useRef(new Animated.Value(0.96)).current;
   const confirmRef = useRef<ComponentRef<typeof Pressable>>(null);
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      scale.setValue(1);
+      return;
+    }
     if (visible) {
       scale.setValue(0.96);
       Animated.timing(scale, {
@@ -50,7 +56,7 @@ export function ConfirmModal({
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, scale]);
+  }, [visible, scale, reduceMotion]);
 
   const handleBack = () => {
     hapticLight();

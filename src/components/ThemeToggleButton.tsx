@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { radius, spacing, typography, useTheme, type Colors } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 
 export function ThemeToggleButton() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -16,8 +17,13 @@ export function ThemeToggleButton() {
   const progress = useRef(new Animated.Value(isDark ? 1 : 0)).current;
   const [trackWidth, setTrackWidth] = useState(0);
   const knobTravel = Math.max(0, trackWidth - 48);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      progress.setValue(isDark ? 1 : 0);
+      return;
+    }
     Animated.spring(progress, {
       damping: 18,
       mass: 0.7,
@@ -25,7 +31,7 @@ export function ThemeToggleButton() {
       toValue: isDark ? 1 : 0,
       useNativeDriver: true,
     }).start();
-  }, [isDark, progress]);
+  }, [isDark, progress, reduceMotion]);
 
   const translateX = progress.interpolate({
     inputRange: [0, 1],
@@ -61,6 +67,7 @@ export function ThemeToggleButton() {
         ]}
       >
         <Ionicons
+          accessible={false}
           color={isDark ? colors.primary.dark : colors.status.warning}
           name={isDark ? "moon" : "sunny"}
           size={18}

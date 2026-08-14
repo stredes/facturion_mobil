@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { springConfig } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 import { hapticLight } from "../utils/haptics";
 
 interface AnimatedPressableProps {
@@ -39,8 +40,10 @@ export function AnimatedPressable({
   ...props
 }: AnimatedPressableProps) {
   const scale = useRef(new Animated.Value(1)).current;
+  const reduceMotion = useReduceMotion();
 
   function handlePressIn() {
+    if (reduceMotion) return;
     Animated.spring(scale, {
       toValue: scaleIn,
       useNativeDriver: true,
@@ -49,6 +52,7 @@ export function AnimatedPressable({
   }
 
   function handlePressOut() {
+    if (reduceMotion) return;
     Animated.spring(scale, {
       toValue: 1,
       useNativeDriver: true,

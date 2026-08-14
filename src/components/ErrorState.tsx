@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 import { hapticMedium } from "../utils/haptics";
 
 interface ErrorStateProps {
@@ -26,8 +27,14 @@ export function ErrorState({
   const translateY = useRef(new Animated.Value(16)).current;
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      return;
+    }
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
@@ -42,7 +49,7 @@ export function ErrorState({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [opacity, translateY]);
+  }, [opacity, translateY, reduceMotion]);
 
   return (
     <Animated.View

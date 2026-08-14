@@ -127,6 +127,7 @@ const createStyles = (c: Colors) =>
       alignItems: "center",
       flexDirection: "row",
       justifyContent: "space-between",
+      minHeight: spacing.buttonHeight,
     },
     monthTitle: {
       ...typography.sectionTitle,

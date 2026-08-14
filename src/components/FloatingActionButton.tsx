@@ -22,6 +22,7 @@ export function FloatingActionButton({
 
   return (
     <AnimatedPressable
+      accessibilityHint="Crea un nuevo registro"
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       hitSlop={8}

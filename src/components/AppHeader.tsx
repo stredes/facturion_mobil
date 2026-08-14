@@ -13,7 +13,12 @@ export function AppHeader({ title, subtitle, largeSubtitle }: AppHeaderProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text.primary }]}>{title}</Text>
+      <Text
+        accessibilityRole="header"
+        style={[styles.title, { color: colors.text.primary }]}
+      >
+        {title}
+      </Text>
       {subtitle ? (
         <Text
           style={[

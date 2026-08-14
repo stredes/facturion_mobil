@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 import { radius, spacing, typography, useThemeColors, type Colors } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 import { PrimaryButton } from "./PrimaryButton";
 
 interface EmptyStateProps {
@@ -36,8 +43,14 @@ export function EmptyState({
   const translateY = useRef(new Animated.Value(16)).current;
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      return;
+    }
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
@@ -52,7 +65,7 @@ export function EmptyState({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [opacity, translateY]);
+  }, [opacity, translateY, reduceMotion]);
 
   const glyph = (iconName && ICON_GLYPHS[iconName]) || ICON;
 
